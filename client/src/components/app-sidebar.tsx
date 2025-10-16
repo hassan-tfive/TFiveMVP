@@ -13,7 +13,6 @@ import {
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { cn } from "@/lib/utils";
 import type { User } from "@shared/schema";
-import logoUrl from "@assets/v3 - crimson text font-03_1760641985520.png";
 
 const menuItems = [
   { title: "Dashboard", url: "/", icon: Home },
@@ -40,9 +39,6 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <div className="px-3 py-4">
-            <img src={logoUrl} alt="Tfive" className="h-8 w-auto" data-testid="img-logo" />
-          </div>
           <SidebarGroupContent>
             <SidebarMenu>
               {allMenuItems.map((item) => (

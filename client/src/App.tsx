@@ -9,6 +9,8 @@ import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
 import { AppSidebar } from "@/components/app-sidebar";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import logoUrl from "@assets/v3 - crimson text font-03_1760641985520.png";
+import { Link } from "wouter";
 import Dashboard from "@/pages/Dashboard";
 import Programs from "@/pages/Programs";
 import ChatPage from "@/pages/ChatPage";
@@ -49,8 +51,11 @@ export default function App() {
                   <header className="flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                     <div className="flex items-center gap-4">
                       <SidebarTrigger data-testid="button-sidebar-toggle" />
-                      <WorkspaceSwitcher />
+                      <Link href="/" className="flex items-center">
+                        <img src={logoUrl} alt="Tfive" className="h-10 w-auto cursor-pointer hover:opacity-90 transition-opacity" data-testid="img-logo" />
+                      </Link>
                     </div>
+                    <WorkspaceSwitcher />
                     <ThemeToggle />
                   </header>
                   <main className="flex-1 overflow-auto p-6">
