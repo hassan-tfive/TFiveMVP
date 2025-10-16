@@ -48,15 +48,20 @@ export default function App() {
               <div className="flex h-screen w-full">
                 <AppSidebar />
                 <div className="flex flex-col flex-1">
-                  <header className="flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                    <div className="flex items-center gap-4">
-                      <SidebarTrigger data-testid="button-sidebar-toggle" />
-                      <Link href="/" className="flex items-center">
-                        <img src={logoUrl} alt="Tfive" className="h-10 w-auto cursor-pointer hover:opacity-90 transition-opacity" data-testid="img-logo" />
+                  <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 border-b bg-gradient-to-r from-background via-background/98 to-background backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 shadow-sm">
+                    <div className="flex items-center gap-6">
+                      <SidebarTrigger data-testid="button-sidebar-toggle" className="hover-elevate active-elevate-2" />
+                      <Link href="/" className="flex items-center group">
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/0 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                          <img src={logoUrl} alt="Tfive" className="h-11 w-auto relative z-10 cursor-pointer transition-all group-hover:scale-105" data-testid="img-logo" />
+                        </div>
                       </Link>
                     </div>
                     <WorkspaceSwitcher />
-                    <ThemeToggle />
+                    <div className="flex items-center gap-3">
+                      <ThemeToggle />
+                    </div>
                   </header>
                   <main className="flex-1 overflow-auto p-6">
                     <Router />
