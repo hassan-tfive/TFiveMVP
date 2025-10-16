@@ -1,4 +1,8 @@
 import {
+  type Organization,
+  type InsertOrganization,
+  type Team,
+  type InsertTeam,
   type User,
   type InsertUser,
   type Program,
@@ -17,8 +21,21 @@ import {
 import { randomUUID } from "crypto";
 
 export interface IStorage {
+  // Organization operations
+  getOrganization(id: string): Promise<Organization | undefined>;
+  getOrganizations(): Promise<Organization[]>;
+  createOrganization(org: InsertOrganization): Promise<Organization>;
+  
+  // Team operations
+  getTeam(id: string): Promise<Team | undefined>;
+  getOrganizationTeams(organizationId: string): Promise<Team[]>;
+  createTeam(team: InsertTeam): Promise<Team>;
+  updateTeam(id: string, updates: Partial<Team>): Promise<Team | undefined>;
+  
   // User operations
   getUser(id: string): Promise<User | undefined>;
+  getOrganizationUsers(organizationId: string): Promise<User[]>;
+  getTeamUsers(teamId: string): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
 
@@ -54,6 +71,8 @@ export interface IStorage {
 }
 
 export class MemStorage implements IStorage {
+  private organizations: Map<string, Organization>;
+  private teams: Map<string, Team>;
   private users: Map<string, User>;
   private programs: Map<string, Program>;
   private sessions: Map<string, Session>;
@@ -63,6 +82,8 @@ export class MemStorage implements IStorage {
   private chatMessages: Map<string, ChatMessage>;
 
   constructor() {
+    this.organizations = new Map();
+    this.teams = new Map();
     this.users = new Map();
     this.programs = new Map();
     this.sessions = new Map();
@@ -80,12 +101,71 @@ export class MemStorage implements IStorage {
       id: "default-user",
       username: "demo",
       email: "demo@tfive.com",
+      role: "user",
+      organizationId: null,
+      teamId: null,
       currentWorkspace: "professional",
       points: 0,
       level: 1,
       createdAt: new Date(),
     };
     this.users.set(defaultUser.id, defaultUser);
+  }
+
+  // Organization operations
+  async getOrganization(id: string): Promise<Organization | undefined> {
+    return this.organizations.get(id);
+  }
+
+  async getOrganizations(): Promise<Organization[]> {
+    return Array.from(this.organizations.values());
+  }
+
+  async createOrganization(insertOrg: InsertOrganization): Promise<Organization> {
+    const id = randomUUID();
+    const org: Organization = {
+      ...insertOrg,
+      id,
+      createdAt: new Date(),
+    };
+    this.organizations.set(id, org);
+    return org;
+  }
+
+  // Team operations
+  async getTeam(id: string): Promise<Team | undefined> {
+    return this.teams.get(id);
+  }
+
+  async getOrganizationTeams(organizationId: string): Promise<Team[]> {
+    return Array.from(this.teams.values()).filter((t) => t.organizationId === organizationId);
+  }
+
+  async createTeam(insertTeam: InsertTeam): Promise<Team> {
+    const id = randomUUID();
+    const team: Team = {
+      ...insertTeam,
+      id,
+      createdAt: new Date(),
+    };
+    this.teams.set(id, team);
+    return team;
+  }
+
+  async updateTeam(id: string, updates: Partial<Team>): Promise<Team | undefined> {
+    const team = this.teams.get(id);
+    if (!team) return undefined;
+    const updated = { ...team, ...updates };
+    this.teams.set(id, updated);
+    return updated;
+  }
+
+  async getOrganizationUsers(organizationId: string): Promise<User[]> {
+    return Array.from(this.users.values()).filter((u) => u.organizationId === organizationId);
+  }
+
+  async getTeamUsers(teamId: string): Promise<User[]> {
+    return Array.from(this.users.values()).filter((u) => u.teamId === teamId);
   }
 
   // User operations
@@ -283,6 +363,60 @@ export class DbStorage implements IStorage {
     this.db = drizzle(pool, { schema });
   }
 
+  // Organization operations
+  async getOrganization(id: string): Promise<Organization | undefined> {
+    const [org] = await this.db
+      .select()
+      .from(schema.organizations)
+      .where(eq(schema.organizations.id, id));
+    return org;
+  }
+
+  async getOrganizations(): Promise<Organization[]> {
+    return await this.db.select().from(schema.organizations);
+  }
+
+  async createOrganization(insertOrg: InsertOrganization): Promise<Organization> {
+    const [org] = await this.db
+      .insert(schema.organizations)
+      .values(insertOrg)
+      .returning();
+    return org;
+  }
+
+  // Team operations
+  async getTeam(id: string): Promise<Team | undefined> {
+    const [team] = await this.db
+      .select()
+      .from(schema.teams)
+      .where(eq(schema.teams.id, id));
+    return team;
+  }
+
+  async getOrganizationTeams(organizationId: string): Promise<Team[]> {
+    return await this.db
+      .select()
+      .from(schema.teams)
+      .where(eq(schema.teams.organizationId, organizationId));
+  }
+
+  async createTeam(insertTeam: InsertTeam): Promise<Team> {
+    const [team] = await this.db
+      .insert(schema.teams)
+      .values(insertTeam)
+      .returning();
+    return team;
+  }
+
+  async updateTeam(id: string, updates: Partial<Team>): Promise<Team | undefined> {
+    const [team] = await this.db
+      .update(schema.teams)
+      .set(updates)
+      .where(eq(schema.teams.id, id))
+      .returning();
+    return team;
+  }
+
   // User operations
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await this.db
@@ -290,6 +424,20 @@ export class DbStorage implements IStorage {
       .from(schema.users)
       .where(eq(schema.users.id, id));
     return user;
+  }
+
+  async getOrganizationUsers(organizationId: string): Promise<User[]> {
+    return await this.db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.organizationId, organizationId));
+  }
+
+  async getTeamUsers(teamId: string): Promise<User[]> {
+    return await this.db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.teamId, teamId));
   }
 
   async createUser(insertUser: InsertUser & { id?: string }): Promise<User> {

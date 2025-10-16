@@ -1,5 +1,6 @@
-import { Home, Library, MessageSquare, Trophy, User } from "lucide-react";
+import { Home, Library, MessageSquare, Trophy, Shield } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import {
   Sidebar,
   SidebarContent,
@@ -12,6 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { cn } from "@/lib/utils";
+import type { User } from "@shared/schema";
 
 const menuItems = [
   { title: "Dashboard", url: "/", icon: Home },
@@ -20,9 +22,19 @@ const menuItems = [
   { title: "Achievements", url: "/achievements", icon: Trophy },
 ];
 
+const adminMenuItem = { title: "Admin", url: "/admin", icon: Shield };
+
 export function AppSidebar() {
   const [location] = useLocation();
   const { workspace } = useWorkspace();
+  
+  const { data: user } = useQuery<User>({
+    queryKey: ["/api/user"],
+  });
+
+  const isAdmin = user?.role === "admin";
+
+  const allMenuItems = isAdmin ? [...menuItems, adminMenuItem] : menuItems;
 
   return (
     <Sidebar>
@@ -31,7 +43,7 @@ export function AppSidebar() {
           <SidebarGroupLabel className="text-lg font-display font-semibold">Tfive</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {allMenuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
@@ -43,7 +55,7 @@ export function AppSidebar() {
                           : "bg-workspace-personal text-white hover:bg-workspace-personal/90"
                       )
                     )}
-                    data-testid={`link-${item.title.toLowerCase().replace(" ", "-")}`}
+                    data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
                   >
                     <Link href={item.url}>
                       <item.icon className="w-4 h-4" />

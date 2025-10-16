@@ -14,6 +14,7 @@ import Programs from "@/pages/Programs";
 import ChatPage from "@/pages/ChatPage";
 import SessionPage from "@/pages/SessionPage";
 import Achievements from "@/pages/Achievements";
+import AdminDashboard from "@/pages/AdminDashboard";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/chat" component={ChatPage} />
       <Route path="/session/:id" component={SessionPage} />
       <Route path="/achievements" component={Achievements} />
+      <Route path="/admin" component={AdminDashboard} />
       <Route component={NotFound} />
     </Switch>
   );

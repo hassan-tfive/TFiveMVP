@@ -3,10 +3,28 @@ import { pgTable, text, varchar, integer, timestamp, boolean, jsonb } from "driz
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+export const organizations = pgTable("organizations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const teams = pgTable("teams", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  organizationId: varchar("organization_id").notNull().references(() => organizations.id),
+  name: text("name").notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
+  role: text("role").notNull().default("user"), // user | admin | team_lead
+  organizationId: varchar("organization_id").references(() => organizations.id),
+  teamId: varchar("team_id").references(() => teams.id),
   currentWorkspace: text("current_workspace").notNull().default("professional"), // professional | personal
   points: integer("points").notNull().default(0),
   level: integer("level").notNull().default(1),
@@ -72,6 +90,20 @@ export const chatMessages = pgTable("chat_messages", {
 });
 
 // Insert schemas
+export const insertOrganizationSchema = createInsertSchema(organizations).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertTeamSchema = createInsertSchema(teams).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const updateTeamSchema = insertTeamSchema.partial().omit({
+  organizationId: true,
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -108,6 +140,12 @@ export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
 });
 
 // Types
+export type InsertOrganization = z.infer<typeof insertOrganizationSchema>;
+export type Organization = typeof organizations.$inferSelect;
+
+export type InsertTeam = z.infer<typeof insertTeamSchema>;
+export type Team = typeof teams.$inferSelect;
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
@@ -135,3 +173,4 @@ export type SessionPhase = "learn" | "act" | "earn";
 export type SessionStatus = "in_progress" | "completed" | "paused";
 export type ProgramCategory = "wellbeing" | "recovery" | "inclusion" | "focus";
 export type ProgramDifficulty = "beginner" | "intermediate" | "advanced";
+export type UserRole = "user" | "admin" | "team_lead";

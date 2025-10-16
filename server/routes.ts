@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import OpenAI from "openai";
@@ -7,6 +7,9 @@ import {
   insertProgramSchema,
   insertSessionSchema,
   insertChatMessageSchema,
+  insertOrganizationSchema,
+  insertTeamSchema,
+  updateTeamSchema,
 } from "@shared/schema";
 
 // Initialize OpenAI with Replit AI Integrations
@@ -16,6 +19,19 @@ const openai = new OpenAI({
 });
 
 const DEFAULT_USER_ID = "default-user";
+
+// Admin authorization middleware
+async function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  try {
+    const user = await storage.getUser(DEFAULT_USER_ID);
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    next();
+  } catch (error) {
+    res.status(500).json({ error: "Authorization failed" });
+  }
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // User routes
@@ -250,6 +266,172 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin routes - Organization and Team Management
+  app.get("/api/admin/organizations", requireAdmin, async (req, res) => {
+    try {
+      const orgs = await storage.getOrganizations();
+      res.json(orgs);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch organizations" });
+    }
+  });
+
+  app.post("/api/admin/organizations", requireAdmin, async (req, res) => {
+    try {
+      const orgData = insertOrganizationSchema.parse(req.body);
+      const org = await storage.createOrganization(orgData);
+      res.status(201).json(org);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create organization" });
+    }
+  });
+
+  app.get("/api/admin/organizations/:id/teams", requireAdmin, async (req, res) => {
+    try {
+      const teams = await storage.getOrganizationTeams(req.params.id);
+      res.json(teams);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch teams" });
+    }
+  });
+
+  app.post("/api/admin/teams", requireAdmin, async (req, res) => {
+    try {
+      const teamData = insertTeamSchema.parse(req.body);
+      const team = await storage.createTeam(teamData);
+      res.status(201).json(team);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create team" });
+    }
+  });
+
+  app.patch("/api/admin/teams/:id", requireAdmin, async (req, res) => {
+    try {
+      const updates = updateTeamSchema.parse(req.body);
+      const team = await storage.updateTeam(req.params.id, updates);
+      if (!team) {
+        return res.status(404).json({ error: "Team not found" });
+      }
+      res.json(team);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Failed to update team" });
+    }
+  });
+
+  app.get("/api/admin/organizations/:id/users", requireAdmin, async (req, res) => {
+    try {
+      const users = await storage.getOrganizationUsers(req.params.id);
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  app.get("/api/admin/teams/:id/users", requireAdmin, async (req, res) => {
+    try {
+      const users = await storage.getTeamUsers(req.params.id);
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch team users" });
+    }
+  });
+
+  // Admin Analytics Routes
+  app.get("/api/admin/analytics/engagement", requireAdmin, async (req, res) => {
+    const { organizationId } = req.query;
+    
+    if (!organizationId) {
+      return res.status(400).json({ error: "Organization ID required" });
+    }
+
+    try {
+      const users = await storage.getOrganizationUsers(organizationId as string);
+      const allSessions = await Promise.all(
+        users.map(u => storage.getUserSessions(u.id))
+      );
+      const flatSessions = allSessions.flat();
+      
+      const activeUsers = new Set(flatSessions.map(s => s.userId)).size;
+      const completedSessions = flatSessions.filter(s => s.status === "completed").length;
+      const totalSessions = flatSessions.length;
+      const completionRate = totalSessions > 0 ? (completedSessions / totalSessions) * 100 : 0;
+
+      // Popular programs
+      const programCounts = flatSessions.reduce((acc, session) => {
+        acc[session.programId] = (acc[session.programId] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      const popularProgramIds = Object.entries(programCounts)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 5)
+        .map(([id]) => id);
+
+      const popularPrograms = await Promise.all(
+        popularProgramIds.map(id => storage.getProgram(id))
+      );
+
+      res.json({
+        activeUsers,
+        totalUsers: users.length,
+        completedSessions,
+        completionRate: Math.round(completionRate),
+        popularPrograms: popularPrograms.filter(Boolean),
+      });
+    } catch (error) {
+      console.error("Analytics error:", error);
+      res.status(500).json({ error: "Failed to fetch analytics" });
+    }
+  });
+
+  app.get("/api/admin/analytics/wellbeing", requireAdmin, async (req, res) => {
+    const { organizationId } = req.query;
+    
+    if (!organizationId) {
+      return res.status(400).json({ error: "Organization ID required" });
+    }
+
+    try {
+      const users = await storage.getOrganizationUsers(organizationId as string);
+      const userStats = await Promise.all(
+        users.map(async (u) => {
+          const stats = await storage.getUserStats(u.id);
+          return {
+            userId: u.id,
+            username: u.username,
+            level: u.level,
+            points: u.points,
+            ...stats,
+          };
+        })
+      );
+
+      const avgLevel = userStats.reduce((sum, u) => sum + u.level, 0) / userStats.length;
+      const avgStreak = userStats.reduce((sum, u) => sum + u.streak, 0) / userStats.length;
+      const avgSessions = userStats.reduce((sum, u) => sum + u.completedSessions, 0) / userStats.length;
+
+      res.json({
+        averageLevel: Math.round(avgLevel * 10) / 10,
+        averageStreak: Math.round(avgStreak * 10) / 10,
+        averageSessions: Math.round(avgSessions),
+        topPerformers: userStats.sort((a, b) => b.points - a.points).slice(0, 5),
+        atRisk: userStats.filter(u => u.streak === 0 && u.completedSessions < 3),
+      });
+    } catch (error) {
+      console.error("Wellbeing analytics error:", error);
+      res.status(500).json({ error: "Failed to fetch wellbeing analytics" });
+    }
+  });
+
   // Initialize seed data
   await initializeSeedData();
 
@@ -258,13 +440,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
 }
 
 async function initializeSeedData() {
+  // Create demo organization if doesn't exist
+  const existingOrgs = await storage.getOrganizations();
+  let demoOrg;
+  if (existingOrgs.length === 0) {
+    demoOrg = await storage.createOrganization({
+      name: "Demo Corp",
+      slug: "demo-corp",
+    });
+
+    // Create demo teams
+    await storage.createTeam({
+      organizationId: demoOrg.id,
+      name: "Engineering",
+      description: "Software development team",
+    });
+
+    await storage.createTeam({
+      organizationId: demoOrg.id,
+      name: "Product",
+      description: "Product management team",
+    });
+
+    await storage.createTeam({
+      organizationId: demoOrg.id,
+      name: "Design",
+      description: "UX/UI design team",
+    });
+  } else {
+    demoOrg = existingOrgs[0];
+  }
+
   // Create default user if doesn't exist
   const existingUser = await storage.getUser(DEFAULT_USER_ID);
   if (!existingUser) {
+    const teams = await storage.getOrganizationTeams(demoOrg.id);
     await storage.createUser({
       id: DEFAULT_USER_ID,
       username: "demo",
       email: "demo@tfive.com",
+      role: "admin",
+      organizationId: demoOrg.id,
+      teamId: teams[0]?.id,
       currentWorkspace: "professional",
       points: 0,
       level: 1,

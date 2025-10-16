@@ -37,6 +37,15 @@ Tfive is an AI-powered personal development platform built around the Pomodoro t
 - Streak tracking for consistency
 - Visual progress dashboard
 
+### 6. Enterprise Admin Dashboard
+- **Organization Management**: Create and manage organizations
+- **Team Management**: Create teams, assign users, track team performance
+- **User Roster**: View all organization members with team assignments
+- **Engagement Analytics**: Track active users, session completion rates, popular programs
+- **Wellbeing Insights**: Monitor average user levels, streaks, and identify at-risk users
+- **Role-Based Access**: Admin-only features protected with authorization middleware
+- **Security**: All admin endpoints require authentication and validate inputs with Zod schemas
+
 ## Tech Stack
 
 ### Frontend
@@ -50,8 +59,10 @@ Tfive is an AI-powered personal development platform built around the Pomodoro t
 ### Backend
 - **Express.js** server
 - **OpenAI** integration via Replit AI Integrations
-- **In-memory storage** for MVP (MemStorage)
-- **Zod** for validation
+- **PostgreSQL** database with Drizzle ORM (using Neon)
+- **In-memory storage** fallback (MemStorage) for development
+- **Zod** for validation and input sanitization
+- **Role-based authorization** middleware for admin features
 
 ### Design System
 - **Fonts**: Inter (UI), Sora (Display), JetBrains Mono (Timer)
@@ -83,6 +94,7 @@ client/
       - ChatPage.tsx
       - SessionPage.tsx
       - Achievements.tsx
+      - AdminDashboard.tsx
     lib/                # Utilities
       - programImages.ts
 
@@ -121,6 +133,17 @@ attached_assets/
 ### Chat
 - `GET /api/chat?workspace=` - Get chat history
 - `POST /api/chat` - Send message to AI companion
+
+### Admin (Protected with requireAdmin middleware)
+- `GET /api/admin/organizations` - List all organizations
+- `POST /api/admin/organizations` - Create organization (validated)
+- `GET /api/admin/organizations/:id/teams` - Get teams for organization
+- `POST /api/admin/teams` - Create team (validated)
+- `PATCH /api/admin/teams/:id` - Update team (validated, prevents organizationId changes)
+- `GET /api/admin/organizations/:id/users` - Get users for organization
+- `GET /api/admin/teams/:id/users` - Get users for team
+- `GET /api/admin/analytics/engagement` - Get engagement metrics
+- `GET /api/admin/analytics/wellbeing` - Get wellbeing metrics
 
 ## Key User Journeys
 
@@ -164,17 +187,60 @@ attached_assets/
 ## Seed Data
 
 The application initializes with:
+- 1 demo organization ("Demo Corp")
+- 3 teams (Engineering, Product, Design)
+- 1 demo admin user
 - 5 sample programs across all categories
 - 5 achievements to unlock
-- 1 demo user account
+
+## Database Schema
+
+The application uses PostgreSQL with the following main tables:
+- `organizations` - Multi-tenant organization management
+- `teams` - Team groupings within organizations
+- `users` - User accounts with role (user/admin), organization, and team assignments
+- `programs` - Learning programs
+- `sessions` - Pomodoro session tracking
+- `progress` - User progress through programs
+- `achievements` - Achievement definitions
+- `user_achievements` - Unlocked achievements per user
+- `chat_messages` - Conversation history with AI companion
+
+## Security
+
+### Authorization
+- Admin endpoints protected with `requireAdmin` middleware
+- Middleware checks user role before allowing access to admin features
+- Returns 403 Forbidden for non-admin users
+
+### Input Validation
+- All admin POST/PATCH endpoints validate with Zod schemas
+- Request bodies parsed before database operations
+- Returns 400 Bad Request with validation errors
+
+### Data Integrity
+- Organizations cannot be changed on team updates
+- Foreign key constraints maintain referential integrity
+- UUID primary keys prevent enumeration attacks
+
+## Recent Changes (October 2025)
+
+### Enterprise Features Implemented
+- ✅ Migrated from in-memory to PostgreSQL database
+- ✅ Multi-tenant organization and team management
+- ✅ Role-based access control (admin/user roles)
+- ✅ Enterprise admin dashboard with analytics
+- ✅ Engagement and wellbeing metrics
+- ✅ Security: Authorization middleware and input validation
 
 ## Future Enhancements
 
 Phase 2 features planned:
 - Tfive-Live peer matching for group sessions
-- Enterprise admin dashboard
 - Calendar integration
 - Custom program builder
 - Reward marketplace
 - SSO/SCIM integration
 - Slack, Teams, WhatsApp integration
+- Multi-user authentication (currently uses DEFAULT_USER_ID)
+- Team lead role with limited admin permissions
