@@ -36,13 +36,15 @@ export default function Dashboard() {
   return (
     <div className="space-y-8">
       <div className={cn(
-        "rounded-lg p-8 transition-colors",
-        workspace === "professional" ? "bg-workspace-professional-bg" : "bg-workspace-personal-bg"
+        "rounded-lg p-8 transition-colors relative overflow-hidden",
+        workspace === "professional" 
+          ? "bg-gradient-to-r from-[hsl(235,100%,9%)] to-[hsl(235,100%,25%)]" 
+          : "bg-gradient-to-r from-[hsl(266,73%,40%)] to-[hsl(318,100%,50%)]"
       )}>
-        <h1 className="text-4xl font-display font-bold mb-2">
+        <h1 className="text-4xl font-display font-bold mb-2 text-white relative z-10">
           Welcome back to Tfive!
         </h1>
-        <p className="text-lg text-muted-foreground">
+        <p className="text-lg text-white/90 relative z-10">
           {workspace === "professional"
             ? "Your professional development space - focused on career growth"
             : "Your personal sanctuary - private space for self-discovery"}
