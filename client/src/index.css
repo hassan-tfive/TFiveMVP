@@ -34,7 +34,7 @@
 
   --sidebar-primary: 40 90% 55%;
 
-  --sidebar-primary-foreground: 40 10% 10%;
+  --sidebar-primary-foreground: 0 0% 100%;
 
   --sidebar-accent: 220 20% 94%;
 
@@ -50,7 +50,7 @@
 
   --primary: 40 90% 55%;
 
-  --primary-foreground: 40 10% 10%;
+  --primary-foreground: 0 0% 100%;
 
   --secondary: 220 15% 92%;
 
@@ -176,7 +176,7 @@
 
   --sidebar-primary: 40 90% 60%;
 
-  --sidebar-primary-foreground: 40 10% 10%;
+  --sidebar-primary-foreground: 0 0% 100%;
 
   --sidebar-accent: 220 15% 18%;
 
@@ -192,7 +192,7 @@
 
   --primary: 40 90% 60%;
 
-  --primary-foreground: 40 10% 10%;
+  --primary-foreground: 0 0% 100%;
 
   --secondary: 220 12% 19%;
 

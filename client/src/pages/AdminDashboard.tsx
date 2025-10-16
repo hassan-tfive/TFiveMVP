@@ -168,7 +168,7 @@ export default function AdminDashboard() {
                           <p className="text-sm font-medium">{program.title}</p>
                           <p className="text-xs text-muted-foreground">{program.category}</p>
                         </div>
-                        <Badge variant="secondary">{program.difficulty}</Badge>
+                        <Badge className="bg-slate-600 text-white">{program.difficulty}</Badge>
                       </div>
                     ))}
                     {!engagement?.popularPrograms.length && (
@@ -218,7 +218,7 @@ export default function AdminDashboard() {
                   {wellbeing?.topPerformers.slice(0, 5).map((user) => (
                     <div key={user.userId} className="flex items-center justify-between">
                       <span className="text-sm">{user.username}</span>
-                      <Badge variant="default">
+                      <Badge className="bg-green-600 text-white">
                         Level {user.level} • {user.points} pts
                       </Badge>
                     </div>
@@ -243,7 +243,7 @@ export default function AdminDashboard() {
                   {wellbeing?.atRisk.slice(0, 5).map((user) => (
                     <div key={user.userId} className="flex items-center justify-between">
                       <span className="text-sm">{user.username}</span>
-                      <Badge variant="destructive">
+                      <Badge className="bg-orange-600 text-white">
                         {user.completedSessions} sessions
                       </Badge>
                     </div>

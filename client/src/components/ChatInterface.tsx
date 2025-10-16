@@ -124,6 +124,7 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
             disabled={!input.trim() || isLoading}
             data-testid="button-send-message"
             className={cn(
+              "text-white hover:text-white",
               workspace === "professional" ? "bg-workspace-professional" : "bg-workspace-personal"
             )}
           >

@@ -13,16 +13,16 @@ interface ProgramCardProps {
 }
 
 const DIFFICULTY_COLORS = {
-  beginner: "bg-green-500",
-  intermediate: "bg-yellow-500",
-  advanced: "bg-red-500",
+  beginner: "bg-green-600 text-white",
+  intermediate: "bg-yellow-600 text-white",
+  advanced: "bg-red-600 text-white",
 };
 
 const CATEGORY_COLORS = {
-  wellbeing: "bg-blue-500",
-  recovery: "bg-orange-500",
-  inclusion: "bg-purple-500",
-  focus: "bg-indigo-500",
+  wellbeing: "bg-blue-600 text-white",
+  recovery: "bg-orange-600 text-white",
+  inclusion: "bg-purple-600 text-white",
+  focus: "bg-indigo-600 text-white",
 };
 
 export function ProgramCard({ program, isCompleted, progressPercent, onClick }: ProgramCardProps) {
