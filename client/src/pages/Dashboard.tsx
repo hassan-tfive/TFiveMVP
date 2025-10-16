@@ -105,6 +105,7 @@ export default function Dashboard() {
           <Button
             asChild
             className={cn(
+              "text-white hover:text-white",
               workspace === "professional" ? "bg-workspace-professional" : "bg-workspace-personal"
             )}
             data-testid="button-start-chat"
