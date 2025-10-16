@@ -7,8 +7,8 @@ Tfive is an AI-powered personal development platform built around the Pomodoro t
 ## Core Features
 
 ### 1. Dual Workspace Architecture
-- **Professional Workspace**: Blue-themed environment for career growth and workplace development
-- **Personal Workspace**: Purple-themed private space for personal growth and self-discovery
+- **Professional Workspace**: Navy blue-themed environment for career growth and workplace development
+- **Personal Workspace**: Purple-themed private space with pink accent for personal growth and self-discovery
 - Visual distinction through color theming and separate data contexts
 
 ### 2. AI Companion "Tairo"
@@ -67,9 +67,13 @@ Tfive is an AI-powered personal development platform built around the Pomodoro t
 ### Design System
 - **Fonts**: Inter (UI), Sora (Display), JetBrains Mono (Timer)
 - **Colors**:
-  - Professional: Blue (220, 90%, 56%)
-  - Personal: Purple (280, 70%, 60%)
-  - Timer phases: Blue (Learn), Green (Act), Gold (Earn)
+  - Primary Brand: Golden (#f4ac24 - 40° 90% 55%)
+  - Pink Accent: #ff00c1 (318° 100% 50%)
+  - Purple: #5c1cb2 (266° 73% 40%)
+  - Navy: #00042d (235° 100% 9%)
+  - Professional Workspace: Navy blue
+  - Personal Workspace: Purple with pink accent
+  - Timer phases: Navy (Learn), Purple (Act), Golden (Earn)
 - **Dark mode** support with theme toggle
 
 ## Project Structure

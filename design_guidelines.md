@@ -17,39 +17,60 @@
 
 ## Color Palette
 
-### Professional Workspace
+### Brand Colors
+- Golden: #f4ac24 (40° 90% 55%) - Primary brand color, warmth, growth
+- Pink: #ff00c1 (318° 100% 50%) - Energy, creativity, accent
+- Purple: #5c1cb2 (266° 73% 40%) - Focus, mindfulness, personal space
+- Navy: #00042d (235° 100% 9%) - Depth, professionalism, trust
+
+### Primary Brand
 **Light Mode:**
-- Primary: 220 90% 56% (Trustworthy blue)
+- Primary: 40 90% 55% (Golden - warm and energizing)
 - Surface: 0 0% 100% (Pure white)
-- Surface Secondary: 220 20% 97% (Subtle blue-gray)
+- Surface Secondary: 220 20% 97% (Subtle gray)
 - Text Primary: 220 20% 15%
 - Text Secondary: 220 15% 45%
 
 **Dark Mode:**
-- Primary: 220 90% 65% (Brighter blue for contrast)
-- Surface: 220 15% 11% (Deep blue-black)
+- Primary: 40 90% 60% (Brighter golden for contrast)
+- Surface: 220 15% 11% (Deep dark)
 - Surface Secondary: 220 15% 16%
 - Text Primary: 220 20% 95%
 - Text Secondary: 220 10% 70%
 
-### Personal Workspace
+### Professional Workspace
 **Light Mode:**
-- Primary: 280 70% 60% (Calming purple)
-- Accent: 160 60% 50% (Growth green - for Earn rewards)
-- Surface: 280 10% 98%
-- Surface Secondary: 280 15% 94%
+- Primary: 235 100% 25% (Navy blue - trustworthy)
+- Light Variant: 235 90% 35%
+- Background: 235 30% 97%
 
 **Dark Mode:**
-- Primary: 280 70% 68%
-- Accent: 160 60% 58%
-- Surface: 280 12% 12%
-- Surface Secondary: 280 12% 17%
+- Primary: 235 100% 45% (Brighter navy for contrast)
+- Light Variant: 235 90% 55%
+- Background: 235 50% 12%
+
+### Personal Workspace
+**Light Mode:**
+- Primary: 266 73% 40% (Purple - calming and creative)
+- Light Variant: 266 70% 50%
+- Accent: 318 100% 50% (Pink - energizing)
+- Background: 266 20% 98%
+
+**Dark Mode:**
+- Primary: 266 73% 60%
+- Light Variant: 266 70% 68%
+- Accent: 318 100% 60%
+- Background: 266 30% 14%
+
+### Timer Phase Colors
+- Learn: Navy (235 100% 25% / 45% dark) - Focus and absorption
+- Act: Purple (266 73% 40% / 60% dark) - Creative application
+- Earn: Golden (40 90% 55% / 65% dark) - Achievement and reward
 
 ### Universal Elements
 - Success: 142 76% 45%
 - Warning: 38 92% 50%
 - Error: 0 84% 60%
-- Timer Active: 25 95% 58% (Pomodoro tomato red)
 
 ---
 

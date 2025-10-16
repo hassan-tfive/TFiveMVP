@@ -32,15 +32,15 @@
 
   --sidebar-border: 220 15% 90%;
 
-  --sidebar-primary: 220 90% 56%;
+  --sidebar-primary: 40 90% 55%;
 
-  --sidebar-primary-foreground: 220 90% 98%;
+  --sidebar-primary-foreground: 40 10% 10%;
 
   --sidebar-accent: 220 20% 94%;
 
   --sidebar-accent-foreground: 220 20% 20%;
 
-  --sidebar-ring: 220 90% 56%;
+  --sidebar-ring: 40 90% 55%;
 
   --popover: 220 20% 95%;
 
@@ -48,9 +48,9 @@
 
   --popover-border: 220 15% 88%;
 
-  --primary: 220 90% 56%;
+  --primary: 40 90% 55%;
 
-  --primary-foreground: 220 90% 98%;
+  --primary-foreground: 40 10% 10%;
 
   --secondary: 220 15% 92%;
 
@@ -69,34 +69,40 @@
   --destructive-foreground: 0 0% 100%;
 
   --input: 220 20% 75%;
-  --ring: 220 90% 56%;
-  --chart-1: 220 90% 45%;
-  --chart-2: 280 70% 50%;
-  --chart-3: 160 60% 40%;
-  --chart-4: 25 95% 48%;
-  --chart-5: 38 92% 45%;
+  --ring: 40 90% 55%;
+  --chart-1: 235 100% 35%;
+  --chart-2: 266 73% 45%;
+  --chart-3: 318 100% 45%;
+  --chart-4: 40 90% 50%;
+  --chart-5: 235 90% 30%;
 
   --font-sans: Inter, system-ui, sans-serif;
   --font-display: Sora, Inter, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: JetBrains Mono, Menlo, monospace;
 
-  /* Workspace-specific colors - Professional (Blue) */
-  --workspace-professional: 220 90% 56%;
-  --workspace-professional-light: 220 85% 65%;
-  --workspace-professional-bg: 220 20% 97%;
+  /* Brand Colors */
+  --brand-golden: 40 90% 55%;
+  --brand-pink: 318 100% 50%;
+  --brand-purple: 266 73% 40%;
+  --brand-navy: 235 100% 9%;
+
+  /* Workspace-specific colors - Professional (Dark Navy Blue) */
+  --workspace-professional: 235 100% 25%;
+  --workspace-professional-light: 235 90% 35%;
+  --workspace-professional-bg: 235 30% 97%;
   
   /* Workspace-specific colors - Personal (Purple) */
-  --workspace-personal: 280 70% 60%;
-  --workspace-personal-light: 280 65% 68%;
-  --workspace-personal-bg: 280 10% 98%;
-  --workspace-personal-accent: 160 60% 50%;
+  --workspace-personal: 266 73% 40%;
+  --workspace-personal-light: 266 70% 50%;
+  --workspace-personal-bg: 266 20% 98%;
+  --workspace-personal-accent: 318 100% 50%;
   
   /* Timer phase colors */
-  --timer-learn: 220 90% 56%;
-  --timer-act: 160 60% 50%;
-  --timer-earn: 45 95% 58%;
-  --timer-active: 25 95% 58%;
+  --timer-learn: 235 100% 25%;
+  --timer-act: 266 73% 40%;
+  --timer-earn: 40 90% 55%;
+  --timer-active: 40 90% 55%;
   --radius: .5rem; /* 8px */
   --shadow-2xs: 0px 2px 0px 0px hsl(220 15% 15% / 0.02);
   --shadow-xs: 0px 2px 0px 0px hsl(220 15% 15% / 0.03);
@@ -168,15 +174,15 @@
 
   --sidebar-border: 220 12% 18%;
 
-  --sidebar-primary: 220 90% 65%;
+  --sidebar-primary: 40 90% 60%;
 
-  --sidebar-primary-foreground: 220 90% 98%;
+  --sidebar-primary-foreground: 40 10% 10%;
 
   --sidebar-accent: 220 15% 18%;
 
   --sidebar-accent-foreground: 220 20% 95%;
 
-  --sidebar-ring: 220 90% 65%;
+  --sidebar-ring: 40 90% 60%;
 
   --popover: 220 15% 16%;
 
@@ -184,9 +190,9 @@
 
   --popover-border: 220 12% 19%;
 
-  --primary: 220 90% 60%;
+  --primary: 40 90% 60%;
 
-  --primary-foreground: 220 90% 98%;
+  --primary-foreground: 40 10% 10%;
 
   --secondary: 220 12% 19%;
 
@@ -206,29 +212,29 @@
 
   /* Used as the border around inputs. Dark mode: Should be a border that is light enough to have high contrast when rendered on a --card background. More contrast than standard --border */
   --input: 220 15% 28%;
-  --ring: 220 90% 65%;
-  --chart-1: 220 90% 70%;
-  --chart-2: 280 70% 68%;
-  --chart-3: 160 60% 58%;
-  --chart-4: 25 95% 58%;
-  --chart-5: 38 92% 55%;
+  --ring: 40 90% 60%;
+  --chart-1: 235 100% 55%;
+  --chart-2: 266 73% 65%;
+  --chart-3: 318 100% 65%;
+  --chart-4: 40 90% 65%;
+  --chart-5: 235 90% 50%;
 
-  /* Workspace-specific colors - Professional (Blue) - Dark */
-  --workspace-professional: 220 90% 65%;
-  --workspace-professional-light: 220 85% 72%;
-  --workspace-professional-bg: 220 15% 16%;
+  /* Workspace-specific colors - Professional (Navy Blue) - Dark */
+  --workspace-professional: 235 100% 45%;
+  --workspace-professional-light: 235 90% 55%;
+  --workspace-professional-bg: 235 50% 12%;
   
   /* Workspace-specific colors - Personal (Purple) - Dark */
-  --workspace-personal: 280 70% 68%;
-  --workspace-personal-light: 280 65% 75%;
-  --workspace-personal-bg: 280 12% 17%;
-  --workspace-personal-accent: 160 60% 58%;
+  --workspace-personal: 266 73% 60%;
+  --workspace-personal-light: 266 70% 68%;
+  --workspace-personal-bg: 266 30% 14%;
+  --workspace-personal-accent: 318 100% 60%;
   
   /* Timer phase colors - Dark */
-  --timer-learn: 220 90% 65%;
-  --timer-act: 160 60% 58%;
-  --timer-earn: 45 95% 62%;
-  --timer-active: 25 95% 60%;
+  --timer-learn: 235 100% 45%;
+  --timer-act: 266 73% 60%;
+  --timer-earn: 40 90% 65%;
+  --timer-active: 40 90% 65%;
 
   --shadow-2xs: 0px 2px 0px 0px hsl(220 15% 0% / 0.15);
   --shadow-xs: 0px 2px 0px 0px hsl(220 15% 0% / 0.20);
