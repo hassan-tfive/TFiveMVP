@@ -1,0 +1,58 @@
+import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { ChatInterface } from "@/components/ChatInterface";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import type { ChatMessage } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
+
+export default function ChatPage() {
+  const { workspace } = useWorkspace();
+  const { toast } = useToast();
+
+  const { data: messages = [] } = useQuery<ChatMessage[]>({
+    queryKey: ["/api/chat", workspace],
+    queryFn: async () => {
+      const res = await fetch(`/api/chat?workspace=${workspace}`);
+      if (!res.ok) throw new Error("Failed to fetch messages");
+      return res.json();
+    },
+  });
+
+  const sendMessageMutation = useMutation({
+    mutationFn: async (content: string) => {
+      return apiRequest("POST", "/api/chat", { content, workspace });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/chat", workspace] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSendMessage = (content: string) => {
+    sendMessageMutation.mutate(content);
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      <div>
+        <h1 className="text-4xl font-display font-bold mb-2">Chat with T</h1>
+        <p className="text-lg text-muted-foreground">
+          Your personal AI companion for guidance and support
+        </p>
+      </div>
+
+      <ChatInterface
+        messages={messages}
+        onSendMessage={handleSendMessage}
+        isLoading={sendMessageMutation.isPending}
+      />
+    </div>
+  );
+}
