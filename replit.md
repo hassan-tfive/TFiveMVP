@@ -11,7 +11,7 @@ Tfive is an AI-powered personal development platform built around the Pomodoro t
 - **Personal Workspace**: Purple-themed private space for personal growth and self-discovery
 - Visual distinction through color theming and separate data contexts
 
-### 2. AI Companion "T"
+### 2. AI Companion "Tairo"
 - Personalized AI guidance powered by OpenAI (via Replit AI Integrations)
 - Contextual responses based on workspace (professional vs personal)
 - Conversational interface for check-ins and support
@@ -150,8 +150,8 @@ attached_assets/
 ### 1. Daily Check-in
 1. User opens app → Dashboard
 2. Switches workspace (Professional/Personal)
-3. Chats with T for guidance
-4. T recommends a program based on mood/goals
+3. Chats with Tairo for guidance
+4. Tairo recommends a program based on mood/goals
 
 ### 2. Complete a Session
 1. Browse program library

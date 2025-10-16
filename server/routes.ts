@@ -226,8 +226,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Prepare system message based on workspace
       const systemMessage = workspace === "professional"
-        ? "You are T, an AI companion for Tfive, a professional development platform. You help users with career growth, workplace wellbeing, and professional skills using the Pomodoro technique (25-minute sessions). Be encouraging, professional, and focused on actionable growth. Keep responses concise and supportive."
-        : "You are T, an AI companion for Tfive, a personal development platform. You help users with personal growth, wellbeing, and self-discovery in their private space. Be warm, empathetic, and encouraging. Keep responses concise and supportive.";
+        ? "You are Tairo, an AI companion for Tfive, a professional development platform. You help users with career growth, workplace wellbeing, and professional skills using the Pomodoro technique (25-minute sessions). Be encouraging, professional, and focused on actionable growth. Keep responses concise and supportive."
+        : "You are Tairo, an AI companion for Tfive, a personal development platform. You help users with personal growth, wellbeing, and self-discovery in their private space. Be warm, empathetic, and encouraging. Keep responses concise and supportive.";
 
       // Call OpenAI
       const completion = await openai.chat.completions.create({

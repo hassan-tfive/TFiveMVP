@@ -42,7 +42,7 @@ export default function ChatPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h1 className="text-4xl font-display font-bold mb-2">Chat with T</h1>
+        <h1 className="text-4xl font-display font-bold mb-2">Chat with Tairo</h1>
         <p className="text-lg text-muted-foreground">
           Your personal AI companion for guidance and support
         </p>

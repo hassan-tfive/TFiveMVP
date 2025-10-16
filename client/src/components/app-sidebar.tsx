@@ -18,7 +18,7 @@ import logoUrl from "@assets/v3 - crimson text font-03_1760641985520.png";
 const menuItems = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "Programs", url: "/programs", icon: Library },
-  { title: "Chat with T", url: "/chat", icon: MessageSquare },
+  { title: "Chat with Tairo", url: "/chat", icon: MessageSquare },
   { title: "Achievements", url: "/achievements", icon: Trophy },
 ];
 

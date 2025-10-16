@@ -11,7 +11,7 @@
 1. **Focus-First:** Every interface element supports the 25-minute concentration cycle
 2. **Privacy-Conscious:** Visual cues clearly distinguish Professional vs Personal spaces
 3. **Progress-Visible:** Gamification that feels mature, not juvenile
-4. **Conversational:** AI companion "T" feels present, helpful, and intelligent
+4. **Conversational:** AI companion "Tairo" feels present, helpful, and intelligent
 
 ---
 
@@ -105,8 +105,8 @@
 ### AI Chat Interface
 **Message Bubbles:** 
 - User: Right-aligned, primary color background, white text
-- T (AI): Left-aligned, surface secondary background, with subtle "T" avatar icon
-- Typing indicator: Three animated dots in T's color
+- Tairo (AI): Left-aligned, surface secondary background, with subtle "Tairo" avatar icon
+- Typing indicator: Three animated dots in Tairo's color
 **Input Area:** Fixed bottom bar with auto-expanding textarea, send button, session controls
 
 ### Pomodoro Timer Components
@@ -187,4 +187,4 @@
 1. **Workspace Identity:** Color and subtle background texture immediately communicate which space user is in
 2. **Session Focus:** Timer and current activity always prominent, supporting info recedes
 3. **Progress Front-and-Center:** Points, levels, completion states visible but never overwhelming
-4. **T's Presence:** AI companion icon and name consistent across platform, feels like a guide not a robot
+4. **Tairo's Presence:** AI companion icon and name consistent across platform, feels like a guide not a robot

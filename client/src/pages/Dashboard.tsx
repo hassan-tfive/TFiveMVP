@@ -97,7 +97,7 @@ export default function Dashboard() {
       )}>
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold mb-1">Start a session with T</h3>
+            <h3 className="text-lg font-semibold mb-1">Start a session with Tairo</h3>
             <p className="text-sm text-muted-foreground">
               Get personalized guidance and support from your AI companion
             </p>
@@ -111,7 +111,7 @@ export default function Dashboard() {
           >
             <Link href="/chat">
               <MessageSquare className="w-4 h-4 mr-2" />
-              Chat with T
+              Chat with Tairo
             </Link>
           </Button>
         </div>

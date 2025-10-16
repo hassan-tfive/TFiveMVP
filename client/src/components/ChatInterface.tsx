@@ -45,13 +45,13 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
         workspace === "professional" ? "bg-workspace-professional-bg" : "bg-workspace-personal-bg"
       )}>
         <div className={cn(
-          "w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg",
+          "w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm",
           workspace === "professional" ? "bg-workspace-professional" : "bg-workspace-personal"
         )}>
-          T
+          Tairo
         </div>
         <div>
-          <h3 className="font-semibold">T - Your AI Companion</h3>
+          <h3 className="font-semibold">Tairo - Your AI Companion</h3>
           <p className="text-sm text-muted-foreground">
             {workspace === "professional" ? "Professional Workspace" : "Personal Workspace"}
           </p>
@@ -87,13 +87,7 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
                 >
                   {message.role === "assistant" && (
                     <div className="flex items-center gap-2 mb-2">
-                      <div className={cn(
-                        "w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold",
-                        workspace === "professional" ? "bg-workspace-professional" : "bg-workspace-personal"
-                      )}>
-                        T
-                      </div>
-                      <span className="text-xs font-medium text-muted-foreground">AI Companion</span>
+                      <span className="text-xs font-medium text-muted-foreground">Tairo</span>
                     </div>
                   )}
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
@@ -106,7 +100,7 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
               <div className="bg-muted rounded-lg px-4 py-3">
                 <div className="flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-sm text-muted-foreground">T is thinking...</span>
+                  <span className="text-sm text-muted-foreground">Tairo is thinking...</span>
                 </div>
               </div>
             </div>
@@ -120,7 +114,7 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Share your thoughts with T..."
+            placeholder="Share your thoughts with Tairo..."
             className="flex-1 resize-none rounded-md border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[60px]"
             data-testid="input-chat"
             disabled={isLoading}
