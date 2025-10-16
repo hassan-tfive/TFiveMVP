@@ -258,6 +258,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 }
 
 async function initializeSeedData() {
+  // Create default user if doesn't exist
+  const existingUser = await storage.getUser(DEFAULT_USER_ID);
+  if (!existingUser) {
+    await storage.createUser({
+      id: DEFAULT_USER_ID,
+      username: "demo",
+      email: "demo@tfive.com",
+      currentWorkspace: "professional",
+      points: 0,
+      level: 1,
+    } as any);
+  }
+
   // Check if data already exists
   const existingPrograms = await storage.getPrograms();
   if (existingPrograms.length > 0) {

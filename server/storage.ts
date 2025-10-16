@@ -266,4 +266,223 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+import { drizzle } from "drizzle-orm/neon-serverless";
+import { neonConfig, Pool } from "@neondatabase/serverless";
+import ws from "ws";
+import { eq, and, desc } from "drizzle-orm";
+import * as schema from "@shared/schema";
+
+neonConfig.webSocketConstructor = ws;
+
+// Database storage implementation
+export class DbStorage implements IStorage {
+  private db;
+
+  constructor() {
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    this.db = drizzle(pool, { schema });
+  }
+
+  // User operations
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await this.db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.id, id));
+    return user;
+  }
+
+  async createUser(insertUser: InsertUser & { id?: string }): Promise<User> {
+    const [user] = await this.db
+      .insert(schema.users)
+      .values(insertUser as any)
+      .returning();
+    return user;
+  }
+
+  async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
+    const [user] = await this.db
+      .update(schema.users)
+      .set(updates)
+      .where(eq(schema.users.id, id))
+      .returning();
+    return user;
+  }
+
+  // Program operations
+  async getPrograms(workspace?: string): Promise<Program[]> {
+    if (workspace) {
+      const { or } = await import("drizzle-orm");
+      return await this.db
+        .select()
+        .from(schema.programs)
+        .where(
+          or(
+            eq(schema.programs.workspace, workspace),
+            eq(schema.programs.workspace, "both")
+          )
+        );
+    }
+    return await this.db.select().from(schema.programs);
+  }
+
+  async getProgram(id: string): Promise<Program | undefined> {
+    const [program] = await this.db
+      .select()
+      .from(schema.programs)
+      .where(eq(schema.programs.id, id));
+    return program;
+  }
+
+  async createProgram(insertProgram: InsertProgram): Promise<Program> {
+    const [program] = await this.db
+      .insert(schema.programs)
+      .values(insertProgram)
+      .returning();
+    return program;
+  }
+
+  // Session operations
+  async getSession(id: string): Promise<Session | undefined> {
+    const [session] = await this.db
+      .select()
+      .from(schema.sessions)
+      .where(eq(schema.sessions.id, id));
+    return session;
+  }
+
+  async getUserSessions(userId: string): Promise<Session[]> {
+    return await this.db
+      .select()
+      .from(schema.sessions)
+      .where(eq(schema.sessions.userId, userId))
+      .orderBy(desc(schema.sessions.startedAt));
+  }
+
+  async createSession(insertSession: InsertSession): Promise<Session> {
+    const [session] = await this.db
+      .insert(schema.sessions)
+      .values(insertSession)
+      .returning();
+    return session;
+  }
+
+  async updateSession(id: string, updates: Partial<Session>): Promise<Session | undefined> {
+    const [session] = await this.db
+      .update(schema.sessions)
+      .set(updates)
+      .where(eq(schema.sessions.id, id))
+      .returning();
+    return session;
+  }
+
+  // Progress operations
+  async getUserProgress(userId: string): Promise<Progress[]> {
+    return await this.db
+      .select()
+      .from(schema.progress)
+      .where(eq(schema.progress.userId, userId));
+  }
+
+  async createProgress(insertProgress: InsertProgress): Promise<Progress> {
+    const [progress] = await this.db
+      .insert(schema.progress)
+      .values(insertProgress)
+      .returning();
+    return progress;
+  }
+
+  // Achievement operations
+  async getAchievements(): Promise<Achievement[]> {
+    return await this.db.select().from(schema.achievements);
+  }
+
+  async createAchievement(insertAchievement: InsertAchievement): Promise<Achievement> {
+    const [achievement] = await this.db
+      .insert(schema.achievements)
+      .values(insertAchievement)
+      .returning();
+    return achievement;
+  }
+
+  // User achievement operations
+  async getUserAchievements(userId: string): Promise<UserAchievement[]> {
+    return await this.db
+      .select()
+      .from(schema.userAchievements)
+      .where(eq(schema.userAchievements.userId, userId));
+  }
+
+  async createUserAchievement(insertUserAchievement: InsertUserAchievement): Promise<UserAchievement> {
+    const [userAchievement] = await this.db
+      .insert(schema.userAchievements)
+      .values(insertUserAchievement)
+      .returning();
+    return userAchievement;
+  }
+
+  // Chat operations
+  async getChatMessages(userId: string, workspace: string): Promise<ChatMessage[]> {
+    return await this.db
+      .select()
+      .from(schema.chatMessages)
+      .where(
+        and(
+          eq(schema.chatMessages.userId, userId),
+          eq(schema.chatMessages.workspace, workspace)
+        )
+      )
+      .orderBy(schema.chatMessages.createdAt);
+  }
+
+  async createChatMessage(insertMessage: InsertChatMessage): Promise<ChatMessage> {
+    const [message] = await this.db
+      .insert(schema.chatMessages)
+      .values(insertMessage)
+      .returning();
+    return message;
+  }
+
+  // Stats
+  async getUserStats(userId: string): Promise<{ completedSessions: number; streak: number }> {
+    const sessions = await this.db
+      .select()
+      .from(schema.sessions)
+      .where(
+        and(
+          eq(schema.sessions.userId, userId),
+          eq(schema.sessions.status, "completed")
+        )
+      );
+
+    // Simple streak calculation
+    const completedDates = sessions
+      .filter((s) => s.completedAt)
+      .map((s) => s.completedAt!.toDateString())
+      .filter((date, index, self) => self.indexOf(date) === index)
+      .sort();
+
+    let streak = 0;
+    const today = new Date().toDateString();
+    if (completedDates.includes(today)) {
+      streak = 1;
+      for (let i = completedDates.length - 2; i >= 0; i--) {
+        const date = new Date(completedDates[i]);
+        const nextDate = new Date(completedDates[i + 1]);
+        const diffDays = Math.floor((nextDate.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+        if (diffDays === 1) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+    }
+
+    return {
+      completedSessions: sessions.length,
+      streak,
+    };
+  }
+}
+
+export const storage = new DbStorage();
