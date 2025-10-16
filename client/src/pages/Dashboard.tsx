@@ -93,32 +93,27 @@ export default function Dashboard() {
         )}
       </div>
 
-      <div className={cn(
-        "rounded-lg p-6 border-2 border-dashed",
-        workspace === "professional" ? "border-workspace-professional" : "border-workspace-personal"
-      )}>
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold mb-1">Start a session with Tairo</h3>
-            <p className="text-sm text-muted-foreground">
-              Get personalized guidance and support from your AI companion
-            </p>
+      <Link href="/chat" data-testid="link-chat-with-tairo">
+        <div className={cn(
+          "rounded-lg p-6 cursor-pointer transition-all hover-elevate active-elevate-2 group",
+          workspace === "professional" 
+            ? "bg-workspace-professional text-white" 
+            : "bg-workspace-personal text-white"
+        )}>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+              <MessageSquare className="w-6 h-6" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold mb-1">Chat with Tairo</h3>
+              <p className="text-sm text-white/80">
+                Get personalized guidance and support
+              </p>
+            </div>
+            <ArrowRight className="w-5 h-5 opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
           </div>
-          <Button
-            asChild
-            className={cn(
-              "text-white hover:text-white",
-              workspace === "professional" ? "bg-workspace-professional" : "bg-workspace-personal"
-            )}
-            data-testid="button-start-chat"
-          >
-            <Link href="/chat">
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Chat with Tairo
-            </Link>
-          </Button>
         </div>
-      </div>
+      </Link>
     </div>
   );
 }
