@@ -38,8 +38,8 @@ export default function Dashboard() {
       <div className={cn(
         "rounded-lg p-8 transition-colors relative overflow-hidden",
         workspace === "professional" 
-          ? "bg-gradient-to-r from-[hsl(235,100%,9%)] to-[hsl(235,100%,25%)]" 
-          : "bg-gradient-to-r from-[hsl(266,73%,40%)] to-[hsl(318,100%,50%)]"
+          ? "bg-gradient-to-r from-[hsl(235,100%,25%)] to-[hsl(40,90%,55%)]" 
+          : "bg-gradient-to-r from-[hsl(318,100%,50%)] to-[hsl(266,73%,40%)]"
       )}>
         <h1 className="text-4xl font-display font-bold mb-2 text-white relative z-10">
           Welcome back to Tfive!
