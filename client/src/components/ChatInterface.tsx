@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Loader2 } from "lucide-react";
+import { Send, Loader2, Hourglass } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -45,10 +45,10 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
         workspace === "professional" ? "bg-workspace-professional-bg" : "bg-workspace-personal-bg"
       )}>
         <div className={cn(
-          "w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm",
-          workspace === "professional" ? "bg-workspace-professional" : "bg-workspace-personal"
+          "w-12 h-12 rounded-full flex items-center justify-center text-white relative overflow-hidden",
+          workspace === "professional" ? "bg-gradient-to-br from-workspace-professional to-workspace-professional-light" : "bg-gradient-to-br from-workspace-personal to-workspace-personal-accent"
         )}>
-          Tairo
+          <Hourglass className="w-6 h-6 animate-pulse" />
         </div>
         <div>
           <h3 className="font-semibold">Tairo - Your AI Companion</h3>
@@ -70,11 +70,19 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
               <div
                 key={message.id}
                 className={cn(
-                  "flex",
+                  "flex gap-2",
                   message.role === "user" ? "justify-end" : "justify-start"
                 )}
                 data-testid={`message-${message.role}`}
               >
+                {message.role === "assistant" && (
+                  <div className={cn(
+                    "w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0 mt-1",
+                    workspace === "professional" ? "bg-gradient-to-br from-workspace-professional to-workspace-professional-light" : "bg-gradient-to-br from-workspace-personal to-workspace-personal-accent"
+                  )}>
+                    <Hourglass className="w-4 h-4" />
+                  </div>
+                )}
                 <div
                   className={cn(
                     "max-w-[80%] rounded-lg px-4 py-3",
@@ -96,7 +104,13 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
             ))
           )}
           {isLoading && (
-            <div className="flex justify-start">
+            <div className="flex justify-start gap-2">
+              <div className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0",
+                workspace === "professional" ? "bg-gradient-to-br from-workspace-professional to-workspace-professional-light" : "bg-gradient-to-br from-workspace-personal to-workspace-personal-accent"
+              )}>
+                <Hourglass className="w-4 h-4 animate-pulse" />
+              </div>
               <div className="bg-muted rounded-lg px-4 py-3">
                 <div className="flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />

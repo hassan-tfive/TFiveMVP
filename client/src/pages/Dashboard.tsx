@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
 import { ProgramCard } from "@/components/ProgramCard";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles, MessageSquare } from "lucide-react";
+import { ArrowRight, Sparkles, MessageSquare, Hourglass } from "lucide-react";
 import { Link } from "wouter";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { cn } from "@/lib/utils";
@@ -102,7 +102,7 @@ export default function Dashboard() {
         )}>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-              <MessageSquare className="w-6 h-6" />
+              <Hourglass className="w-6 h-6 animate-pulse" />
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold mb-1">Chat with Tairo</h3>
