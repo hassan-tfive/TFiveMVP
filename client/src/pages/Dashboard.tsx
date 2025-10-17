@@ -35,7 +35,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <div className="rounded-lg p-8 transition-colors relative overflow-hidden bg-[hsl(40,90%,55%)]">
+      <div className="rounded-lg p-8 transition-colors relative overflow-hidden bg-[hsl(235,100%,9%)]">
         <h1 className="text-4xl font-display font-bold mb-2 text-white relative z-10">
           Welcome back to Tfive!
         </h1>
