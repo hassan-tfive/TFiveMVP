@@ -54,7 +54,7 @@ export default function Dashboard() {
                 : "Your personal sanctuary - private space for self-discovery"}
             </p>
           </div>
-          <img src={tfiveLogoUrl} alt="Tfive" className="h-20 w-auto relative z-10 flex-shrink-0" data-testid="img-banner-logo" />
+          <img src={tfiveLogoUrl} alt="Tfive" className="h-16 w-auto relative z-10 flex-shrink-0" data-testid="img-banner-logo" />
         </div>
       </div>
 
