@@ -1,4 +1,4 @@
-import { Home, Library, MessageSquare, Trophy, Shield, UserCircle, Hourglass } from "lucide-react";
+import { Home, Library, MessageSquare, Trophy, Shield, UserCircle } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import type { User } from "@shared/schema";
+import logoUrl from "@assets/v3 - crimson text font-03_1760641985520.png";
 
 const menuItems = [
   { title: "Dashboard", url: "/", icon: Home },
@@ -39,16 +40,12 @@ export function AppSidebar() {
   return (
     <Sidebar className="border-r-4 border-[hsl(var(--nav-accent))]">
       <SidebarHeader className="p-6 bg-gradient-to-b from-[hsl(var(--nav-bg-start))] to-[hsl(var(--nav-bg-end))]">
-        <div className="flex items-center gap-3">
-          <div className="relative w-10 h-10 rounded-lg bg-[hsl(var(--nav-accent))] flex items-center justify-center">
-            <Hourglass className="w-6 h-6 text-white" />
-            <div className="absolute inset-0 bg-gradient-to-br from-transparent to-white/20 rounded-lg"></div>
+        <Link href="/" className="flex items-center justify-center group">
+          <div className="relative px-6 py-3 rounded-lg bg-white/10 backdrop-blur-sm hover-elevate active-elevate-2">
+            <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nav-accent))]/30 to-transparent blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-lg"></div>
+            <img src={logoUrl} alt="Tfive" className="h-10 w-auto relative z-10 cursor-pointer brightness-0 invert" data-testid="img-sidebar-logo" />
           </div>
-          <div>
-            <h2 className="font-display text-xl font-bold text-[hsl(var(--nav-foreground))]">Tfive</h2>
-            <p className="text-xs text-[hsl(var(--nav-foreground))]/70">with Tairo AI</p>
-          </div>
-        </div>
+        </Link>
       </SidebarHeader>
       <SidebarContent className="bg-gradient-to-b from-[hsl(var(--nav-bg-end))] to-[hsl(var(--nav-bg-start))]/95">
         <SidebarGroup>
