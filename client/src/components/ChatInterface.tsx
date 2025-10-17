@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import type { ChatMessage } from "@shared/schema";
-import tairoLogoUrl from "@assets/v3 - crimson text font-11_1760728277194.png";
+import tairoLogoUrl from "@assets/v3 - crimson text font-09_1760728277194.png";
 
 interface ChatInterfaceProps {
   messages: ChatMessage[];

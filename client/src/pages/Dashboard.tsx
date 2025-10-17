@@ -7,7 +7,7 @@ import { Link } from "wouter";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { cn } from "@/lib/utils";
 import type { Program, User } from "@shared/schema";
-import tairoLogoUrl from "@assets/v3 - crimson text font-11_1760728277194.png";
+import tairoLogoUrl from "@assets/v3 - crimson text font-09_1760728277194.png";
 
 export default function Dashboard() {
   const { workspace } = useWorkspace();
