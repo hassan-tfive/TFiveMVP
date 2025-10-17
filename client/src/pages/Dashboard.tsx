@@ -97,8 +97,8 @@ export default function Dashboard() {
         <div className={cn(
           "rounded-lg p-6 cursor-pointer transition-all hover-elevate active-elevate-2 group",
           workspace === "professional" 
-            ? "bg-workspace-professional text-white" 
-            : "bg-workspace-personal text-white"
+            ? "bg-[hsl(235,100%,9%)] text-white" 
+            : "bg-[hsl(318,100%,50%)] text-white"
         )}>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
