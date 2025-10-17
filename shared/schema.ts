@@ -51,11 +51,54 @@ export const sessions = pgTable("sessions", {
   userId: varchar("user_id").notNull().references(() => users.id),
   programId: varchar("program_id").notNull().references(() => programs.id),
   status: text("status").notNull(), // in_progress | completed | paused
-  phase: text("phase").notNull(), // learn | act | earn
+  phase: text("phase").notNull(), // checkin | learn | act | earn
   timeRemaining: integer("time_remaining").notNull(), // in seconds
   workspace: text("workspace").notNull(), // professional | personal
+  mood: integer("mood"), // 1-5 from check-in
+  focus: integer("focus"), // 1-5 from check-in
+  goal: text("goal"), // user's goal from check-in
   startedAt: timestamp("started_at").notNull().defaultNow(),
   completedAt: timestamp("completed_at"),
+});
+
+export const sessionEvents = pgTable("session_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull().references(() => sessions.id),
+  phase: text("phase").notNull(), // checkin | learn | act | earn
+  payload: jsonb("payload"), // flexible data for each phase
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const reflections = pgTable("reflections", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull().references(() => sessions.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  text: text("text").notNull(),
+  sentiment: text("sentiment"), // positive | neutral | negative
+  score: integer("score"), // 0-100 reflection quality score
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const rewardCatalog = pgTable("reward_catalog", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  provider: text("provider").notNull(), // employer | sponsor
+  organizationId: varchar("organization_id").references(() => organizations.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  costPoints: integer("cost_points").notNull(),
+  metadata: jsonb("metadata"), // additional reward details
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const redemptions = pgTable("redemptions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  catalogId: varchar("catalog_id").notNull().references(() => rewardCatalog.id),
+  status: text("status").notNull(), // pending | fulfilled | cancelled
+  pointsSpent: integer("points_spent").notNull(),
+  redeemedAt: timestamp("redeemed_at").notNull().defaultNow(),
+  fulfilledAt: timestamp("fulfilled_at"),
 });
 
 export const progress = pgTable("progress", {
@@ -141,6 +184,27 @@ export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
   createdAt: true,
 });
 
+export const insertSessionEventSchema = createInsertSchema(sessionEvents).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertReflectionSchema = createInsertSchema(reflections).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertRewardCatalogSchema = createInsertSchema(rewardCatalog).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertRedemptionSchema = createInsertSchema(redemptions).omit({
+  id: true,
+  redeemedAt: true,
+  fulfilledAt: true,
+});
+
 // Types
 export type InsertOrganization = z.infer<typeof insertOrganizationSchema>;
 export type Organization = typeof organizations.$inferSelect;
@@ -169,10 +233,25 @@ export type UserAchievement = typeof userAchievements.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 
+export type InsertSessionEvent = z.infer<typeof insertSessionEventSchema>;
+export type SessionEvent = typeof sessionEvents.$inferSelect;
+
+export type InsertReflection = z.infer<typeof insertReflectionSchema>;
+export type Reflection = typeof reflections.$inferSelect;
+
+export type InsertRewardCatalog = z.infer<typeof insertRewardCatalogSchema>;
+export type RewardCatalog = typeof rewardCatalog.$inferSelect;
+
+export type InsertRedemption = z.infer<typeof insertRedemptionSchema>;
+export type Redemption = typeof redemptions.$inferSelect;
+
 // Additional types for frontend
 export type Workspace = "professional" | "personal";
-export type SessionPhase = "learn" | "act" | "earn";
+export type SessionPhase = "checkin" | "learn" | "act" | "earn";
 export type SessionStatus = "in_progress" | "completed" | "paused";
 export type ProgramCategory = "wellbeing" | "recovery" | "inclusion" | "focus";
 export type ProgramDifficulty = "beginner" | "intermediate" | "advanced";
 export type UserRole = "user" | "admin" | "team_lead";
+export type RewardProvider = "employer" | "sponsor";
+export type RedemptionStatus = "pending" | "fulfilled" | "cancelled";
+export type Sentiment = "positive" | "neutral" | "negative";

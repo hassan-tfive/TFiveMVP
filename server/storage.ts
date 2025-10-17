@@ -101,6 +101,8 @@ export class MemStorage implements IStorage {
       id: "default-user",
       username: "demo",
       email: "demo@tfive.com",
+      displayName: null,
+      avatarUrl: null,
       role: "user",
       organizationId: null,
       teamId: null,
@@ -145,6 +147,7 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const team: Team = {
       ...insertTeam,
+      description: insertTeam.description ?? null,
       id,
       createdAt: new Date(),
     };
@@ -177,6 +180,10 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const user: User = {
       ...insertUser,
+      displayName: insertUser.displayName ?? null,
+      avatarUrl: insertUser.avatarUrl ?? null,
+      organizationId: insertUser.organizationId ?? null,
+      teamId: insertUser.teamId ?? null,
       id,
       createdAt: new Date(),
     };
@@ -209,6 +216,7 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const program: Program = {
       ...insertProgram,
+      imageUrl: insertProgram.imageUrl ?? null,
       id,
       createdAt: new Date(),
     };
@@ -229,6 +237,9 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const session: Session = {
       ...insertSession,
+      mood: insertSession.mood ?? null,
+      focus: insertSession.focus ?? null,
+      goal: insertSession.goal ?? null,
       id,
       startedAt: new Date(),
       completedAt: null,
@@ -254,6 +265,7 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const progress: Progress = {
       ...insertProgress,
+      completed: insertProgress.completed ?? false,
       id,
       completedAt: null,
     };
