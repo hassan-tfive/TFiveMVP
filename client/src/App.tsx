@@ -69,9 +69,9 @@ function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2 hover-elevate active-elevate-2 rounded-full" data-testid="button-user-menu">
-          <Avatar className="w-9 h-9 cursor-pointer">
+          <Avatar className="w-11 h-11 cursor-pointer border-2 border-primary/20">
             <AvatarImage src={user.avatarUrl || undefined} alt={displayName} />
-            <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+            <AvatarFallback className="bg-primary text-primary-foreground text-base font-semibold">
               {getInitials(displayName)}
             </AvatarFallback>
           </Avatar>
@@ -116,18 +116,18 @@ export default function App() {
               <div className="flex h-screen w-full">
                 <AppSidebar />
                 <div className="flex flex-col flex-1">
-                  <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 border-b bg-gradient-to-r from-background via-background/98 to-background backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 shadow-sm">
-                    <div className="flex items-center gap-6">
-                      <SidebarTrigger data-testid="button-sidebar-toggle" className="hover-elevate active-elevate-2" />
+                  <header className="sticky top-0 z-50 flex items-center justify-between px-8 py-5 border-b-2 bg-gradient-to-r from-background via-background/98 to-background backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 shadow-lg">
+                    <div className="flex items-center gap-8">
+                      <SidebarTrigger data-testid="button-sidebar-toggle" className="hover-elevate active-elevate-2 scale-110" />
                       <Link href="/" className="flex items-center group">
                         <div className="relative">
-                          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/0 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                          <img src={logoUrl} alt="Tfive" className="h-11 w-auto relative z-10 cursor-pointer transition-all group-hover:scale-105" data-testid="img-logo" />
+                          <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-primary/0 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                          <img src={logoUrl} alt="Tfive" className="h-16 w-auto relative z-10 cursor-pointer transition-all group-hover:scale-105" data-testid="img-logo" />
                         </div>
                       </Link>
                     </div>
                     <WorkspaceSwitcher />
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <ThemeToggle />
                       <UserMenu />
                     </div>
