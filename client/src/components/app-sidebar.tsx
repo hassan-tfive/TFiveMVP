@@ -39,9 +39,9 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="p-6">
+      <SidebarHeader className="p-8">
         <Link href="/" className="flex items-center justify-center group">
-          <img src={logoUrl} alt="Tfive" className="h-16 w-auto cursor-pointer hover-elevate active-elevate-2" data-testid="img-sidebar-logo" />
+          <img src={logoUrl} alt="Tfive" className="h-32 w-auto cursor-pointer hover-elevate active-elevate-2" data-testid="img-sidebar-logo" />
         </Link>
       </SidebarHeader>
       <SidebarContent>
