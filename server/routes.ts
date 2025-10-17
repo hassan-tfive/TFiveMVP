@@ -44,12 +44,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.patch("/api/user", async (req, res) => {
-    const updates = req.body;
-    const user = await storage.updateUser(DEFAULT_USER_ID, updates);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
+    try {
+      const updateSchema = z.object({
+        displayName: z.string().optional(),
+        avatarUrl: z.string().url().optional().or(z.literal("")),
+        currentWorkspace: z.enum(["professional", "personal"]).optional(),
+        points: z.number().optional(),
+        level: z.number().optional(),
+      }).strict();
+
+      const updates = updateSchema.parse(req.body);
+      const user = await storage.updateUser(DEFAULT_USER_ID, updates);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Failed to update user" });
     }
-    res.json(user);
   });
 
   // Program routes

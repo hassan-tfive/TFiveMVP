@@ -1,4 +1,4 @@
-import { Home, Library, MessageSquare, Trophy, Shield } from "lucide-react";
+import { Home, Library, MessageSquare, Trophy, Shield, UserCircle } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -19,6 +19,7 @@ const menuItems = [
   { title: "Programs", url: "/programs", icon: Library },
   { title: "Chat with Tairo", url: "/chat", icon: MessageSquare },
   { title: "Achievements", url: "/achievements", icon: Trophy },
+  { title: "Profile", url: "/profile", icon: UserCircle },
 ];
 
 const adminMenuItem = { title: "Admin", url: "/admin", icon: Shield };
