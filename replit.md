@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Tfive is an AI-powered personal development platform built around the Pomodoro technique. The name "Tfive" stands for "Twenty-Five" - representing the 25-minute focus sessions that drive meaningful personal growth. The platform combines AI coaching with structured learning through the Learn → Act → Earn framework.
+Tfive is an AI-powered personal development platform built around the Pomodoro technique. The name "Tfive" stands for "Twenty-Five" - representing the 25-minute focus sessions that drive meaningful personal growth. The platform combines AI coaching with structured learning through the Check-In → Learn → Act → Earn framework.
 
 ## Core Features
 
@@ -14,13 +14,20 @@ Tfive is an AI-powered personal development platform built around the Pomodoro t
 ### 2. AI Companion "Tairo"
 - Personalized AI guidance powered by OpenAI (via Replit AI Integrations)
 - Contextual responses based on workspace (professional vs personal)
+- **Phase-Specific Prompts**: Adaptive guidance for each session phase
+  - Check-In: Mood assessment and goal setting
+  - Learn: Concept exploration and understanding
+  - Act: Practice guidance and troubleshooting
+  - Earn: Reflection prompts and celebration
 - Conversational interface for check-ins and support
 
 ### 3. 25-Minute Pomodoro Sessions
-- **Learn Phase (5 min)**: Absorb knowledge and context
-- **Act Phase (15 min)**: Apply learning through practical exercises
-- **Earn Phase (5 min)**: Reflection and rewards
-- Visual timer with phase-specific colors
+- **Check-In Phase (2 min)**: Mood, focus, and goal tracking
+- **Learn Phase (8 min)**: Absorb knowledge and context
+- **Act Phase (13 min)**: Apply learning through practical exercises
+- **Earn Phase (2 min)**: Reflection and rewards
+- Visual timer with phase-specific colors (Pink→Navy→Purple→Golden)
+- Automatic phase transitions with event tracking
 
 ### 4. Program Library
 - Curated learning programs across categories:
@@ -32,10 +39,16 @@ Tfive is an AI-powered personal development platform built around the Pomodoro t
 - Beautiful program cards with abstract imagery
 
 ### 5. Gamification & Progress
-- Points and leveling system (1000 points = 1 level)
+- **Points and Leveling**: 1000 points = 1 level
+- **Reward System**:
+  - Session completion: +50 points
+  - Reflection submitted: +10 points
+  - Streak bonus: +10 points per day (3+ day streaks, max +50)
+  - Deep reflection: +20 bonus points (quality score > 70/100)
 - Achievement badges for milestones
 - Streak tracking for consistency
 - Visual progress dashboard
+- **Reward Catalog**: Employer and sponsor rewards (redeemable with points)
 
 ### 6. User Profile & Avatar
 - **Profile Management**: Comprehensive user profile page with avatar and personal info
@@ -81,7 +94,7 @@ Tfive is an AI-powered personal development platform built around the Pomodoro t
   - Navy: #00042d (235° 100% 9%)
   - Professional Workspace: Navy blue
   - Personal Workspace: Purple with pink accent
-  - Timer phases: Navy (Learn), Purple (Act), Golden (Earn)
+  - Timer phases: Pink (Check-In), Navy (Learn), Purple (Act), Golden (Earn)
 - **Dark mode** support with theme toggle
 
 ## Project Structure
@@ -138,7 +151,13 @@ attached_assets/
 ### Sessions
 - `POST /api/sessions` - Start session
 - `PATCH /api/sessions/:id` - Update session
-- `POST /api/sessions/complete` - Complete session and award points
+- `POST /api/sessions/complete` - Complete session and award points (50 base + streak bonuses)
+- `GET /api/sessions/:sessionId/events` - Get session events (phase transitions)
+- `POST /api/sessions/:sessionId/events` - Create session event
+
+### Reflections
+- `GET /api/reflections/:sessionId` - Get reflection for session
+- `POST /api/reflections` - Create reflection (awards 10 pts + 20 bonus if score > 70)
 
 ### Stats & Achievements
 - `GET /api/stats` - Get user stats (sessions, streak)
@@ -147,7 +166,7 @@ attached_assets/
 
 ### Chat
 - `GET /api/chat?workspace=` - Get chat history
-- `POST /api/chat` - Send message to AI companion
+- `POST /api/chat` - Send message to AI companion (supports phase-specific prompts via `phase` parameter)
 
 ### Admin (Protected with requireAdmin middleware)
 - `GET /api/admin/organizations` - List all organizations
@@ -172,8 +191,10 @@ attached_assets/
 1. Browse program library
 2. Select program → Session page
 3. Start 25-minute Pomodoro timer
-4. Progress through Learn → Act → Earn phases
-5. Earn points and update progress
+4. Progress through Check-In → Learn → Act → Earn phases
+5. Submit reflection (optional, earns bonus points)
+6. Earn points (50 base + streak + reflection bonuses)
+7. Update progress and level
 
 ### 3. Track Progress
 1. View dashboard stats (level, points, streak)
@@ -217,11 +238,15 @@ The application uses PostgreSQL with the following main tables:
   - Added: `displayName` (text) - User's display name
   - Added: `avatarUrl` (text) - URL to user's avatar image
 - `programs` - Learning programs
-- `sessions` - Pomodoro session tracking
+- `sessions` - Pomodoro session tracking (4 phases: checkin, learn, act, earn)
+- `session_events` - Phase transition tracking with detailed payload data
+- `reflections` - Post-session reflections with sentiment scoring (0-100 scale)
 - `progress` - User progress through programs
 - `achievements` - Achievement definitions
 - `user_achievements` - Unlocked achievements per user
 - `chat_messages` - Conversation history with AI companion
+- `reward_catalog` - Employer and sponsor rewards (redeemable with points)
+- `redemptions` - User reward redemption history
 
 ## Security
 
