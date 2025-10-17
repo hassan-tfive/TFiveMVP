@@ -244,8 +244,8 @@ The application uses PostgreSQL with the following main tables:
 
 ### Bold Navigation Redesign (October 17, 2025)
 - ✅ Redesigned left sidebar with bold navy-to-purple gradient background
-- ✅ Added golden 4px accent border on sidebar right edge
-- ✅ Created prominent Tairo branding header with hourglass icon
+- ✅ Added golden accent border on sidebar right edge
+- ✅ Restored Tfive logo in sidebar header with enhanced frosted glass container and golden glow
 - ✅ Enhanced navigation items with proper elevation utilities
 - ✅ Unified active state: golden background for all workspaces (removed workspace-specific colors)
 - ✅ Larger icons (5x5) and improved typography for better visibility
