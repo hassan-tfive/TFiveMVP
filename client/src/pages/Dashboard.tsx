@@ -38,7 +38,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-8">
       <div className={cn(
-        "rounded-lg py-6 px-8 transition-colors relative overflow-hidden",
+        "rounded-lg py-4 px-8 transition-colors relative overflow-hidden",
         workspace === "professional" 
           ? "bg-[hsl(235,100%,9%)]" 
           : "bg-gradient-to-r from-[hsl(318,100%,50%)] to-[hsl(266,73%,40%)]"
@@ -54,7 +54,7 @@ export default function Dashboard() {
                 : "Your personal sanctuary - private space for self-discovery"}
             </p>
           </div>
-          <img src={tfiveLogoUrl} alt="Tfive" className="h-16 w-auto relative z-10 flex-shrink-0" data-testid="img-banner-logo" />
+          <img src={tfiveLogoUrl} alt="Tfive" className="h-full w-auto max-h-24 relative z-10 flex-shrink-0" data-testid="img-banner-logo" />
         </div>
       </div>
 
