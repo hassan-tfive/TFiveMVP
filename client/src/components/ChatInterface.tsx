@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Loader2, Hourglass } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import type { ChatMessage } from "@shared/schema";
+import tairoLogoUrl from "@assets/v3 - crimson text font-11_1760728277194.png";
 
 interface ChatInterfaceProps {
   messages: ChatMessage[];
@@ -48,7 +49,7 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
           "w-12 h-12 rounded-full flex items-center justify-center text-white relative overflow-hidden",
           workspace === "professional" ? "bg-gradient-to-br from-workspace-professional to-workspace-professional-light" : "bg-gradient-to-br from-workspace-personal to-workspace-personal-accent"
         )}>
-          <Hourglass className="w-6 h-6 animate-pulse" />
+          <img src={tairoLogoUrl} alt="Tairo" className="w-8 h-8 animate-pulse" />
         </div>
         <div>
           <h3 className="font-semibold">Tairo - Your AI Companion</h3>
