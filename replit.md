@@ -242,6 +242,15 @@ The application uses PostgreSQL with the following main tables:
 
 ## Recent Changes (October 2025)
 
+### Bold Navigation Redesign (October 17, 2025)
+- ✅ Redesigned left sidebar with bold navy-to-purple gradient background
+- ✅ Added golden 4px accent border on sidebar right edge
+- ✅ Created prominent Tairo branding header with hourglass icon
+- ✅ Enhanced navigation items with proper elevation utilities
+- ✅ Unified active state: golden background for all workspaces (removed workspace-specific colors)
+- ✅ Larger icons (5x5) and improved typography for better visibility
+- ✅ Top navigation bar also updated with bold brand gradient and golden accent
+
 ### User Profile & Avatar (October 17, 2025)
 - ✅ Added user profile page with avatar and personal info management
 - ✅ Avatar URL upload and display name customization
