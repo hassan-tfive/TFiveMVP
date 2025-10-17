@@ -39,7 +39,7 @@ export default function Dashboard() {
         "rounded-lg p-8 transition-colors relative overflow-hidden",
         workspace === "professional" 
           ? "bg-[hsl(235,100%,9%)]" 
-          : "bg-[hsl(318,100%,50%)]"
+          : "bg-[hsl(266,73%,40%)]"
       )}>
         <h1 className="text-4xl font-display font-bold mb-2 text-white relative z-10">
           Welcome back to Tfive!
@@ -98,7 +98,7 @@ export default function Dashboard() {
           "rounded-lg p-6 cursor-pointer transition-all hover-elevate active-elevate-2 group",
           workspace === "professional" 
             ? "bg-[hsl(235,100%,9%)] text-white" 
-            : "bg-[hsl(318,100%,50%)] text-white"
+            : "bg-[hsl(266,73%,40%)] text-white"
         )}>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
