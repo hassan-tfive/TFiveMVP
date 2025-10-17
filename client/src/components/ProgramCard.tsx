@@ -46,7 +46,7 @@ export function ProgramCard({ program, isCompleted, progressPercent, onClick }: 
           <img 
             src={tairoLogoUrl} 
             alt="Tairo" 
-            className="absolute bottom-0 right-0 w-12 h-12 opacity-40" 
+            className="absolute top-0 right-0 w-12 h-12 opacity-40" 
           />
         </div>
       )}
