@@ -103,6 +103,13 @@
   --timer-act: 266 73% 40%;
   --timer-earn: 40 90% 55%;
   --timer-active: 40 90% 55%;
+  
+  /* Navigation Bar */
+  --nav-bg-start: 235 100% 15%;
+  --nav-bg-end: 266 73% 25%;
+  --nav-accent: 40 90% 55%;
+  --nav-foreground: 0 0% 98%;
+  
   --radius: .5rem; /* 8px */
   --shadow-2xs: 0px 2px 0px 0px hsl(220 15% 15% / 0.02);
   --shadow-xs: 0px 2px 0px 0px hsl(220 15% 15% / 0.03);
@@ -235,6 +242,12 @@
   --timer-act: 266 73% 60%;
   --timer-earn: 40 90% 65%;
   --timer-active: 40 90% 65%;
+  
+  /* Navigation Bar - Dark */
+  --nav-bg-start: 235 100% 25%;
+  --nav-bg-end: 266 73% 35%;
+  --nav-accent: 40 90% 65%;
+  --nav-foreground: 0 0% 98%;
 
   --shadow-2xs: 0px 2px 0px 0px hsl(220 15% 0% / 0.15);
   --shadow-xs: 0px 2px 0px 0px hsl(220 15% 0% / 0.20);
