@@ -1,29 +1,50 @@
 import { Home, Library, MessageSquare, Trophy, Shield, UserCircle } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent } from "@/components/ui/sidebar";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { User } from "@shared/schema";
 
 const menuItems = [
-  { title: "Dashboard", url: "/", icon: Home },
-  { title: "Programs", url: "/programs", icon: Library },
-  { title: "Chat with Tairo", url: "/chat", icon: MessageSquare },
-  { title: "Achievements", url: "/achievements", icon: Trophy },
-  { title: "Profile", url: "/profile", icon: UserCircle },
+  { 
+    title: "Dashboard", 
+    url: "/", 
+    icon: Home,
+    description: "Your overview"
+  },
+  { 
+    title: "Programs", 
+    url: "/programs", 
+    icon: Library,
+    description: "Learning library"
+  },
+  { 
+    title: "Chat with Tairo", 
+    url: "/chat", 
+    icon: MessageSquare,
+    description: "AI guidance"
+  },
+  { 
+    title: "Achievements", 
+    url: "/achievements", 
+    icon: Trophy,
+    description: "Your progress"
+  },
+  { 
+    title: "Profile", 
+    url: "/profile", 
+    icon: UserCircle,
+    description: "Your settings"
+  },
 ];
 
-const adminMenuItem = { title: "Admin", url: "/admin", icon: Shield };
+const adminMenuItem = { 
+  title: "Admin", 
+  url: "/admin", 
+  icon: Shield,
+  description: "Management"
+};
 
 export function AppSidebar() {
   const [location] = useLocation();
@@ -38,31 +59,45 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="h-auto max-h-[98vh] rounded-lg overflow-visible">
-      <SidebarContent className="rounded-lg">
-        <SidebarGroup>
-          <SidebarGroupLabel className="font-semibold px-4">Navigation</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {allMenuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    className={cn(
-                      "hover-elevate active-elevate-2 mx-2 rounded-lg",
-                      location === item.url && "bg-primary text-primary-foreground font-semibold"
-                    )}
-                    data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
-                  >
-                    <Link href={item.url}>
-                      <item.icon className="w-5 h-5" />
-                      <span className="text-sm">{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+      <SidebarContent className="rounded-lg p-4">
+        <div className="space-y-3">
+          {allMenuItems.map((item) => (
+            <Link 
+              key={item.title} 
+              href={item.url}
+              data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
+            >
+              <Card
+                className={cn(
+                  "p-4 cursor-pointer hover-elevate active-elevate-2 transition-all",
+                  location === item.url && "bg-primary text-primary-foreground"
+                )}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={cn(
+                    "p-2 rounded-lg",
+                    location === item.url 
+                      ? "bg-primary-foreground/20" 
+                      : "bg-muted"
+                  )}>
+                    <item.icon className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm mb-0.5">{item.title}</h3>
+                    <p className={cn(
+                      "text-xs",
+                      location === item.url 
+                        ? "text-primary-foreground/70" 
+                        : "text-muted-foreground"
+                    )}>
+                      {item.description}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            </Link>
+          ))}
+        </div>
       </SidebarContent>
     </Sidebar>
   );
