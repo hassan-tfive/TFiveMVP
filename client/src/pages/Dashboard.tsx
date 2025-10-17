@@ -38,12 +38,12 @@ export default function Dashboard() {
   return (
     <div className="space-y-8">
       <div className={cn(
-        "rounded-lg py-4 px-8 transition-colors relative overflow-hidden",
+        "rounded-lg px-8 transition-colors relative overflow-hidden",
         workspace === "professional" 
           ? "bg-[hsl(235,100%,9%)]" 
           : "bg-gradient-to-r from-[hsl(318,100%,50%)] to-[hsl(266,73%,40%)]"
       )}>
-        <div className="flex items-center justify-between gap-6">
+        <div className="flex items-center justify-between gap-6 py-6">
           <div className="flex-1">
             <h1 className="text-4xl font-display font-bold mb-2 text-white relative z-10">
               Welcome back to Tfive!
@@ -54,7 +54,7 @@ export default function Dashboard() {
                 : "Your personal sanctuary - private space for self-discovery"}
             </p>
           </div>
-          <img src={tfiveLogoUrl} alt="Tfive" className="h-full w-auto max-h-32 relative z-10 flex-shrink-0" data-testid="img-banner-logo" />
+          <img src={tfiveLogoUrl} alt="Tfive" className="h-24 w-auto relative z-10 flex-shrink-0 -my-6" data-testid="img-banner-logo" />
         </div>
       </div>
 
