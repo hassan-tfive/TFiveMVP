@@ -242,14 +242,14 @@ The application uses PostgreSQL with the following main tables:
 
 ## Recent Changes (October 2025)
 
-### Bold Navigation Redesign (October 17, 2025)
-- ✅ Redesigned left sidebar with bold navy-to-purple gradient background
-- ✅ Added golden accent border on sidebar right edge
-- ✅ Restored Tfive logo in sidebar header with enhanced frosted glass container and golden glow
-- ✅ Enhanced navigation items with proper elevation utilities
-- ✅ Unified active state: golden background for all workspaces (removed workspace-specific colors)
-- ✅ Larger icons (5x5) and improved typography for better visibility
-- ✅ Top navigation bar also updated with bold brand gradient and golden accent
+### Minimal Navigation Design (October 17, 2025)
+- ✅ Clean, neutral navigation without blue/golden gradient backgrounds
+- ✅ Sidebar: Single Tfive logo (h-16/64px) without white background or accent borders
+- ✅ Top nav: Transparent glass effect (`bg-background/95 backdrop-blur`) with simple border
+- ✅ Workspace switcher repositioned to left corner (next to sidebar toggle)
+- ✅ Navigation items use default theme colors (active state: `bg-primary text-primary-foreground`)
+- ✅ Avatar menu uses theme primary color (removed golden accent border)
+- ✅ Proper elevation utilities applied: `hover-elevate` and `active-elevate-2`
 
 ### User Profile & Avatar (October 17, 2025)
 - ✅ Added user profile page with avatar and personal info management
