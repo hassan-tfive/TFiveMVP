@@ -12,27 +12,30 @@ interface PomodoroTimerProps {
   onComplete?: () => void;
 }
 
-const PHASE_DURATIONS = {
-  learn: 5 * 60, // 5 minutes
-  act: 15 * 60, // 15 minutes
-  earn: 5 * 60, // 5 minutes
+const PHASE_DURATIONS: Record<SessionPhase, number> = {
+  checkin: 2 * 60, // 2 minutes
+  learn: 8 * 60, // 8 minutes
+  act: 13 * 60, // 13 minutes
+  earn: 2 * 60, // 2 minutes
 };
 
-const PHASE_LABELS = {
+const PHASE_LABELS: Record<SessionPhase, string> = {
+  checkin: "Check-In",
   learn: "Learn",
   act: "Act",
   earn: "Earn",
 };
 
-const PHASE_COLORS = {
+const PHASE_COLORS: Record<SessionPhase, string> = {
+  checkin: "timer-checkin",
   learn: "timer-learn",
   act: "timer-act",
   earn: "timer-earn",
 };
 
 export function PomodoroTimer({ programTitle, onPhaseChange, onComplete }: PomodoroTimerProps) {
-  const [phase, setPhase] = useState<SessionPhase>("learn");
-  const [timeRemaining, setTimeRemaining] = useState(PHASE_DURATIONS.learn);
+  const [phase, setPhase] = useState<SessionPhase>("checkin");
+  const [timeRemaining, setTimeRemaining] = useState(PHASE_DURATIONS.checkin);
   const [isRunning, setIsRunning] = useState(false);
 
   const totalTime = PHASE_DURATIONS[phase];
@@ -47,7 +50,11 @@ export function PomodoroTimer({ programTitle, onPhaseChange, onComplete }: Pomod
       }, 1000);
     } else if (timeRemaining === 0) {
       // Move to next phase
-      if (phase === "learn") {
+      if (phase === "checkin") {
+        setPhase("learn");
+        setTimeRemaining(PHASE_DURATIONS.learn);
+        onPhaseChange?.("learn");
+      } else if (phase === "learn") {
         setPhase("act");
         setTimeRemaining(PHASE_DURATIONS.act);
         onPhaseChange?.("act");
@@ -72,8 +79,8 @@ export function PomodoroTimer({ programTitle, onPhaseChange, onComplete }: Pomod
 
   const handleReset = () => {
     setIsRunning(false);
-    setPhase("learn");
-    setTimeRemaining(PHASE_DURATIONS.learn);
+    setPhase("checkin");
+    setTimeRemaining(PHASE_DURATIONS.checkin);
   };
 
   return (
@@ -81,8 +88,8 @@ export function PomodoroTimer({ programTitle, onPhaseChange, onComplete }: Pomod
       <div className="space-y-6">
         <div className="text-center space-y-2">
           <h3 className="text-lg font-semibold text-muted-foreground">{programTitle}</h3>
-          <div className="flex items-center justify-center gap-2">
-            {(["learn", "act", "earn"] as SessionPhase[]).map((p) => (
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            {(["checkin", "learn", "act", "earn"] as SessionPhase[]).map((p) => (
               <div
                 key={p}
                 className={cn(

@@ -95,6 +95,7 @@ export default {
           },
         },
         timer: {
+          checkin: "hsl(var(--timer-checkin) / <alpha-value>)",
           learn: "hsl(var(--timer-learn) / <alpha-value>)",
           act: "hsl(var(--timer-act) / <alpha-value>)",
           earn: "hsl(var(--timer-earn) / <alpha-value>)",

@@ -99,6 +99,7 @@
   --workspace-personal-accent: 318 100% 50%;
   
   /* Timer phase colors */
+  --timer-checkin: 318 100% 50%;
   --timer-learn: 235 100% 25%;
   --timer-act: 266 73% 40%;
   --timer-earn: 40 90% 55%;
@@ -238,6 +239,7 @@
   --workspace-personal-accent: 318 100% 60%;
   
   /* Timer phase colors - Dark */
+  --timer-checkin: 318 100% 60%;
   --timer-learn: 235 100% 45%;
   --timer-act: 266 73% 60%;
   --timer-earn: 40 90% 65%;
