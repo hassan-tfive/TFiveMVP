@@ -1,9 +1,10 @@
-import { Clock, TrendingUp, CheckCircle2, Hourglass } from "lucide-react";
+import { Clock, TrendingUp, CheckCircle2 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import type { Program } from "@shared/schema";
+import tairoLogoUrl from "@assets/v3 - crimson text font-09_1760728277194.png";
 
 interface ProgramCardProps {
   program: Program;
@@ -42,9 +43,11 @@ export function ProgramCard({ program, isCompleted, progressPercent, onClick }: 
             alt={program.title}
             className="w-full h-full object-cover transition-transform hover:scale-105"
           />
-          <div className="absolute bottom-2 right-2 bg-black/20 backdrop-blur-sm rounded-lg p-1.5">
-            <Hourglass className="w-5 h-5 text-white/80" />
-          </div>
+          <img 
+            src={tairoLogoUrl} 
+            alt="Tairo" 
+            className="absolute bottom-0 right-0 w-12 h-12 opacity-40" 
+          />
         </div>
       )}
       {isCompleted && (
