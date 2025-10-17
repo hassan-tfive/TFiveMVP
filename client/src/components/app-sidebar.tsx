@@ -37,7 +37,7 @@ export function AppSidebar() {
   const allMenuItems = isAdmin ? [...menuItems, adminMenuItem] : menuItems;
 
   return (
-    <Sidebar className="h-auto max-h-[60vh]">
+    <Sidebar className="h-auto max-h-[85vh]">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="font-semibold px-4">Navigation</SidebarGroupLabel>
