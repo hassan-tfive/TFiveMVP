@@ -38,18 +38,15 @@ export function AppSidebar() {
   const allMenuItems = isAdmin ? [...menuItems, adminMenuItem] : menuItems;
 
   return (
-    <Sidebar className="border-r-4 border-[hsl(var(--nav-accent))]">
-      <SidebarHeader className="p-6 bg-gradient-to-b from-[hsl(var(--nav-bg-start))] to-[hsl(var(--nav-bg-end))]">
+    <Sidebar>
+      <SidebarHeader className="p-6">
         <Link href="/" className="flex items-center justify-center group">
-          <div className="relative px-6 py-3 rounded-lg bg-white/90 hover-elevate active-elevate-2">
-            <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nav-accent))]/30 to-transparent blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-lg"></div>
-            <img src={logoUrl} alt="Tfive" className="h-14 w-auto relative z-10 cursor-pointer" data-testid="img-sidebar-logo" />
-          </div>
+          <img src={logoUrl} alt="Tfive" className="h-16 w-auto cursor-pointer hover-elevate active-elevate-2" data-testid="img-sidebar-logo" />
         </Link>
       </SidebarHeader>
-      <SidebarContent className="bg-gradient-to-b from-[hsl(var(--nav-bg-end))] to-[hsl(var(--nav-bg-start))]/95">
+      <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[hsl(var(--nav-foreground))]/60 font-semibold px-4">Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="font-semibold px-4">Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {allMenuItems.map((item) => (
@@ -57,8 +54,8 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     asChild
                     className={cn(
-                      "text-[hsl(var(--nav-foreground))] hover-elevate active-elevate-2 mx-2 rounded-lg",
-                      location === item.url && "bg-[hsl(var(--nav-accent))] text-white font-semibold shadow-lg"
+                      "hover-elevate active-elevate-2 mx-2 rounded-lg",
+                      location === item.url && "bg-primary text-primary-foreground font-semibold"
                     )}
                     data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
                   >

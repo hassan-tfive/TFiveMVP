@@ -9,7 +9,6 @@ import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
 import { AppSidebar } from "@/components/app-sidebar";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import logoUrl from "@assets/v3 - crimson text font-03_1760641985520.png";
 import { Link } from "wouter";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -69,9 +68,9 @@ function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2 rounded-full hover-elevate active-elevate-2 overflow-visible" data-testid="button-user-menu">
-          <Avatar className="w-11 h-11 cursor-pointer border-2 border-[hsl(var(--nav-accent))]">
+          <Avatar className="w-11 h-11 cursor-pointer">
             <AvatarImage src={user.avatarUrl || undefined} alt={displayName} />
-            <AvatarFallback className="bg-[hsl(var(--nav-accent))] text-white text-base font-bold">
+            <AvatarFallback className="bg-primary text-primary-foreground text-base font-bold">
               {getInitials(displayName)}
             </AvatarFallback>
           </Avatar>
@@ -116,21 +115,13 @@ export default function App() {
               <div className="flex h-screen w-full">
                 <AppSidebar />
                 <div className="flex flex-col flex-1">
-                  <header className="sticky top-0 z-50 bg-gradient-to-r from-[hsl(var(--nav-bg-start))] to-[hsl(var(--nav-bg-end))] border-b-4 border-[hsl(var(--nav-accent))] shadow-2xl">
-                    <div className="max-w-[1800px] mx-auto flex items-center justify-between px-8 py-6">
-                      <div className="flex items-center gap-8">
+                  <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                    <div className="max-w-[1800px] mx-auto flex items-center justify-between px-8 py-4">
+                      <div className="flex items-center gap-6">
                         <SidebarTrigger 
                           data-testid="button-sidebar-toggle" 
-                          className="text-[hsl(var(--nav-foreground))] hover-elevate active-elevate-2" 
+                          className="hover-elevate active-elevate-2" 
                         />
-                        <Link href="/" className="flex items-center group">
-                          <div className="relative px-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm hover-elevate active-elevate-2">
-                            <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nav-accent))]/30 to-transparent blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-lg"></div>
-                            <img src={logoUrl} alt="Tfive" className="h-12 w-auto relative z-10 cursor-pointer brightness-0 invert" data-testid="img-logo" />
-                          </div>
-                        </Link>
-                      </div>
-                      <div className="flex-1 flex justify-center">
                         <WorkspaceSwitcher />
                       </div>
                       <div className="flex items-center gap-4">
