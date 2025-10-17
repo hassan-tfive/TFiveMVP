@@ -244,12 +244,13 @@ The application uses PostgreSQL with the following main tables:
 
 ### Minimal Navigation Design (October 17, 2025)
 - ✅ Clean, neutral navigation without blue/golden gradient backgrounds
-- ✅ Sidebar: Single Tfive logo (h-16/64px) without white background or accent borders
+- ✅ Sidebar: Single Tfive logo (h-20/80px) with pink-purple gradient background (logo 02)
 - ✅ Top nav: Transparent glass effect (`bg-background/95 backdrop-blur`) with simple border
 - ✅ Workspace switcher repositioned to left corner (next to sidebar toggle)
 - ✅ Navigation items use default theme colors (active state: `bg-primary text-primary-foreground`)
 - ✅ Avatar menu uses theme primary color (removed golden accent border)
 - ✅ Proper elevation utilities applied: `hover-elevate` and `active-elevate-2`
+- ✅ Dashboard banners: Navy for professional workspace, purple for personal workspace
 
 ### User Profile & Avatar (October 17, 2025)
 - ✅ Added user profile page with avatar and personal info management
