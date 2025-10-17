@@ -81,7 +81,7 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
                     "w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0 mt-1",
                     workspace === "professional" ? "bg-gradient-to-br from-workspace-professional to-workspace-professional-light" : "bg-gradient-to-br from-workspace-personal to-workspace-personal-accent"
                   )}>
-                    <Hourglass className="w-4 h-4" />
+                    <img src={tairoLogoUrl} alt="Tairo" className="w-5 h-5" />
                   </div>
                 )}
                 <div
@@ -110,7 +110,7 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
                 "w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0",
                 workspace === "professional" ? "bg-gradient-to-br from-workspace-professional to-workspace-professional-light" : "bg-gradient-to-br from-workspace-personal to-workspace-personal-accent"
               )}>
-                <Hourglass className="w-4 h-4 animate-pulse" />
+                <img src={tairoLogoUrl} alt="Tairo" className="w-5 h-5 animate-pulse" />
               </div>
               <div className="bg-muted rounded-lg px-4 py-3">
                 <div className="flex items-center gap-2">
