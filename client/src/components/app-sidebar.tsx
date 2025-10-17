@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import type { User } from "@shared/schema";
-import logoUrl from "@assets/v3 - crimson text font-01_1760728277193.png";
+import logoUrl from "@assets/v3 - crimson text font-02_1760728277193.png";
 
 const menuItems = [
   { title: "Dashboard", url: "/", icon: Home },
