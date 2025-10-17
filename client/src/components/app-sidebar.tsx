@@ -38,7 +38,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarContent>
+      <SidebarContent className="pb-96">
         <SidebarGroup>
           <SidebarGroupLabel className="font-semibold px-4">Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
