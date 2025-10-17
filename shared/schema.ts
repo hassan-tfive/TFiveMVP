@@ -22,6 +22,8 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
+  displayName: text("display_name"),
+  avatarUrl: text("avatar_url"),
   role: text("role").notNull().default("user"), // user | admin | team_lead
   organizationId: varchar("organization_id").references(() => organizations.id),
   teamId: varchar("team_id").references(() => teams.id),
