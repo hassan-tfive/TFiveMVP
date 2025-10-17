@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import type { User } from "@shared/schema";
-import logoUrl from "@assets/v3 - crimson text font-02_1760728277193.png";
 
 const menuItems = [
   { title: "Dashboard", url: "/", icon: Home },
@@ -39,11 +38,6 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="p-6">
-        <Link href="/" className="flex items-center justify-center group">
-          <img src={logoUrl} alt="Tfive" className="h-20 w-auto cursor-pointer hover-elevate active-elevate-2" data-testid="img-sidebar-logo" />
-        </Link>
-      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="font-semibold px-4">Navigation</SidebarGroupLabel>

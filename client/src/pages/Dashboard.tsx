@@ -8,6 +8,7 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { cn } from "@/lib/utils";
 import type { Program, User } from "@shared/schema";
 import tairoLogoUrl from "@assets/v3 - crimson text font-09_1760728277194.png";
+import tfiveLogoUrl from "@assets/v3 - crimson text font-02_1760728277193.png";
 
 export default function Dashboard() {
   const { workspace } = useWorkspace();
@@ -42,14 +43,19 @@ export default function Dashboard() {
           ? "bg-[hsl(235,100%,9%)]" 
           : "bg-gradient-to-r from-[hsl(318,100%,50%)] to-[hsl(266,73%,40%)]"
       )}>
-        <h1 className="text-4xl font-display font-bold mb-2 text-white relative z-10">
-          Welcome back to Tfive!
-        </h1>
-        <p className="text-lg text-white/90 relative z-10">
-          {workspace === "professional"
-            ? "Your professional development space - focused on career growth"
-            : "Your personal sanctuary - private space for self-discovery"}
-        </p>
+        <div className="flex items-center justify-between gap-6">
+          <div className="flex-1">
+            <h1 className="text-4xl font-display font-bold mb-2 text-white relative z-10">
+              Welcome back to Tfive!
+            </h1>
+            <p className="text-lg text-white/90 relative z-10">
+              {workspace === "professional"
+                ? "Your professional development space - focused on career growth"
+                : "Your personal sanctuary - private space for self-discovery"}
+            </p>
+          </div>
+          <img src={tfiveLogoUrl} alt="Tfive" className="h-24 w-auto relative z-10 flex-shrink-0" data-testid="img-banner-logo" />
+        </div>
       </div>
 
       <ProgressDashboard
