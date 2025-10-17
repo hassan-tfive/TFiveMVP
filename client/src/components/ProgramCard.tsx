@@ -42,7 +42,9 @@ export function ProgramCard({ program, isCompleted, progressPercent, onClick }: 
             alt={program.title}
             className="w-full h-full object-cover transition-transform hover:scale-105"
           />
-          <Hourglass className="absolute bottom-2 right-2 w-6 h-6 text-white/30" />
+          <div className="absolute bottom-2 right-2 bg-black/20 backdrop-blur-sm rounded-lg p-1.5">
+            <Hourglass className="w-5 h-5 text-white/80" />
+          </div>
         </div>
       )}
       {isCompleted && (
