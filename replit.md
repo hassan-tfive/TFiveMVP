@@ -37,7 +37,15 @@ Tfive is an AI-powered personal development platform built around the Pomodoro t
 - Streak tracking for consistency
 - Visual progress dashboard
 
-### 6. Enterprise Admin Dashboard
+### 6. User Profile & Avatar
+- **Profile Management**: Comprehensive user profile page with avatar and personal info
+- **Avatar Support**: Upload avatar via URL with real-time preview
+- **Display Name**: Customize display name separate from username
+- **User Menu**: Avatar-based dropdown menu in navigation bar
+- **Stats Display**: View progress stats (level, points, sessions, streak) on profile
+- **Navigation Integration**: Profile accessible via sidebar and user menu
+
+### 7. Enterprise Admin Dashboard
 - **Organization Management**: Create and manage organizations
 - **Team Management**: Create teams, assign users, track team performance
 - **User Roster**: View all organization members with team assignments
@@ -98,6 +106,7 @@ client/
       - ChatPage.tsx
       - SessionPage.tsx
       - Achievements.tsx
+      - Profile.tsx
       - AdminDashboard.tsx
     lib/                # Utilities
       - programImages.ts
@@ -117,7 +126,9 @@ attached_assets/
 
 ### User
 - `GET /api/user` - Get current user
-- `PATCH /api/user` - Update user data
+- `PATCH /api/user` - Update user data (display name, avatar URL, workspace, points, level)
+  - Validates with Zod schema
+  - Supports optional fields: displayName, avatarUrl (URL or empty string)
 
 ### Programs
 - `GET /api/programs?workspace=` - List programs
@@ -203,6 +214,8 @@ The application uses PostgreSQL with the following main tables:
 - `organizations` - Multi-tenant organization management
 - `teams` - Team groupings within organizations
 - `users` - User accounts with role (user/admin), organization, and team assignments
+  - Added: `displayName` (text) - User's display name
+  - Added: `avatarUrl` (text) - URL to user's avatar image
 - `programs` - Learning programs
 - `sessions` - Pomodoro session tracking
 - `progress` - User progress through programs
@@ -228,6 +241,14 @@ The application uses PostgreSQL with the following main tables:
 - UUID primary keys prevent enumeration attacks
 
 ## Recent Changes (October 2025)
+
+### User Profile & Avatar (October 17, 2025)
+- ✅ Added user profile page with avatar and personal info management
+- ✅ Avatar URL upload and display name customization
+- ✅ User avatar menu in navigation bar with dropdown
+- ✅ Profile accessible via sidebar and user menu
+- ✅ Real-time avatar updates across application
+- ✅ Zod validation for profile updates
 
 ### Enterprise Features Implemented
 - ✅ Migrated from in-memory to PostgreSQL database
