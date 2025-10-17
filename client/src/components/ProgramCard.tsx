@@ -1,4 +1,4 @@
-import { Clock, TrendingUp, CheckCircle2 } from "lucide-react";
+import { Clock, TrendingUp, CheckCircle2, Hourglass } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -36,16 +36,17 @@ export function ProgramCard({ program, isCompleted, progressPercent, onClick }: 
       data-testid={`card-program-${program.id}`}
     >
       {program.imageUrl && (
-        <div className="h-40 overflow-hidden">
+        <div className="h-40 overflow-hidden relative">
           <img
             src={program.imageUrl}
             alt={program.title}
             className="w-full h-full object-cover transition-transform hover:scale-105"
           />
+          <Hourglass className="absolute bottom-2 right-2 w-6 h-6 text-white/30" />
         </div>
       )}
       {isCompleted && (
-        <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1">
+        <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1 z-10">
           <CheckCircle2 className="w-5 h-5" />
         </div>
       )}
