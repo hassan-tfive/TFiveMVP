@@ -17,6 +17,14 @@ import {
   type InsertUserAchievement,
   type ChatMessage,
   type InsertChatMessage,
+  type SessionEvent,
+  type InsertSessionEvent,
+  type Reflection,
+  type InsertReflection,
+  type RewardCatalog,
+  type InsertRewardCatalog,
+  type Redemption,
+  type InsertRedemption,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -66,6 +74,23 @@ export interface IStorage {
   getChatMessages(userId: string, workspace: string): Promise<ChatMessage[]>;
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
 
+  // Session event operations
+  getSessionEvents(sessionId: string): Promise<SessionEvent[]>;
+  createSessionEvent(event: InsertSessionEvent): Promise<SessionEvent>;
+
+  // Reflection operations
+  getSessionReflection(sessionId: string): Promise<Reflection | undefined>;
+  createReflection(reflection: InsertReflection): Promise<Reflection>;
+
+  // Reward catalog operations
+  getRewardCatalog(organizationId?: string): Promise<RewardCatalog[]>;
+  createReward(reward: InsertRewardCatalog): Promise<RewardCatalog>;
+
+  // Redemption operations
+  getUserRedemptions(userId: string): Promise<Redemption[]>;
+  createRedemption(redemption: InsertRedemption): Promise<Redemption>;
+  updateRedemption(id: string, updates: Partial<Redemption>): Promise<Redemption | undefined>;
+
   // Stats
   getUserStats(userId: string): Promise<{ completedSessions: number; streak: number }>;
 }
@@ -80,6 +105,10 @@ export class MemStorage implements IStorage {
   private achievements: Map<string, Achievement>;
   private userAchievements: Map<string, UserAchievement>;
   private chatMessages: Map<string, ChatMessage>;
+  private sessionEvents: Map<string, SessionEvent>;
+  private reflections: Map<string, Reflection>;
+  private rewardCatalog: Map<string, RewardCatalog>;
+  private redemptions: Map<string, Redemption>;
 
   constructor() {
     this.organizations = new Map();
@@ -91,6 +120,10 @@ export class MemStorage implements IStorage {
     this.achievements = new Map();
     this.userAchievements = new Map();
     this.chatMessages = new Map();
+    this.sessionEvents = new Map();
+    this.reflections = new Map();
+    this.rewardCatalog = new Map();
+    this.redemptions = new Map();
     
     // Initialize with default user
     this.initializeDefaultData();
@@ -184,6 +217,10 @@ export class MemStorage implements IStorage {
       avatarUrl: insertUser.avatarUrl ?? null,
       organizationId: insertUser.organizationId ?? null,
       teamId: insertUser.teamId ?? null,
+      role: insertUser.role ?? "user",
+      currentWorkspace: insertUser.currentWorkspace ?? "professional",
+      points: insertUser.points ?? 0,
+      level: insertUser.level ?? 1,
       id,
       createdAt: new Date(),
     };
@@ -320,6 +357,93 @@ export class MemStorage implements IStorage {
     };
     this.chatMessages.set(id, message);
     return message;
+  }
+
+  // Session event operations
+  async getSessionEvents(sessionId: string): Promise<SessionEvent[]> {
+    return Array.from(this.sessionEvents.values())
+      .filter((e) => e.sessionId === sessionId)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+  }
+
+  async createSessionEvent(insertEvent: InsertSessionEvent): Promise<SessionEvent> {
+    const id = randomUUID();
+    const event: SessionEvent = {
+      ...insertEvent,
+      id,
+      createdAt: new Date(),
+    };
+    this.sessionEvents.set(id, event);
+    return event;
+  }
+
+  // Reflection operations
+  async getSessionReflection(sessionId: string): Promise<Reflection | undefined> {
+    return Array.from(this.reflections.values()).find((r) => r.sessionId === sessionId);
+  }
+
+  async createReflection(insertReflection: InsertReflection): Promise<Reflection> {
+    const id = randomUUID();
+    const reflection: Reflection = {
+      ...insertReflection,
+      sentiment: insertReflection.sentiment ?? null,
+      score: insertReflection.score ?? null,
+      id,
+      createdAt: new Date(),
+    };
+    this.reflections.set(id, reflection);
+    return reflection;
+  }
+
+  // Reward catalog operations
+  async getRewardCatalog(organizationId?: string): Promise<RewardCatalog[]> {
+    const rewards = Array.from(this.rewardCatalog.values()).filter((r) => r.isActive);
+    if (organizationId) {
+      return rewards.filter((r) => r.organizationId === organizationId || r.provider === "sponsor");
+    }
+    return rewards;
+  }
+
+  async createReward(insertReward: InsertRewardCatalog): Promise<RewardCatalog> {
+    const id = randomUUID();
+    const reward: RewardCatalog = {
+      ...insertReward,
+      organizationId: insertReward.organizationId ?? null,
+      description: insertReward.description ?? null,
+      metadata: insertReward.metadata ?? null,
+      isActive: insertReward.isActive ?? true,
+      id,
+      createdAt: new Date(),
+    };
+    this.rewardCatalog.set(id, reward);
+    return reward;
+  }
+
+  // Redemption operations
+  async getUserRedemptions(userId: string): Promise<Redemption[]> {
+    return Array.from(this.redemptions.values())
+      .filter((r) => r.userId === userId)
+      .sort((a, b) => b.redeemedAt.getTime() - a.redeemedAt.getTime());
+  }
+
+  async createRedemption(insertRedemption: InsertRedemption): Promise<Redemption> {
+    const id = randomUUID();
+    const redemption: Redemption = {
+      ...insertRedemption,
+      id,
+      redeemedAt: new Date(),
+      fulfilledAt: null,
+    };
+    this.redemptions.set(id, redemption);
+    return redemption;
+  }
+
+  async updateRedemption(id: string, updates: Partial<Redemption>): Promise<Redemption | undefined> {
+    const redemption = this.redemptions.get(id);
+    if (!redemption) return undefined;
+    const updated = { ...redemption, ...updates };
+    this.redemptions.set(id, updated);
+    return updated;
   }
 
   // Stats
@@ -601,6 +725,97 @@ export class DbStorage implements IStorage {
       .values(insertMessage)
       .returning();
     return message;
+  }
+
+  // Session event operations
+  async getSessionEvents(sessionId: string): Promise<SessionEvent[]> {
+    return await this.db
+      .select()
+      .from(schema.sessionEvents)
+      .where(eq(schema.sessionEvents.sessionId, sessionId))
+      .orderBy(schema.sessionEvents.createdAt);
+  }
+
+  async createSessionEvent(insertEvent: InsertSessionEvent): Promise<SessionEvent> {
+    const [event] = await this.db
+      .insert(schema.sessionEvents)
+      .values(insertEvent)
+      .returning();
+    return event;
+  }
+
+  // Reflection operations
+  async getSessionReflection(sessionId: string): Promise<Reflection | undefined> {
+    const [reflection] = await this.db
+      .select()
+      .from(schema.reflections)
+      .where(eq(schema.reflections.sessionId, sessionId));
+    return reflection;
+  }
+
+  async createReflection(insertReflection: InsertReflection): Promise<Reflection> {
+    const [reflection] = await this.db
+      .insert(schema.reflections)
+      .values(insertReflection)
+      .returning();
+    return reflection;
+  }
+
+  // Reward catalog operations
+  async getRewardCatalog(organizationId?: string): Promise<RewardCatalog[]> {
+    if (organizationId) {
+      const { or } = await import("drizzle-orm");
+      return await this.db
+        .select()
+        .from(schema.rewardCatalog)
+        .where(
+          and(
+            eq(schema.rewardCatalog.isActive, true),
+            or(
+              eq(schema.rewardCatalog.organizationId, organizationId),
+              eq(schema.rewardCatalog.provider, "sponsor")
+            )
+          )
+        );
+    }
+    return await this.db
+      .select()
+      .from(schema.rewardCatalog)
+      .where(eq(schema.rewardCatalog.isActive, true));
+  }
+
+  async createReward(insertReward: InsertRewardCatalog): Promise<RewardCatalog> {
+    const [reward] = await this.db
+      .insert(schema.rewardCatalog)
+      .values(insertReward)
+      .returning();
+    return reward;
+  }
+
+  // Redemption operations
+  async getUserRedemptions(userId: string): Promise<Redemption[]> {
+    return await this.db
+      .select()
+      .from(schema.redemptions)
+      .where(eq(schema.redemptions.userId, userId))
+      .orderBy(desc(schema.redemptions.redeemedAt));
+  }
+
+  async createRedemption(insertRedemption: InsertRedemption): Promise<Redemption> {
+    const [redemption] = await this.db
+      .insert(schema.redemptions)
+      .values(insertRedemption)
+      .returning();
+    return redemption;
+  }
+
+  async updateRedemption(id: string, updates: Partial<Redemption>): Promise<Redemption | undefined> {
+    const [redemption] = await this.db
+      .update(schema.redemptions)
+      .set(updates)
+      .where(eq(schema.redemptions.id, id))
+      .returning();
+    return redemption;
   }
 
   // Stats

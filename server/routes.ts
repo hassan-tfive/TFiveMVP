@@ -33,6 +33,36 @@ async function requireAdmin(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+// Helper function to get phase-specific Tairo guidance
+function getPhaseGuidance(phase: string, workspace: string): string {
+  const isProfessional = workspace === "professional";
+  
+  switch (phase) {
+    case "checkin":
+      return isProfessional
+        ? "You're in the CHECK-IN phase. Ask about their current work state, energy level, and what they want to accomplish this session. Help them set a clear, achievable goal for the next 25 minutes."
+        : "You're in the CHECK-IN phase. Ask how they're feeling emotionally and mentally. Help them identify what they need most right now - calm, energy, clarity, or connection. Guide them to set a personal intention for this session.";
+    
+    case "learn":
+      return isProfessional
+        ? "You're in the LEARN phase (8-10 minutes). Help them absorb key concepts and context. Ask reflective questions to deepen understanding. Connect new information to their professional experience."
+        : "You're in the LEARN phase (8-10 minutes). Help them understand the concept or practice they're exploring. Use examples from everyday life. Encourage curiosity and openness to new perspectives.";
+    
+    case "act":
+      return isProfessional
+        ? "You're in the ACT phase (10-12 minutes). Guide them through practical application. Provide clear steps, troubleshoot challenges, and keep them focused on action. Celebrate small wins as they practice."
+        : "You're in the ACT phase (10-12 minutes). Encourage them to fully engage in the practice or exercise. Remind them there's no wrong way to try. Support them through any discomfort or resistance that comes up.";
+    
+    case "earn":
+      return isProfessional
+        ? "You're in the EARN phase (1-2 minutes). Ask what went well and what they learned. Help them identify one specific takeaway they can use at work. Celebrate their effort and progress. Prompt for a brief reflection."
+        : "You're in the EARN phase (1-2 minutes). Ask them to reflect on how this session felt. What shifted? What did they notice? Celebrate their commitment to growth. Invite them to capture any insights in a brief reflection.";
+    
+    default:
+      return "Provide supportive, contextual guidance based on where they are in their growth journey.";
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // User routes
   app.get("/api/user", async (req, res) => {
@@ -133,7 +163,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const { programId, workspace } = req.body;
     
     try {
-      // Get program to calculate points
+      // Get program to validate it exists
       const program = await storage.getProgram(programId);
       if (!program) {
         return res.status(404).json({ error: "Program not found" });
@@ -154,8 +184,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         completedAt: new Date(),
       });
 
-      // Calculate points (from program content)
-      const pointsEarned = (program.content as any)?.earn?.points || 100;
+      // Calculate points according to spec
+      let pointsEarned = 50; // Base points for completing a session
+
+      // Get user stats to calculate streak bonus
+      const stats = await storage.getUserStats(DEFAULT_USER_ID);
+      if (stats.streak >= 3) {
+        // Streak bonus: +10 points per day, max +50
+        const streakBonus = Math.min(stats.streak * 10, 50);
+        pointsEarned += streakBonus;
+      }
 
       // Update user points and level
       const user = await storage.getUser(DEFAULT_USER_ID);
@@ -184,6 +222,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error completing session:", error);
       res.status(500).json({ error: "Failed to complete session" });
+    }
+  });
+
+  // Reflection routes
+  app.get("/api/reflections/:sessionId", async (req, res) => {
+    try {
+      const reflection = await storage.getSessionReflection(req.params.sessionId);
+      if (!reflection) {
+        return res.status(404).json({ error: "Reflection not found" });
+      }
+      res.json(reflection);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch reflection" });
+    }
+  });
+
+  app.post("/api/reflections", async (req, res) => {
+    try {
+      const { sessionId, content, sentiment, score } = req.body;
+      
+      // Validate session exists
+      const session = await storage.getSession(sessionId);
+      if (!session) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+
+      // Create reflection
+      const reflection = await storage.createReflection({
+        sessionId,
+        userId: DEFAULT_USER_ID,
+        content,
+        sentiment: sentiment || null,
+        score: score || null,
+      });
+
+      // Award points for reflection
+      let pointsEarned = 10; // Base points for reflection
+      
+      // Deep reflection bonus (score > 70 on 0-100 scale)
+      if (score && score > 70) {
+        pointsEarned += 20;
+      }
+
+      // Update user points
+      const user = await storage.getUser(DEFAULT_USER_ID);
+      if (user) {
+        const newPoints = user.points + pointsEarned;
+        const newLevel = Math.floor(newPoints / 1000) + 1;
+        
+        await storage.updateUser(DEFAULT_USER_ID, {
+          points: newPoints,
+          level: newLevel,
+        });
+      }
+
+      res.status(201).json({
+        reflection,
+        pointsEarned,
+      });
+    } catch (error) {
+      console.error("Error creating reflection:", error);
+      res.status(500).json({ error: "Failed to create reflection" });
+    }
+  });
+
+  // Session event routes
+  app.get("/api/sessions/:sessionId/events", async (req, res) => {
+    try {
+      const events = await storage.getSessionEvents(req.params.sessionId);
+      res.json(events);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch session events" });
+    }
+  });
+
+  app.post("/api/sessions/:sessionId/events", async (req, res) => {
+    try {
+      const { eventType, phase, payload } = req.body;
+      
+      const event = await storage.createSessionEvent({
+        sessionId: req.params.sessionId,
+        eventType,
+        phase,
+        payload: payload || null,
+      });
+
+      res.status(201).json(event);
+    } catch (error) {
+      console.error("Error creating session event:", error);
+      res.status(500).json({ error: "Failed to create session event" });
     }
   });
 
@@ -222,7 +350,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/chat", async (req, res) => {
     try {
-      const { content, workspace } = insertChatMessageSchema.parse({
+      const { content, workspace, phase, sessionId } = insertChatMessageSchema.parse({
         ...req.body,
         userId: DEFAULT_USER_ID,
         role: "user",
@@ -239,10 +367,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get conversation history for context
       const history = await storage.getChatMessages(DEFAULT_USER_ID, workspace);
       
-      // Prepare system message based on workspace
-      const systemMessage = workspace === "professional"
-        ? "You are Tairo, an AI companion for Tfive, a professional development platform. You help users with career growth, workplace wellbeing, and professional skills using the Pomodoro technique (25-minute sessions). Be encouraging, professional, and focused on actionable growth. Keep responses concise and supportive."
-        : "You are Tairo, an AI companion for Tfive, a personal development platform. You help users with personal growth, wellbeing, and self-discovery in their private space. Be warm, empathetic, and encouraging. Keep responses concise and supportive.";
+      // Prepare base system message based on workspace
+      let systemMessage = workspace === "professional"
+        ? "You are Tairo, an AI companion for Tfive, a professional development platform. You help users with career growth, workplace wellbeing, and professional skills using the Pomodoro technique (25-minute sessions). Be encouraging, professional, and focused on actionable growth."
+        : "You are Tairo, an AI companion for Tfive, a personal development platform. You help users with personal growth, wellbeing, and self-discovery in their private space. Be warm, empathetic, and encouraging.";
+
+      // Add phase-specific guidance
+      if (phase) {
+        const phaseGuidance = getPhaseGuidance(phase, workspace);
+        systemMessage += `\n\n${phaseGuidance}`;
+      }
+
+      systemMessage += "\n\nKeep responses concise and supportive (2-3 sentences max).";
 
       // Call OpenAI
       const completion = await openai.chat.completions.create({
