@@ -276,17 +276,18 @@ The application uses PostgreSQL with the following main tables:
 
 ## Recent Changes (October 2025)
 
-### Enhanced Tairo Avatar Character (October 18, 2025)
-- ✅ Replaced simple icon with lifelike animated character avatar
-- ✅ Full upper body design with head, neck, torso, and clothing details
-- ✅ Natural breathing animation (4-second subtle movement cycle)
-- ✅ Random blinking animation (eyes close every 2-6 seconds)
-- ✅ Talking animation with 3-frame mouth movement when speaking
-- ✅ Thinking state with bouncing animation and sparkle effect
-- ✅ Workspace-aware colors (navy/golden for professional, purple/pink for personal)
-- ✅ Four size options: sm (60x80), md (80x100), lg (120x160), xl (200x260)
-- ✅ Integrated prominently in chat interface (XL in header, MD in messages)
-- ✅ Dashboard "Chat with Tairo" card shows LG animated avatar
+### Floating Tairo Character (October 18, 2025)
+- ✅ Created human-like AI coach character using AI image generation
+- ✅ Professional, friendly appearance with warm expression and business casual attire
+- ✅ Floating character that moves around chat interface (drifts 0-30px every 3 seconds)
+- ✅ Gentle sway animation (6-second cycle with subtle rotation)
+- ✅ Breathing glow effect (4-second pulsing)
+- ✅ Status indicators: "Thinking..." badge during AI processing, "Speaking" badge when responding
+- ✅ Sound wave animation on Speaking badge
+- ✅ Non-blocking design (pointer-events: none) - doesn't interfere with chat functionality
+- ✅ Workspace-aware theming (navy border for professional, purple for personal)
+- ✅ Smooth transitions between positions (3-second ease-in-out)
+- ✅ Appears in chat page alongside conversation
 - ✅ Improved Tfive logo visibility in personal workspace (80% opacity + brightness boost)
 
 ### Minimal Navigation Design (October 17, 2025)
