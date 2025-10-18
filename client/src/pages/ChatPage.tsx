@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { ChatInterface } from "@/components/ChatInterface";
+import { FloatingTairo } from "@/components/FloatingTairo";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { ChatMessage } from "@shared/schema";
@@ -39,8 +40,13 @@ export default function ChatPage() {
     sendMessageMutation.mutate(content);
   };
 
+  // Determine if Tairo is currently talking (last message is from assistant and recent)
+  const lastMessage = messages[messages.length - 1];
+  const isTairoTalking = lastMessage?.role === "assistant" && 
+    (Date.now() - new Date(lastMessage.createdAt || Date.now()).getTime() < 5000);
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 relative">
       <div>
         <h1 className="text-4xl font-display font-bold mb-2">Chat with Tairo</h1>
         <p className="text-lg text-muted-foreground">
@@ -52,6 +58,12 @@ export default function ChatPage() {
         messages={messages}
         onSendMessage={handleSendMessage}
         isLoading={sendMessageMutation.isPending}
+      />
+
+      {/* Floating Tairo character */}
+      <FloatingTairo 
+        isThinking={sendMessageMutation.isPending}
+        isTalking={isTairoTalking}
       />
     </div>
   );
