@@ -5,8 +5,8 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { TairoAvatar } from "@/components/TairoAvatar";
 import type { ChatMessage } from "@shared/schema";
-import tairoLogoUrl from "@assets/v3 - crimson text font-09_1760728277194.png";
 
 interface ChatInterfaceProps {
   messages: ChatMessage[];
@@ -45,12 +45,7 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
         "flex items-center gap-3 p-4 border-b",
         workspace === "professional" ? "bg-workspace-professional-bg" : "bg-workspace-personal-bg"
       )}>
-        <div className={cn(
-          "w-12 h-12 rounded-full flex items-center justify-center text-white relative overflow-hidden",
-          workspace === "professional" ? "bg-gradient-to-br from-workspace-professional to-workspace-professional-light" : "bg-gradient-to-br from-workspace-personal to-workspace-personal-accent"
-        )}>
-          <img src={tairoLogoUrl} alt="Tairo" className="w-8 h-8 animate-pulse" />
-        </div>
+        <TairoAvatar size="md" isThinking={isLoading} />
         <div>
           <h3 className="font-semibold">Tairo - Your AI Companion</h3>
           <p className="text-sm text-muted-foreground">
@@ -77,12 +72,7 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
                 data-testid={`message-${message.role}`}
               >
                 {message.role === "assistant" && (
-                  <div className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0 mt-1",
-                    workspace === "professional" ? "bg-gradient-to-br from-workspace-professional to-workspace-professional-light" : "bg-gradient-to-br from-workspace-personal to-workspace-personal-accent"
-                  )}>
-                    <img src={tairoLogoUrl} alt="Tairo" className="w-5 h-5" />
-                  </div>
+                  <TairoAvatar size="sm" className="mt-1 flex-shrink-0" />
                 )}
                 <div
                   className={cn(
@@ -106,12 +96,7 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
           )}
           {isLoading && (
             <div className="flex justify-start gap-2">
-              <div className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0",
-                workspace === "professional" ? "bg-gradient-to-br from-workspace-professional to-workspace-professional-light" : "bg-gradient-to-br from-workspace-personal to-workspace-personal-accent"
-              )}>
-                <img src={tairoLogoUrl} alt="Tairo" className="w-5 h-5 animate-pulse" />
-              </div>
+              <TairoAvatar size="sm" isThinking={true} className="flex-shrink-0" />
               <div className="bg-muted rounded-lg px-4 py-3">
                 <div className="flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />

@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
 import { ProgramCard } from "@/components/ProgramCard";
+import { TairoAvatar } from "@/components/TairoAvatar";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, MessageSquare } from "lucide-react";
 import { Link } from "wouter";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { cn } from "@/lib/utils";
 import type { Program, User } from "@shared/schema";
-import tairoLogoUrl from "@assets/v3 - crimson text font-09_1760728277194.png";
 import tfiveLogoUrl from "@assets/v3 - crimson text font-02_1760728277193.png";
 
 export default function Dashboard() {
@@ -116,9 +116,7 @@ export default function Dashboard() {
             : "bg-gradient-to-r from-[hsl(318,100%,50%)] to-[hsl(266,73%,40%)] text-white"
         )}>
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-              <img src={tairoLogoUrl} alt="Tairo" className="w-8 h-8 animate-pulse" />
-            </div>
+            <TairoAvatar size="md" className="flex-shrink-0" />
             <div className="flex-1">
               <h3 className="text-lg font-semibold mb-1">Chat with Tairo</h3>
               <p className="text-sm text-white/80">
