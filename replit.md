@@ -20,6 +20,15 @@ Tfive is an AI-powered personal development platform built around the Pomodoro t
   - Act: Practice guidance and troubleshooting
   - Earn: Reflection prompts and celebration
 - Conversational interface for check-ins and support
+- **Animated Character Avatar**: Lifelike character with natural movements
+  - Full upper body design (head, neck, torso with clothing details)
+  - Breathing animation (4-second subtle movement cycle)
+  - Random blinking (eyes close every 2-6 seconds)
+  - Talking animation (3-frame mouth movement when speaking)
+  - Thinking state (bouncing animation with sparkle effect)
+  - Workspace-aware colors (navy/golden for professional, purple/pink for personal)
+  - Four sizes: sm (60x80), md (80x100), lg (120x160), xl (200x260)
+  - Appears prominently in chat interface (XL in header, MD in messages)
 
 ### 3. 25-Minute Pomodoro Sessions
 - **Check-In Phase (2 min)**: Mood, focus, and goal tracking
@@ -266,6 +275,19 @@ The application uses PostgreSQL with the following main tables:
 - UUID primary keys prevent enumeration attacks
 
 ## Recent Changes (October 2025)
+
+### Enhanced Tairo Avatar Character (October 18, 2025)
+- ✅ Replaced simple icon with lifelike animated character avatar
+- ✅ Full upper body design with head, neck, torso, and clothing details
+- ✅ Natural breathing animation (4-second subtle movement cycle)
+- ✅ Random blinking animation (eyes close every 2-6 seconds)
+- ✅ Talking animation with 3-frame mouth movement when speaking
+- ✅ Thinking state with bouncing animation and sparkle effect
+- ✅ Workspace-aware colors (navy/golden for professional, purple/pink for personal)
+- ✅ Four size options: sm (60x80), md (80x100), lg (120x160), xl (200x260)
+- ✅ Integrated prominently in chat interface (XL in header, MD in messages)
+- ✅ Dashboard "Chat with Tairo" card shows LG animated avatar
+- ✅ Improved Tfive logo visibility in personal workspace (80% opacity + brightness boost)
 
 ### Minimal Navigation Design (October 17, 2025)
 - ✅ Clean, neutral navigation without blue/golden gradient backgrounds
