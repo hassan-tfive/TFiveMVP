@@ -42,12 +42,12 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
   return (
     <Card className="flex flex-col h-[600px]">
       <div className={cn(
-        "flex items-center gap-3 p-4 border-b",
+        "flex items-center gap-4 p-6 border-b",
         workspace === "professional" ? "bg-workspace-professional-bg" : "bg-workspace-personal-bg"
       )}>
-        <TairoAvatar size="md" isThinking={isLoading} />
+        <TairoAvatar size="xl" isThinking={isLoading} isTalking={false} />
         <div>
-          <h3 className="font-semibold">Tairo - Your AI Companion</h3>
+          <h3 className="text-xl font-semibold">Tairo - Your AI Companion</h3>
           <p className="text-sm text-muted-foreground">
             {workspace === "professional" ? "Professional Workspace" : "Personal Workspace"}
           </p>
@@ -66,17 +66,17 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
               <div
                 key={message.id}
                 className={cn(
-                  "flex gap-2",
+                  "flex gap-3",
                   message.role === "user" ? "justify-end" : "justify-start"
                 )}
                 data-testid={`message-${message.role}`}
               >
                 {message.role === "assistant" && (
-                  <TairoAvatar size="sm" className="mt-1 flex-shrink-0" />
+                  <TairoAvatar size="md" className="mt-1 flex-shrink-0" isTalking={true} />
                 )}
                 <div
                   className={cn(
-                    "max-w-[80%] rounded-lg px-4 py-3",
+                    "max-w-[75%] rounded-lg px-4 py-3",
                     message.role === "user"
                       ? workspace === "professional"
                         ? "bg-workspace-professional text-white"
@@ -86,7 +86,7 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
                 >
                   {message.role === "assistant" && (
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="text-xs font-medium text-muted-foreground">Tairo</span>
+                      <span className="text-xs font-semibold text-muted-foreground">Tairo</span>
                     </div>
                   )}
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
@@ -95,8 +95,8 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
             ))
           )}
           {isLoading && (
-            <div className="flex justify-start gap-2">
-              <TairoAvatar size="sm" isThinking={true} className="flex-shrink-0" />
+            <div className="flex justify-start gap-3">
+              <TairoAvatar size="md" isThinking={true} className="flex-shrink-0" />
               <div className="bg-muted rounded-lg px-4 py-3">
                 <div className="flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />

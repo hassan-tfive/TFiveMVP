@@ -1,125 +1,219 @@
 import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { cn } from "@/lib/utils";
+import { Sparkles } from "lucide-react";
 
 interface TairoAvatarProps {
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   isThinking?: boolean;
+  isTalking?: boolean;
   className?: string;
 }
 
-export function TairoAvatar({ size = "md", isThinking = false, className }: TairoAvatarProps) {
+export function TairoAvatar({ 
+  size = "md", 
+  isThinking = false,
+  isTalking = false,
+  className 
+}: TairoAvatarProps) {
   const { workspace } = useWorkspace();
   const [blink, setBlink] = useState(false);
+  const [mouthFrame, setMouthFrame] = useState(0);
 
-  // Random blinking animation
+  const sizeMap = {
+    sm: { width: 60, height: 80 },
+    md: { width: 80, height: 100 },
+    lg: { width: 120, height: 160 },
+    xl: { width: 200, height: 260 },
+  };
+
+  const { width, height } = sizeMap[size];
+
+  const colors = workspace === "professional"
+    ? {
+        primary: "hsl(235, 100%, 20%)",
+        accent: "hsl(40, 90%, 55%)",
+        skin: "hsl(30, 50%, 75%)",
+        clothes: "hsl(235, 100%, 15%)",
+      }
+    : {
+        primary: "hsl(266, 73%, 40%)",
+        accent: "hsl(318, 100%, 50%)",
+        skin: "hsl(30, 50%, 75%)",
+        clothes: "hsl(266, 73%, 35%)",
+      };
+
+  // Blinking animation
   useEffect(() => {
     const blinkInterval = setInterval(() => {
       setBlink(true);
       setTimeout(() => setBlink(false), 150);
-    }, Math.random() * 4000 + 2000); // Blink every 2-6 seconds
+    }, Math.random() * 3000 + 2000);
 
     return () => clearInterval(blinkInterval);
   }, []);
 
-  const sizeClasses = {
-    sm: "w-8 h-8",
-    md: "w-12 h-12",
-    lg: "w-16 h-16"
-  };
+  // Talking animation
+  useEffect(() => {
+    if (isTalking) {
+      const talkInterval = setInterval(() => {
+        setMouthFrame((prev) => (prev + 1) % 3);
+      }, 200);
+      return () => clearInterval(talkInterval);
+    } else {
+      setMouthFrame(0);
+    }
+  }, [isTalking]);
 
-  const eyeSize = {
-    sm: 2,
-    md: 3,
-    lg: 4
+  const getMouthPath = () => {
+    if (!isTalking) {
+      return "M 40 60 Q 50 65 60 60"; // Smile
+    }
+    
+    // Three mouth positions for talking animation
+    const mouths = [
+      "M 40 60 Q 50 68 60 60", // Open
+      "M 42 58 Q 50 64 58 58", // Mid
+      "M 40 60 Q 50 65 60 60", // Closed
+    ];
+    return mouths[mouthFrame];
   };
-
-  const colors = workspace === "professional" 
-    ? { primary: "#00042d", secondary: "#1e3a8a" } 
-    : { primary: "#5c1cb2", secondary: "#ff00c1" };
 
   return (
-    <div className={cn("relative", sizeClasses[size], className)}>
-      {/* Breathing/pulse animation background */}
-      <div 
+    <div className={cn("relative inline-block", className)}>
+      <svg
+        width={width}
+        height={height}
+        viewBox="0 0 100 130"
         className={cn(
-          "absolute inset-0 rounded-full opacity-20 animate-pulse",
-          workspace === "professional" ? "bg-workspace-professional" : "bg-workspace-personal"
+          "transition-transform duration-300",
+          isThinking && "animate-bounce"
         )}
-      />
-      
-      {/* Main avatar circle */}
-      <div 
-        className={cn(
-          "relative w-full h-full rounded-full flex items-center justify-center overflow-hidden transition-all duration-300",
-          workspace === "professional" 
-            ? "bg-gradient-to-br from-workspace-professional to-workspace-professional-light" 
-            : "bg-gradient-to-br from-workspace-personal to-workspace-personal-accent"
-        )}
-        style={{
-          transform: isThinking ? "scale(1.1)" : "scale(1)",
-        }}
       >
-        {/* Simple friendly face SVG */}
-        <svg
-          viewBox="0 0 100 100"
-          className={cn("w-full h-full transition-transform duration-200", isThinking && "animate-bounce")}
-          style={{ transform: blink ? "scaleY(0.1)" : "scaleY(1)" }}
-        >
-          {/* Face */}
-          <circle cx="50" cy="50" r="45" fill="white" opacity="0.95" />
-          
-          {/* Eyes */}
-          <circle 
-            cx="35" 
-            cy="42" 
-            r={eyeSize[size]} 
-            fill={colors.primary}
-            className={cn("transition-all", blink && "opacity-0")}
+        <defs>
+          <linearGradient id={`avatar-gradient-${workspace}`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor={colors.primary} />
+            <stop offset="100%" stopColor={colors.accent} />
+          </linearGradient>
+        </defs>
+
+        {/* Animated group with breathing effect */}
+        <g className="animate-[breathe_4s_ease-in-out_infinite]">
+          {/* Body/Torso */}
+          <rect
+            x="20"
+            y="65"
+            width="60"
+            height="60"
+            rx="10"
+            fill={colors.clothes}
+            opacity="0.9"
           />
-          <circle 
-            cx="65" 
-            cy="42" 
-            r={eyeSize[size]} 
-            fill={colors.primary}
-            className={cn("transition-all", blink && "opacity-0")}
-          />
-          
-          {/* Smile */}
+
+          {/* Neck */}
           <path
-            d={isThinking 
-              ? "M 30 55 Q 50 60 70 55" 
-              : "M 30 55 Q 50 70 70 55"
-            }
-            stroke={colors.secondary}
-            strokeWidth="3"
+            d="M 30 65 Q 50 55 70 65"
+            fill={colors.clothes}
+            stroke={colors.primary}
+            strokeWidth="2"
+          />
+
+          {/* Head */}
+          <circle
+            cx="50"
+            cy="35"
+            r="22"
+            fill={colors.skin}
+            stroke={colors.primary}
+            strokeWidth="2"
+          />
+
+          {/* Eyes */}
+          <ellipse
+            cx="42"
+            cy="32"
+            rx="3"
+            ry={blink ? 1 : 4}
+            fill={colors.primary}
+            className="transition-all duration-150"
+          />
+          <ellipse
+            cx="58"
+            cy="32"
+            rx="3"
+            ry={blink ? 1 : 4}
+            fill={colors.primary}
+            className="transition-all duration-150"
+          />
+
+          {/* Eyebrows */}
+          <path
+            d="M 30 22 Q 28 18 32 16"
+            stroke={colors.primary}
+            strokeWidth="2"
             fill="none"
             strokeLinecap="round"
-            className="transition-all duration-300"
           />
-          
-          {/* Thinking dots when AI is processing */}
-          {isThinking && (
-            <g className="animate-pulse">
-              <circle cx="40" cy="70" r="2" fill={colors.primary} opacity="0.6">
-                <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite" begin="0s" />
-              </circle>
-              <circle cx="50" cy="70" r="2" fill={colors.primary} opacity="0.6">
-                <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite" begin="0.3s" />
-              </circle>
-              <circle cx="60" cy="70" r="2" fill={colors.primary} opacity="0.6">
-                <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite" begin="0.6s" />
-              </circle>
-            </g>
-          )}
-        </svg>
-      </div>
+          <path
+            d="M 70 22 Q 72 18 68 16"
+            stroke={colors.primary}
+            strokeWidth="2"
+            fill="none"
+            strokeLinecap="round"
+          />
 
-      {/* Sparkle effect when thinking */}
+          {/* Mouth - animated when talking */}
+          <path
+            d={getMouthPath()}
+            stroke={colors.primary}
+            strokeWidth="2"
+            fill="none"
+            strokeLinecap="round"
+            className="transition-all duration-200"
+          />
+
+          {/* Shirt buttons */}
+          <circle
+            cx="50"
+            cy="80"
+            r="4"
+            fill={colors.accent}
+            opacity="0.8"
+          />
+          <circle
+            cx="50"
+            cy="90"
+            r="4"
+            fill={colors.accent}
+            opacity="0.8"
+          />
+          <circle
+            cx="50"
+            cy="100"
+            r="4"
+            fill={colors.accent}
+            opacity="0.8"
+          />
+        </g>
+
+        {/* Thinking sparkle */}
+        {isThinking && (
+          <g className="animate-pulse" opacity="0.8">
+            <circle cx="75" cy="20" r="8" fill={colors.accent} opacity="0.3" />
+            <circle cx="75" cy="20" r="4" fill={colors.accent} />
+          </g>
+        )}
+      </svg>
+
+      {/* Thinking label */}
       {isThinking && (
-        <div className="absolute -top-1 -right-1">
-          <div className="w-3 h-3 rounded-full bg-primary animate-ping" />
-          <div className="w-3 h-3 rounded-full bg-primary absolute top-0" />
+        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-background/90 backdrop-blur px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+          <span className="animate-pulse">Thinking</span>
+          <span className="flex gap-0.5">
+            <span className="animate-[bounce_1s_infinite_0ms]">.</span>
+            <span className="animate-[bounce_1s_infinite_200ms]">.</span>
+            <span className="animate-[bounce_1s_infinite_400ms]">.</span>
+          </span>
         </div>
       )}
     </div>

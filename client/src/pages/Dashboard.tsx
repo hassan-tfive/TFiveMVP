@@ -116,7 +116,7 @@ export default function Dashboard() {
             : "bg-gradient-to-r from-[hsl(318,100%,50%)] to-[hsl(266,73%,40%)] text-white"
         )}>
           <div className="flex items-center gap-4">
-            <TairoAvatar size="md" className="flex-shrink-0" />
+            <TairoAvatar size="lg" className="flex-shrink-0" />
             <div className="flex-1">
               <h3 className="text-lg font-semibold mb-1">Chat with Tairo</h3>
               <p className="text-sm text-white/80">
