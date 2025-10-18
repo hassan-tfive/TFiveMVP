@@ -59,7 +59,7 @@ export default function Dashboard() {
             alt="Tfive" 
             className={cn(
               "h-32 w-auto relative z-10 flex-shrink-0 -my-6 -mr-8",
-              workspace === "personal" ? "opacity-30 mix-blend-soft-light" : "rounded-lg"
+              workspace === "personal" ? "opacity-80 brightness-150" : "rounded-lg"
             )} 
             data-testid="img-banner-logo" 
           />
