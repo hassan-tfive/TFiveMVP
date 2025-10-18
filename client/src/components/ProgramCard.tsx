@@ -1,4 +1,4 @@
-import { Clock, TrendingUp, CheckCircle2, Cherry } from "lucide-react";
+import { Clock, TrendingUp, CheckCircle2 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -67,7 +67,6 @@ export function ProgramCard({ program, isCompleted, progressPercent, onClick }: 
       <CardContent className="space-y-3">
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
-            <Cherry className="w-4 h-4 text-red-500" />
             <Clock className="w-4 h-4" />
             <span>{program.duration} min</span>
           </div>

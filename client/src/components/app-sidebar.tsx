@@ -1,4 +1,4 @@
-import { Home, Library, MessageSquare, Trophy, Shield, UserCircle } from "lucide-react";
+import { Home, Library, MessageSquare, Trophy, Shield, UserCircle, Circle } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Sidebar, SidebarContent } from "@/components/ui/sidebar";
@@ -16,8 +16,9 @@ const menuItems = [
   { 
     title: "Programs", 
     url: "/programs", 
-    icon: Library,
-    description: "Learning library"
+    icon: Circle,
+    description: "Learning library",
+    iconClassName: "fill-red-500 text-red-500"
   },
   { 
     title: "Chat with Tairo", 
@@ -80,7 +81,7 @@ export function AppSidebar() {
                       ? "bg-primary-foreground/20" 
                       : "bg-muted"
                   )}>
-                    <item.icon className="w-5 h-5" />
+                    <item.icon className={cn("w-5 h-5", (item as any).iconClassName)} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-sm mb-0.5">{item.title}</h3>
