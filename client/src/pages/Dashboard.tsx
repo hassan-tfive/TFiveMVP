@@ -58,8 +58,8 @@ export default function Dashboard() {
             src={tfiveLogoUrl} 
             alt="Tfive" 
             className={cn(
-              "h-32 w-auto relative z-10 flex-shrink-0 -my-6 -mr-8 rounded-lg",
-              workspace === "personal" && "mix-blend-overlay opacity-70"
+              "h-32 w-auto relative z-10 flex-shrink-0 -my-6 -mr-8",
+              workspace === "personal" ? "opacity-30 mix-blend-soft-light" : "rounded-lg"
             )} 
             data-testid="img-banner-logo" 
           />
