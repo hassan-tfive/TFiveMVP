@@ -8,6 +8,7 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { cn } from "@/lib/utils";
 import type { Program, User } from "@shared/schema";
 import tfiveLogoUrl from "@assets/v3 - crimson text font-02_1760728277193.png";
+import tfiveLogoWhiteUrl from "@assets/ChatGPT Image 19. Okt. 2025, 11_20_02_1760865621027.png";
 
 export default function Dashboard() {
   const { workspace } = useWorkspace();
@@ -54,7 +55,7 @@ export default function Dashboard() {
             </p>
           </div>
           <img 
-            src={tfiveLogoUrl} 
+            src={workspace === "professional" ? tfiveLogoWhiteUrl : tfiveLogoUrl} 
             alt="Tfive" 
             className="h-32 w-auto relative z-10 flex-shrink-0 -my-6 -mr-8" 
             data-testid="img-banner-logo" 
