@@ -23,14 +23,13 @@ interface WizardData {
   topic: string;
   goal: string;
   difficulty: "beginner" | "intermediate" | "advanced" | "";
-  category: "wellbeing" | "recovery" | "inclusion" | "focus" | "";
   workspace: "professional" | "personal" | "both" | "";
 }
 
 const STEPS = [
   { id: 1, title: "Topic", description: "What do you want to focus on?" },
   { id: 2, title: "Goal", description: "What do you want to achieve?" },
-  { id: 3, title: "Details", description: "Choose difficulty and category" },
+  { id: 3, title: "Difficulty", description: "Choose your experience level" },
   { id: 4, title: "Workspace", description: "Where should this program live?" },
 ];
 
@@ -42,7 +41,6 @@ export function ProgramWizard({ open, onOpenChange }: ProgramWizardProps) {
     topic: "",
     goal: "",
     difficulty: "",
-    category: "",
     workspace: "",
   });
   const { workspace } = useWorkspace();
@@ -78,7 +76,6 @@ export function ProgramWizard({ open, onOpenChange }: ProgramWizardProps) {
       topic: "",
       goal: "",
       difficulty: "",
-      category: "",
       workspace: "",
     });
   };
@@ -115,9 +112,9 @@ export function ProgramWizard({ open, onOpenChange }: ProgramWizardProps) {
       case 2:
         return data.goal.trim().length > 0;
       case 3:
-        return data.difficulty && data.category;
+        return data.difficulty !== "";
       case 4:
-        return data.workspace;
+        return data.workspace !== "";
       default:
         return false;
     }
@@ -234,41 +231,24 @@ export function ProgramWizard({ open, onOpenChange }: ProgramWizardProps) {
               )}
 
               {step === 3 && (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="difficulty">Difficulty Level</Label>
-                    <Select
-                      value={data.difficulty}
-                      onValueChange={(value) => setData({ ...data, difficulty: value as WizardData["difficulty"] })}
-                    >
-                      <SelectTrigger data-testid="select-difficulty">
-                        <SelectValue placeholder="Choose difficulty" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="beginner">Beginner - New to this area</SelectItem>
-                        <SelectItem value="intermediate">Intermediate - Some experience</SelectItem>
-                        <SelectItem value="advanced">Advanced - Ready for a challenge</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="category">Category</Label>
-                    <Select
-                      value={data.category}
-                      onValueChange={(value) => setData({ ...data, category: value as WizardData["category"] })}
-                    >
-                      <SelectTrigger data-testid="select-category">
-                        <SelectValue placeholder="Choose category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="wellbeing">Wellbeing - Mental health & balance</SelectItem>
-                        <SelectItem value="recovery">Recovery - Resilience & healing</SelectItem>
-                        <SelectItem value="inclusion">Inclusion - Empathy & connection</SelectItem>
-                        <SelectItem value="focus">Focus - Concentration & productivity</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="difficulty">What's your experience level with this topic?</Label>
+                  <Select
+                    value={data.difficulty}
+                    onValueChange={(value) => setData({ ...data, difficulty: value as WizardData["difficulty"] })}
+                  >
+                    <SelectTrigger data-testid="select-difficulty">
+                      <SelectValue placeholder="Choose your level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="beginner">Beginner - New to this area</SelectItem>
+                      <SelectItem value="intermediate">Intermediate - Some experience</SelectItem>
+                      <SelectItem value="advanced">Advanced - Ready for a challenge</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    Tairo will adjust the content complexity to match your level
+                  </p>
                 </div>
               )}
 

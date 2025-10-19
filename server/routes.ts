@@ -135,7 +135,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           topic: z.string(),
           goal: z.string(),
           difficulty: z.enum(["beginner", "intermediate", "advanced"]),
-          category: z.enum(["wellbeing", "recovery", "inclusion", "focus"]),
           workspace: z.enum(["professional", "personal", "both"]),
         }),
         // Prompt mode
@@ -153,21 +152,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 Your task is to:
 1. Understand the user's request and emotional/professional context
-2. Identify the topic DOMAIN (choose one: focus, leadership, recovery, stress, inclusion)
+2. Identify the topic DOMAIN and CATEGORY that best fits (choose from these options):
+   DOMAINS: focus, leadership, recovery, stress, inclusion, wellbeing
+   CATEGORIES: wellbeing, recovery, inclusion, focus
 3. Dynamically assign phase durations based on domain (total ≤ 25 minutes):
    - Focus/Productivity: Learn 6min, Act 15min, Earn 4min
    - Leadership: Learn 12min, Act 9min, Earn 4min
    - Recovery: Learn 14min, Act 7min, Earn 4min
+   - Wellbeing: Learn 10min, Act 11min, Earn 4min
    - Stress: Learn 8min, Act 12min, Earn 5min
-   - Inclusion/Empathy: Learn 10min, Act 10min, Earn 5min
+   - Inclusion/Empathy: Learn 9min, Act 12min, Earn 4min
 4. Write rich, actionable content for each phase
-5. Suggest a follow-up program
+5. Create a visual description for the program image
+6. Suggest a follow-up program
 
 ${isWizardMode ? `User provided structured input:
 - Topic: ${requestData.topic}
 - Goal: ${requestData.goal}
 - Difficulty: ${requestData.difficulty}
-- Category: ${requestData.category}
 - Workspace: ${requestData.workspace}` : `User's natural language request: "${requestData.prompt}"
 Workspace context: ${requestData.workspace || 'professional'}`}
 
@@ -175,10 +177,11 @@ Return ONLY valid JSON in this exact format:
 {
   "title": "Compelling title (3-6 words)",
   "description": "Brief engaging description (2-3 sentences)",
-  "domain": "focus|leadership|recovery|stress|inclusion",
+  "domain": "focus|leadership|recovery|stress|inclusion|wellbeing",
   "category": "wellbeing|recovery|inclusion|focus",
   "difficulty": "beginner|intermediate|advanced",
   "goal": "Specific user goal statement",
+  "imagePrompt": "Detailed visual description for an abstract, calming image that represents this program's theme (be specific about colors, mood, elements)",
   "durations": {
     "learn": <number>,
     "act": <number>,
@@ -208,20 +211,21 @@ Return ONLY valid JSON in this exact format:
         // Determine values from request
         const topic = isWizardMode ? requestData.topic : requestData.prompt;
         const goal = isWizardMode ? requestData.goal : `Achieve progress with ${topic}`;
-        const category = isWizardMode ? requestData.category : 'wellbeing';
+        const category = 'wellbeing';
         const difficulty = isWizardMode ? requestData.difficulty : 'beginner';
         const workspace = isWizardMode ? requestData.workspace : (requestData.workspace || 'professional');
         
-        // Default domain-based durations (focus)
-        const durations = { learn: 6, act: 15, earn: 4 };
+        // Default domain-based durations (wellbeing)
+        const durations = { learn: 10, act: 11, earn: 4 };
         
         return {
-          title: `${category.charAt(0).toUpperCase() + category.slice(1)}: ${topic}`,
+          title: `${topic.charAt(0).toUpperCase()}${topic.slice(1, 40)}`,
           description: goal,
-          domain: 'focus',
+          domain: 'wellbeing',
           category,
           difficulty,
           goal,
+          imagePrompt: `Calming abstract background with soft gradients, peaceful colors like blue and purple, representing mindfulness and personal growth, minimalist design, serene atmosphere`,
           durations,
           content: {
             learn: `Explore the fundamentals of ${topic}. Understand key concepts and insights that will help you ${goal.toLowerCase()}.`,
@@ -236,10 +240,11 @@ Return ONLY valid JSON in this exact format:
       const aiResponseSchema = z.object({
         title: z.string().min(3).max(100),
         description: z.string().min(10).max(500),
-        domain: z.enum(["focus", "leadership", "recovery", "stress", "inclusion"]),
+        domain: z.enum(["focus", "leadership", "recovery", "stress", "inclusion", "wellbeing"]),
         category: z.enum(["wellbeing", "recovery", "inclusion", "focus"]),
         difficulty: z.enum(["beginner", "intermediate", "advanced"]),
         goal: z.string().min(5),
+        imagePrompt: z.string().min(20),
         durations: z.object({
           learn: z.number().min(1).max(20),
           act: z.number().min(1).max(20),
@@ -284,6 +289,33 @@ Return ONLY valid JSON in this exact format:
                            generatedContent.durations.act + 
                            generatedContent.durations.earn;
 
+      // Generate program image using DALL-E 2 (more compatible)
+      let imageUrl: string | null = null;
+      try {
+        console.log('[Image Generation] Generating image with prompt:', generatedContent.imagePrompt);
+        const imageResponse = await openai.images.generate({
+          model: "dall-e-2",
+          prompt: generatedContent.imagePrompt,
+          n: 1,
+          size: "512x512",
+        });
+        imageUrl = imageResponse.data?.[0]?.url || null;
+        console.log('[Image Generation] Image generated successfully:', imageUrl ? 'Yes' : 'No');
+      } catch (imageError: any) {
+        console.error('[Image Generation] Failed to generate image:', imageError?.message || imageError);
+        // Set a placeholder/fallback image URL based on domain
+        const domainImages: Record<string, string> = {
+          'focus': 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&h=600&fit=crop',
+          'leadership': 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop',
+          'recovery': 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&h=600&fit=crop',
+          'stress': 'https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=800&h=600&fit=crop',
+          'inclusion': 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&h=600&fit=crop',
+          'wellbeing': 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&h=600&fit=crop',
+        };
+        imageUrl = domainImages[generatedContent.domain] || domainImages['wellbeing'];
+        console.log('[Image Generation] Using fallback image for domain:', generatedContent.domain);
+      }
+
       // Create the program with dynamic durations
       const programData = {
         title: generatedContent.title,
@@ -300,7 +332,7 @@ Return ONLY valid JSON in this exact format:
           },
         },
         workspace: isWizardMode ? requestData.workspace : (requestData.workspace || 'both'),
-        imageUrl: null,
+        imageUrl,
         // Enhanced fields
         domain: generatedContent.domain,
         goal: generatedContent.goal,
