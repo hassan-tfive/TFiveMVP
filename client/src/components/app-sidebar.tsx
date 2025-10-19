@@ -21,7 +21,7 @@ const menuItems = [
   { 
     title: "Programs", 
     url: "/programs", 
-    icon: () => <span className="text-5xl leading-none">🍅</span>,
+    icon: () => <div className="w-16 h-16 flex items-center justify-center text-6xl">🍅</div>,
     description: "Learning library"
   },
   { 
