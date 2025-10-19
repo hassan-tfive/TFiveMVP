@@ -254,6 +254,12 @@ export class MemStorage implements IStorage {
     const program: Program = {
       ...insertProgram,
       imageUrl: insertProgram.imageUrl ?? null,
+      domain: insertProgram.domain ?? null,
+      goal: insertProgram.goal ?? null,
+      durationLearn: insertProgram.durationLearn ?? null,
+      durationAct: insertProgram.durationAct ?? null,
+      durationEarn: insertProgram.durationEarn ?? null,
+      metadata: insertProgram.metadata ?? null,
       id,
       createdAt: new Date(),
     };

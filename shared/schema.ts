@@ -39,10 +39,17 @@ export const programs = pgTable("programs", {
   description: text("description").notNull(),
   category: text("category").notNull(), // wellbeing | recovery | inclusion | focus
   difficulty: text("difficulty").notNull(), // beginner | intermediate | advanced
-  duration: integer("duration").notNull(), // in minutes (always 25 for Pomodoro)
+  duration: integer("duration").notNull(), // total duration in minutes
   content: jsonb("content").notNull(), // { learn: string, act: string, earn: { points: number, message: string } }
   imageUrl: text("image_url"),
   workspace: text("workspace").notNull(), // professional | personal | both
+  // Enhanced fields for dynamic program generation
+  domain: text("domain"), // focus | leadership | recovery | stress | inclusion
+  goal: text("goal"), // user's specific goal for this program
+  durationLearn: integer("duration_learn"), // minutes for Learn phase
+  durationAct: integer("duration_act"), // minutes for Act phase
+  durationEarn: integer("duration_earn"), // minutes for Earn phase
+  metadata: jsonb("metadata"), // { followupSuggestion?: string, tone?: string, [key: string]: any }
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

@@ -125,50 +125,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create program from wizard data with AI-generated content
+  // Create program from wizard data or natural prompt with AI-generated content
   app.post("/api/programs/generate", async (req, res) => {
     try {
-      const wizardSchema = z.object({
-        topic: z.string(),
-        goal: z.string(),
-        difficulty: z.enum(["beginner", "intermediate", "advanced"]),
-        category: z.enum(["wellbeing", "recovery", "inclusion", "focus"]),
-        workspace: z.enum(["professional", "personal", "both"]),
-      });
+      // Support both wizard mode (structured) and prompt mode (natural language)
+      const requestSchema = z.union([
+        // Wizard mode
+        z.object({
+          topic: z.string(),
+          goal: z.string(),
+          difficulty: z.enum(["beginner", "intermediate", "advanced"]),
+          category: z.enum(["wellbeing", "recovery", "inclusion", "focus"]),
+          workspace: z.enum(["professional", "personal", "both"]),
+        }),
+        // Prompt mode
+        z.object({
+          prompt: z.string(),
+          workspace: z.enum(["professional", "personal", "both"]).optional(),
+        }),
+      ]);
 
-      const wizardData = wizardSchema.parse(req.body);
+      const requestData = requestSchema.parse(req.body);
+      const isWizardMode = 'topic' in requestData;
 
-      // Use OpenAI to generate program content
-      const systemPrompt = `You are Tairo, an AI coach creating a 25-minute personal development program.
-        
-Generate a complete program based on these details:
-- Topic: ${wizardData.topic}
-- Goal: ${wizardData.goal}
-- Difficulty: ${wizardData.difficulty}
-- Category: ${wizardData.category}
-- Workspace: ${wizardData.workspace}
+      // Sophisticated Tairo system prompt with dynamic duration allocation
+      const systemPrompt = `You are Tairo, TFIVE's AI companion that creates personalized 25-minute (or shorter) Learn→Act→Earn development programs.
 
-Create:
-1. A compelling title (3-6 words)
-2. An engaging description (2-3 sentences)
-3. Learn phase content (8 minutes): Educational content, key concepts, insights
-4. Act phase content (13 minutes): Practical exercises, steps to practice, actionable activities
-5. Earn phase message: Celebration message with specific takeaway
+Your task is to:
+1. Understand the user's request and emotional/professional context
+2. Identify the topic DOMAIN (choose one: focus, leadership, recovery, stress, inclusion)
+3. Dynamically assign phase durations based on domain (total ≤ 25 minutes):
+   - Focus/Productivity: Learn 6min, Act 15min, Earn 4min
+   - Leadership: Learn 12min, Act 9min, Earn 4min
+   - Recovery: Learn 14min, Act 7min, Earn 4min
+   - Stress: Learn 8min, Act 12min, Earn 5min
+   - Inclusion/Empathy: Learn 10min, Act 10min, Earn 5min
+4. Write rich, actionable content for each phase
+5. Suggest a follow-up program
+
+${isWizardMode ? `User provided structured input:
+- Topic: ${requestData.topic}
+- Goal: ${requestData.goal}
+- Difficulty: ${requestData.difficulty}
+- Category: ${requestData.category}
+- Workspace: ${requestData.workspace}` : `User's natural language request: "${requestData.prompt}"
+Workspace context: ${requestData.workspace || 'professional'}`}
 
 Return ONLY valid JSON in this exact format:
 {
-  "title": "string",
-  "description": "string",
-  "learn": "string",
-  "act": "string",
-  "earnMessage": "string"
+  "title": "Compelling title (3-6 words)",
+  "description": "Brief engaging description (2-3 sentences)",
+  "domain": "focus|leadership|recovery|stress|inclusion",
+  "category": "wellbeing|recovery|inclusion|focus",
+  "difficulty": "beginner|intermediate|advanced",
+  "goal": "Specific user goal statement",
+  "durations": {
+    "learn": <number>,
+    "act": <number>,
+    "earn": <number>
+  },
+  "content": {
+    "learn": "Educational content, key concepts, insights",
+    "act": "Practical exercises, specific steps to practice",
+    "earnMessage": "Celebration message with specific takeaway"
+  },
+  "followupSuggestion": "Suggested next program title"
 }`;
 
       const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [{ role: "system", content: systemPrompt }],
         temperature: 0.8,
-        max_tokens: 1500,
+        max_tokens: 2000,
       });
 
       const responseText = completion.choices[0]?.message?.content;
@@ -176,12 +204,31 @@ Return ONLY valid JSON in this exact format:
       // Helper function to create fallback content
       const createFallbackContent = (reason: string) => {
         console.log(`Using fallback content. Reason: ${reason}`);
+        
+        // Determine values from request
+        const topic = isWizardMode ? requestData.topic : requestData.prompt;
+        const goal = isWizardMode ? requestData.goal : `Achieve progress with ${topic}`;
+        const category = isWizardMode ? requestData.category : 'wellbeing';
+        const difficulty = isWizardMode ? requestData.difficulty : 'beginner';
+        const workspace = isWizardMode ? requestData.workspace : (requestData.workspace || 'professional');
+        
+        // Default domain-based durations (focus)
+        const durations = { learn: 6, act: 15, earn: 4 };
+        
         return {
-          title: `${wizardData.category.charAt(0).toUpperCase() + wizardData.category.slice(1)}: ${wizardData.topic}`,
-          description: wizardData.goal,
-          learn: `Explore the fundamentals of ${wizardData.topic}. Understand key concepts and insights that will help you ${wizardData.goal.toLowerCase()}.`,
-          act: `Practice exercises related to ${wizardData.topic}. Apply what you've learned through actionable steps.`,
-          earnMessage: `Great work exploring ${wizardData.topic}! You're one step closer to ${wizardData.goal.toLowerCase()}.`,
+          title: `${category.charAt(0).toUpperCase() + category.slice(1)}: ${topic}`,
+          description: goal,
+          domain: 'focus',
+          category,
+          difficulty,
+          goal,
+          durations,
+          content: {
+            learn: `Explore the fundamentals of ${topic}. Understand key concepts and insights that will help you ${goal.toLowerCase()}.`,
+            act: `Practice exercises related to ${topic}. Apply what you've learned through actionable steps.`,
+            earnMessage: `Great work exploring ${topic}! You're one step closer to ${goal.toLowerCase()}.`,
+          },
+          followupSuggestion: `Continue your journey with ${category}`,
         };
       };
 
@@ -189,9 +236,23 @@ Return ONLY valid JSON in this exact format:
       const aiResponseSchema = z.object({
         title: z.string().min(3).max(100),
         description: z.string().min(10).max(500),
-        learn: z.string().min(20),
-        act: z.string().min(20),
-        earnMessage: z.string().min(10),
+        domain: z.enum(["focus", "leadership", "recovery", "stress", "inclusion"]),
+        category: z.enum(["wellbeing", "recovery", "inclusion", "focus"]),
+        difficulty: z.enum(["beginner", "intermediate", "advanced"]),
+        goal: z.string().min(5),
+        durations: z.object({
+          learn: z.number().min(1).max(20),
+          act: z.number().min(1).max(20),
+          earn: z.number().min(1).max(10),
+        }).refine(d => d.learn + d.act + d.earn <= 25, {
+          message: "Total duration must be ≤ 25 minutes"
+        }),
+        content: z.object({
+          learn: z.string().min(20),
+          act: z.string().min(20),
+          earnMessage: z.string().min(10),
+        }),
+        followupSuggestion: z.string().optional(),
       });
 
       let generatedContent;
@@ -218,23 +279,39 @@ Return ONLY valid JSON in this exact format:
         }
       }
 
-      // Create the program (always succeeds with either AI or fallback content)
+      // Calculate total duration
+      const totalDuration = generatedContent.durations.learn + 
+                           generatedContent.durations.act + 
+                           generatedContent.durations.earn;
+
+      // Create the program with dynamic durations
       const programData = {
         title: generatedContent.title,
         description: generatedContent.description,
-        category: wizardData.category,
-        difficulty: wizardData.difficulty,
-        duration: 25,
+        category: generatedContent.category,
+        difficulty: generatedContent.difficulty,
+        duration: totalDuration,
         content: {
-          learn: generatedContent.learn,
-          act: generatedContent.act,
+          learn: generatedContent.content.learn,
+          act: generatedContent.content.act,
           earn: {
             points: 50,
-            message: generatedContent.earnMessage,
+            message: generatedContent.content.earnMessage,
           },
         },
-        workspace: wizardData.workspace,
+        workspace: isWizardMode ? requestData.workspace : (requestData.workspace || 'both'),
         imageUrl: null,
+        // Enhanced fields
+        domain: generatedContent.domain,
+        goal: generatedContent.goal,
+        durationLearn: generatedContent.durations.learn,
+        durationAct: generatedContent.durations.act,
+        durationEarn: generatedContent.durations.earn,
+        metadata: {
+          followupSuggestion: generatedContent.followupSuggestion,
+          generatedAt: new Date().toISOString(),
+          mode: isWizardMode ? 'wizard' : 'prompt',
+        },
       };
 
       const program = await storage.createProgram(programData);
