@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { User } from "@shared/schema";
 import { TairoGlowIcon, GrowthStepsIcon, FingerprintLinesIcon, EyeFrameIcon } from "@/components/CustomIcons";
+import tairoAvatar from "@assets/generated_images/Geometric_Tairo_AI_avatar_ced5dc20.png";
 
 const menuItems = [
   { 
@@ -23,7 +24,7 @@ const menuItems = [
   { 
     title: "TAIRO", 
     url: "/chat", 
-    icon: TairoGlowIcon,
+    icon: () => <img src={tairoAvatar} alt="Tairo" className="w-16 h-16 object-contain" />,
     description: "AI guidance"
   },
   { 
@@ -81,7 +82,7 @@ export function AppSidebar() {
                       ? "bg-primary-foreground/20" 
                       : "bg-muted"
                   )}>
-                    {typeof item.icon === 'function' && item.title === 'Programs' ? (
+                    {typeof item.icon === 'function' && (item.title === 'Programs' || item.title === 'TAIRO') ? (
                       <item.icon />
                     ) : (
                       <item.icon className="w-16 h-16" />
