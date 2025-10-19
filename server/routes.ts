@@ -10,7 +10,14 @@ import {
   insertOrganizationSchema,
   insertTeamSchema,
   updateTeamSchema,
+  insertLoopSchema,
 } from "@shared/schema";
+import {
+  parseIntent,
+  getWizardQuestions,
+  composeLoop,
+  buildSeries,
+} from "./ai-workflows";
 
 // Initialize OpenAI with Replit AI Integrations
 const openai = new OpenAI({
@@ -828,6 +835,240 @@ Return ONLY valid JSON in this exact format:
     } catch (error) {
       console.error("Wellbeing analytics error:", error);
       res.status(500).json({ error: "Failed to fetch wellbeing analytics" });
+    }
+  });
+
+  // ========================================
+  // TAIRO INTERACTION MODEL ROUTES
+  // ========================================
+
+  // POST /api/intent/parse - Parse user's free-text intent
+  app.post("/api/intent/parse", async (req, res) => {
+    try {
+      const schema = z.object({
+        text: z.string().min(1),
+        space: z.enum(["personal", "work"]),
+      });
+      
+      const { text, space } = schema.parse(req.body);
+      const intent = await parseIntent(text, space);
+      
+      res.json(intent);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      console.error("Intent parse error:", error);
+      res.status(500).json({ error: "Failed to parse intent" });
+    }
+  });
+
+  // POST /api/wizard/next - Get next wizard question(s)
+  app.post("/api/wizard/next", async (req, res) => {
+    try {
+      const schema = z.object({
+        context: z.object({
+          topic: z.string(),
+          emotion: z.string(),
+          scope_hint: z.enum(["short_term", "mid_term", "long_term"]),
+          space: z.enum(["personal", "work"]),
+          confidence: z.number(),
+        }),
+        previous_answers: z.record(z.any()).optional(),
+      });
+      
+      const { context, previous_answers } = schema.parse(req.body);
+      const questions = await getWizardQuestions(context, previous_answers);
+      
+      res.json({ questions });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      console.error("Wizard error:", error);
+      res.status(500).json({ error: "Failed to generate wizard questions" });
+    }
+  });
+
+  // POST /api/programs/generate - Generate a program with loops
+  app.post("/api/programs/generate", async (req, res) => {
+    try {
+      const schema = z.object({
+        space: z.enum(["personal", "work"]),
+        inputs: z.object({
+          topic: z.string(),
+          tone: z.string(),
+          series_type: z.enum(["one_off", "short_series", "mid_series", "long_series"]),
+          cadence_per_week: z.number().optional(),
+          duration_weeks: z.number().optional(),
+        }),
+      });
+      
+      const { space, inputs } = schema.parse(req.body);
+      const user = await storage.getUser(DEFAULT_USER_ID);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Build the series using AI
+      const programOutput = await buildSeries({
+        ...inputs,
+        space,
+      });
+
+      // Create the program in the database
+      const program = await storage.createProgram({
+        title: programOutput.program.title,
+        description: `AI-generated ${inputs.topic} program`,
+        workspace: space === "personal" ? "personal" : "professional",
+        ownerSpace: space,
+        type: inputs.series_type,
+        topic: inputs.topic,
+        tone: inputs.tone,
+        durationWeeks: programOutput.program.duration_weeks,
+        metadata: programOutput.program.metadata,
+      });
+
+      // Create the first loop
+      const firstLoop = await storage.createLoop({
+        programId: program.id,
+        index: 1,
+        title: programOutput.next_loop.title,
+        phaseLearnText: programOutput.next_loop.learn,
+        phaseActText: programOutput.next_loop.act,
+        phaseEarnText: programOutput.next_loop.earn,
+        durLearn: programOutput.next_loop.durations.learn,
+        durAct: programOutput.next_loop.durations.act,
+        durEarn: programOutput.next_loop.durations.earn,
+      });
+
+      res.json({
+        program,
+        next_loop: firstLoop,
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      console.error("Program generation error:", error);
+      res.status(500).json({ error: "Failed to generate program" });
+    }
+  });
+
+  // POST /api/sessions/start - Start a loop session
+  app.post("/api/sessions/start", async (req, res) => {
+    try {
+      const schema = z.object({
+        loop_id: z.string(),
+      });
+      
+      const { loop_id } = schema.parse(req.body);
+      const user = await storage.getUser(DEFAULT_USER_ID);
+      const loop = await storage.getLoop(loop_id);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      if (!loop) {
+        return res.status(404).json({ error: "Loop not found" });
+      }
+
+      // Create session for this loop
+      const session = await storage.createSession({
+        userId: user.id,
+        loopId: loop.id,
+        status: "in_progress",
+        phase: "learn",
+        timeRemaining: (loop.durLearn + loop.durAct + loop.durEarn) * 60, // total seconds
+        workspace: user.currentWorkspace,
+      });
+
+      res.json({ session_id: session.id, session });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      console.error("Session start error:", error);
+      res.status(500).json({ error: "Failed to start session" });
+    }
+  });
+
+  // POST /api/sessions/:id/complete - Complete a session with reflection
+  app.post("/api/sessions/:id/complete", async (req, res) => {
+    try {
+      const schema = z.object({
+        reflection: z.string().optional(),
+      });
+      
+      const { id } = req.params;
+      const { reflection } = schema.parse(req.body);
+      
+      const session = await storage.getSession(id);
+      if (!session) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+
+      // Update session status
+      await storage.updateSession(id, {
+        status: "completed",
+        completedAt: new Date(),
+      });
+
+      // Award points (base 100 points per completed loop)
+      const user = await storage.getUser(session.userId);
+      if (user) {
+        const newPoints = user.points + 100;
+        const newLevel = Math.floor(newPoints / 500) + 1;
+        await storage.updateUser(user.id, {
+          points: newPoints,
+          level: newLevel,
+        });
+      }
+
+      // Save reflection if provided
+      if (reflection) {
+        await storage.createReflection({
+          sessionId: id,
+          userId: session.userId,
+          text: reflection,
+        });
+      }
+
+      // Create analytics event
+      await storage.createAnalyticsEvent({
+        organizationId: user?.organizationId || null,
+        space: session.workspace === "professional" ? "work" : "personal",
+        name: "session_completed",
+        props: {
+          loopId: session.loopId,
+          programId: session.programId,
+        },
+      });
+
+      res.json({
+        points_awarded: 100,
+        summary: "Session completed successfully!",
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      console.error("Session complete error:", error);
+      res.status(500).json({ error: "Failed to complete session" });
+    }
+  });
+
+  // GET /api/programs/:id/loops - Get all loops for a program
+  app.get("/api/programs/:id/loops", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const loops = await storage.getProgramLoops(id);
+      res.json(loops);
+    } catch (error) {
+      console.error("Get loops error:", error);
+      res.status(500).json({ error: "Failed to fetch loops" });
     }
   });
 
