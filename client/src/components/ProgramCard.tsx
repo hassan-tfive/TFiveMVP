@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import type { Program } from "@shared/schema";
-import tairoLogoUrl from "@assets/v3 - crimson text font-09_1760728277194.png";
 
 interface ProgramCardProps {
   program: Program;
@@ -42,11 +41,6 @@ export function ProgramCard({ program, isCompleted, progressPercent, onClick }: 
             src={program.imageUrl}
             alt={program.title}
             className="w-full h-full object-cover transition-transform hover:scale-105"
-          />
-          <img 
-            src={tairoLogoUrl} 
-            alt="Tairo" 
-            className="absolute top-0 right-0 w-12 h-12 opacity-40" 
           />
         </div>
       )}

@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
 import { ProgramCard } from "@/components/ProgramCard";
-import { TairoAvatar } from "@/components/TairoAvatar";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, MessageSquare } from "lucide-react";
 import { Link } from "wouter";
@@ -116,7 +115,7 @@ export default function Dashboard() {
             : "bg-gradient-to-r from-[hsl(318,100%,50%)] to-[hsl(266,73%,40%)] text-white"
         )}>
           <div className="flex items-center gap-4">
-            <TairoAvatar size="lg" className="flex-shrink-0" />
+            <MessageSquare className="w-12 h-12 flex-shrink-0 opacity-80" />
             <div className="flex-1">
               <h3 className="text-lg font-semibold mb-1">Chat with Tairo</h3>
               <p className="text-sm text-white/80">
