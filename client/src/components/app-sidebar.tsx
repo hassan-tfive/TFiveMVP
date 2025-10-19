@@ -70,11 +70,11 @@ export function AppSidebar() {
             >
               <Card
                 className={cn(
-                  "p-4 cursor-pointer hover-elevate active-elevate-2 transition-all h-24",
+                  "p-6 cursor-pointer hover-elevate active-elevate-2 transition-all",
                   location === item.url && "bg-primary text-primary-foreground"
                 )}
               >
-                <div className="flex items-center gap-3 h-full">
+                <div className="flex items-start gap-4">
                   <div className={cn(
                     "p-2 rounded-lg",
                     location === item.url 
