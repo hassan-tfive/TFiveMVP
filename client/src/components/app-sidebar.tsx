@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { User } from "@shared/schema";
 import { TairoGlowIcon, GrowthStepsIcon, FingerprintLinesIcon, EyeFrameIcon } from "@/components/CustomIcons";
-import tairoAvatar from "@assets/generated_images/Geometric_Tairo_AI_avatar_ced5dc20.png";
+import tairoAvatar from "@assets/generated_images/Modern_innovative_Tairo_avatar_6577fdec.png";
 
 const menuItems = [
   { 
