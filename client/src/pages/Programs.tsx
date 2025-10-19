@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ProgramCard } from "@/components/ProgramCard";
+import { ProgramWizard } from "@/components/ProgramWizard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, Sparkles } from "lucide-react";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -19,6 +21,7 @@ export default function Programs() {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<ProgramCategory | "all">("all");
   const [difficultyFilter, setDifficultyFilter] = useState<ProgramDifficulty | "all">("all");
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   const { data: programs, isLoading } = useQuery<Program[]>({
     queryKey: ["/api/programs", workspace],
@@ -39,11 +42,24 @@ export default function Programs() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-4xl font-display font-bold mb-2">Program Library</h1>
-        <p className="text-lg text-muted-foreground">
-          Discover 25-minute Pomodoro programs for personal growth
-        </p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-4xl font-display font-bold mb-2">Program Library</h1>
+          <p className="text-lg text-muted-foreground">
+            Discover 25-minute Pomodoro programs for personal growth
+          </p>
+        </div>
+        <Button
+          onClick={() => setWizardOpen(true)}
+          className={cn(
+            "text-white hover:text-white",
+            workspace === "professional" ? "bg-workspace-professional" : "bg-workspace-personal"
+          )}
+          data-testid="button-create-program"
+        >
+          <Sparkles className="w-4 h-4 mr-2" />
+          Create Program
+        </Button>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4">
@@ -107,6 +123,8 @@ export default function Programs() {
           ))}
         </div>
       )}
+
+      <ProgramWizard open={wizardOpen} onOpenChange={setWizardOpen} />
     </div>
   );
 }

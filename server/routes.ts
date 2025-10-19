@@ -314,7 +314,23 @@ Return ONLY valid JSON in this exact format:
         },
       };
 
+      console.log('[Program Generation] Creating program with data:', {
+        domain: programData.domain,
+        durationLearn: programData.durationLearn,
+        durationAct: programData.durationAct,
+        durationEarn: programData.durationEarn,
+      });
+
       const program = await storage.createProgram(programData);
+      
+      console.log('[Program Generation] Program created:', {
+        id: program.id,
+        domain: program.domain,
+        durationLearn: program.durationLearn,
+        durationAct: program.durationAct,
+        durationEarn: program.durationEarn,
+      });
+      
       res.status(201).json(program);
     } catch (error) {
       console.error("Program generation error:", error);
