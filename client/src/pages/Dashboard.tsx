@@ -8,7 +8,7 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { cn } from "@/lib/utils";
 import type { Program, User } from "@shared/schema";
 import tfiveLogoUrl from "@assets/v3 - crimson text font-02_1760728277193.png";
-import tfiveLogoWhiteUrl from "@assets/ChatGPT Image 19. Okt. 2025, 11_47_14_1760867249305.png";
+import tfiveLogoWhiteUrl from "@assets/ChatGPT Image 19. Okt. 2025, 11_51_26_1760867492489.png";
 
 export default function Dashboard() {
   const { workspace } = useWorkspace();
