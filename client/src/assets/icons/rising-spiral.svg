@@ -1,0 +1,50 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="spiralGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#003C51;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#2D9DA8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E3B34A;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Rising spiral path -->
+  <path d="M 256 420 Q 220 400 200 360 Q 180 320 190 280 Q 200 240 230 220 Q 260 200 290 210 Q 320 220 330 250 Q 340 280 325 310 Q 310 340 280 350 Q 250 360 230 345 Q 210 330 210 305 Q 210 280 230 270 Q 250 260 270 270 Q 285 280 285 295" 
+        stroke="url(#spiralGradient)" 
+        stroke-width="3" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        fill="none" 
+        filter="url(#glow)"/>
+  
+  <path d="M 256 370 Q 240 350 235 320 Q 230 290 245 270 Q 260 250 285 255 Q 310 260 320 285 Q 330 310 315 330 Q 300 350 275 350 Q 255 350 245 335 Q 235 320 240 305 Q 245 290 260 290" 
+        stroke="url(#spiralGradient)" 
+        stroke-width="3" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        fill="none" 
+        filter="url(#glow)"/>
+  
+  <path d="M 256 320 Q 245 305 245 285 Q 245 265 260 255 Q 275 245 290 255 Q 305 265 305 280 Q 305 295 295 305 Q 285 315 270 310 Q 260 305 258 295" 
+        stroke="url(#spiralGradient)" 
+        stroke-width="3" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        fill="none" 
+        filter="url(#glow)"/>
+  
+  <!-- Expanding outer curves -->
+  <path d="M 256 450 Q 180 430 140 360 Q 100 290 110 210 Q 120 130 180 85 Q 240 40 310 60 Q 380 80 410 150 Q 440 220 415 290 Q 390 360 330 395" 
+        stroke="url(#spiralGradient)" 
+        stroke-width="2.5" 
+        stroke-linecap="round"
+        stroke-dasharray="5,8"
+        fill="none" 
+        opacity="0.6"/>
+</svg>
