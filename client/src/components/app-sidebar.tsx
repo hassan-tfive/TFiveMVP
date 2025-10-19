@@ -10,6 +10,7 @@ import tairoAvatar from "@assets/generated_images/Modern_innovative_Tairo_avatar
 import achievementIcon from "@assets/generated_images/Modern_achievement_growth_icon_674335b9.png";
 import profileIcon from "@assets/generated_images/Modern_profile_fingerprint_icon_7845f54d.png";
 import adminIcon from "@assets/generated_images/Modern_admin_eye_icon_169abb78.png";
+import programsIcon from "@assets/generated_images/Modern_pomodoro_productivity_icon_9fdad59d.png";
 
 const menuItems = [
   { 
@@ -21,7 +22,7 @@ const menuItems = [
   { 
     title: "Programs", 
     url: "/programs", 
-    icon: () => <div className="w-16 h-16 flex items-center justify-center text-6xl">🍅</div>,
+    icon: () => <img src={programsIcon} alt="Programs" className="w-16 h-16 object-contain" />,
     description: "Learning library"
   },
   { 
