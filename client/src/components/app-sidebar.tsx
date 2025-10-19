@@ -17,7 +17,7 @@ const menuItems = [
   { 
     title: "Programs", 
     url: "/programs", 
-    icon: () => <span className="text-2xl leading-none">🍅</span>,
+    icon: () => <span className="text-5xl leading-none">🍅</span>,
     description: "Learning library"
   },
   { 
