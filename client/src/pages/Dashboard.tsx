@@ -57,10 +57,7 @@ export default function Dashboard() {
           <img 
             src={workspace === "professional" ? tfiveLogoWhiteUrl : tfiveLogoUrl} 
             alt="Tfive" 
-            className={cn(
-              "w-auto relative z-10 flex-shrink-0 -my-6 -mr-8",
-              workspace === "professional" ? "h-[346px]" : "h-40"
-            )}
+            className="h-40 w-auto relative z-10 flex-shrink-0 -my-6 -mr-8"
             data-testid="img-banner-logo" 
           />
         </div>
