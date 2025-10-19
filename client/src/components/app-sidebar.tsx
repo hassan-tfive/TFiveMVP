@@ -84,7 +84,7 @@ export function AppSidebar() {
                     {typeof item.icon === 'function' && item.title === 'Programs' ? (
                       <item.icon />
                     ) : (
-                      <item.icon className="w-5 h-5" />
+                      <item.icon className="w-8 h-8" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
