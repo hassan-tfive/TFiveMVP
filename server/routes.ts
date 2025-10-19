@@ -1072,6 +1072,21 @@ Return ONLY valid JSON in this exact format:
     }
   });
 
+  // GET /api/loops/:id - Get a single loop by ID
+  app.get("/api/loops/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const loop = await storage.getLoop(id);
+      if (!loop) {
+        return res.status(404).json({ error: "Loop not found" });
+      }
+      res.json(loop);
+    } catch (error) {
+      console.error("Get loop error:", error);
+      res.status(500).json({ error: "Failed to fetch loop" });
+    }
+  });
+
   // Initialize seed data
   await initializeSeedData();
 

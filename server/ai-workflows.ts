@@ -79,12 +79,17 @@ Respond ONLY with valid JSON matching this exact structure:
   });
 
   const content = response.choices[0]?.message?.content || "{}";
-  const parsed = JSON.parse(content);
   
-  return {
-    ...parsed,
-    space,
-  };
+  try {
+    const parsed = JSON.parse(content);
+    return {
+      ...parsed,
+      space,
+    };
+  } catch (error) {
+    console.error("Failed to parse intent response:", content);
+    throw new Error("AI returned malformed response");
+  }
 }
 
 /**
@@ -129,9 +134,14 @@ If no questions needed, respond: {"questions": []}`;
   });
 
   const content = response.choices[0]?.message?.content || '{"questions": []}';
-  const parsed: WizardOutput = JSON.parse(content);
   
-  return parsed.questions.length > 0 ? parsed.questions : null;
+  try {
+    const parsed: WizardOutput = JSON.parse(content);
+    return parsed.questions.length > 0 ? parsed.questions : null;
+  } catch (error) {
+    console.error("Failed to parse wizard response:", content);
+    throw new Error("AI returned malformed response");
+  }
 }
 
 /**
@@ -185,7 +195,13 @@ Respond ONLY with valid JSON:
   });
 
   const content = response.choices[0]?.message?.content || "{}";
-  return JSON.parse(content);
+  
+  try {
+    return JSON.parse(content);
+  } catch (error) {
+    console.error("Failed to parse loop response:", content);
+    throw new Error("AI returned malformed response");
+  }
 }
 
 /**
@@ -260,5 +276,11 @@ Respond ONLY with valid JSON:
   });
 
   const content = response.choices[0]?.message?.content || "{}";
-  return JSON.parse(content);
+  
+  try {
+    return JSON.parse(content);
+  } catch (error) {
+    console.error("Failed to parse series response:", content);
+    throw new Error("AI returned malformed response");
+  }
 }

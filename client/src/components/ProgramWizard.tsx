@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,57 +7,150 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, ArrowRight, ArrowLeft, Check, Zap } from "lucide-react";
+import { Sparkles, ArrowRight, ArrowLeft, Check, Zap, Loader2 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { cn } from "@/lib/utils";
+import { useLocation } from "wouter";
 
 interface ProgramWizardProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-interface WizardData {
+interface IntentContext {
   topic: string;
-  goal: string;
-  difficulty: "beginner" | "intermediate" | "advanced" | "";
-  workspace: "professional" | "personal" | "both" | "";
+  emotion: string;
+  scope_hint: "short_term" | "mid_term" | "long_term";
+  space: "personal" | "work";
+  confidence: number;
 }
 
-const STEPS = [
-  { id: 1, title: "Topic", description: "What do you want to focus on?" },
-  { id: 2, title: "Goal", description: "What do you want to achieve?" },
-  { id: 3, title: "Difficulty", description: "Choose your experience level" },
-  { id: 4, title: "Workspace", description: "Where should this program live?" },
-];
+interface WizardQuestion {
+  id: string;
+  type: "choice" | "text";
+  prompt: string;
+  options?: string[];
+}
 
 export function ProgramWizard({ open, onOpenChange }: ProgramWizardProps) {
   const [mode, setMode] = useState<"prompt" | "wizard">("prompt");
-  const [step, setStep] = useState(1);
   const [prompt, setPrompt] = useState("");
-  const [data, setData] = useState<WizardData>({
-    topic: "",
-    goal: "",
-    difficulty: "",
-    workspace: "",
-  });
+  const [intentContext, setIntentContext] = useState<IntentContext | null>(null);
+  const [wizardQuestions, setWizardQuestions] = useState<WizardQuestion[]>([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [isParsingIntent, setIsParsingIntent] = useState(false);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
+  
   const { workspace } = useWorkspace();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+
+  // Reset state when dialog opens/closes
+  useEffect(() => {
+    if (!open) {
+      resetWizard();
+    }
+  }, [open]);
+
+  const resetWizard = () => {
+    setPrompt("");
+    setIntentContext(null);
+    setWizardQuestions([]);
+    setCurrentQuestionIndex(0);
+    setAnswers({});
+    setIsParsingIntent(false);
+    setIsLoadingQuestions(false);
+  };
+
+  // Parse intent mutation
+  const parseIntentMutation = useMutation({
+    mutationFn: async (text: string): Promise<IntentContext> => {
+      const response = await apiRequest("POST", "/api/intent/parse", {
+        text,
+        space: workspace === "professional" ? "work" : "personal",
+      });
+      return response as unknown as IntentContext;
+    },
+    onSuccess: async (data: IntentContext) => {
+      setIntentContext(data);
+      
+      // If confidence is high enough, skip wizard and generate directly
+      if (data.confidence >= 0.8) {
+        // Generate program with default settings based on intent
+        await generateProgram({
+          topic: data.topic,
+          tone: getDefaultTone(data.emotion),
+          series_type: getSuggestedSeriesType(data.scope_hint),
+          cadence_per_week: 3,
+        });
+      } else {
+        // Load wizard questions
+        loadWizardQuestions(data);
+      }
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to understand your request. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Load wizard questions
+  const loadWizardQuestions = async (context: IntentContext) => {
+    setIsLoadingQuestions(true);
+    try {
+      const response: any = await apiRequest("POST", "/api/wizard/next", {
+        context,
+        previous_answers: answers,
+      });
+      
+      if (response.questions && response.questions.length > 0) {
+        setWizardQuestions(response.questions);
+        setCurrentQuestionIndex(0);
+      } else {
+        // No questions needed, generate program
+        await generateProgram({
+          topic: context.topic,
+          tone: getDefaultTone(context.emotion),
+          series_type: getSuggestedSeriesType(context.scope_hint),
+          cadence_per_week: 3,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load wizard questions.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingQuestions(false);
+    }
+  };
 
   const createProgramMutation = useMutation({
-    mutationFn: async (requestData: any) => {
-      return apiRequest("POST", "/api/programs/generate", requestData);
+    mutationFn: async (requestData: any): Promise<any> => {
+      const response = await apiRequest("POST", "/api/programs/generate", requestData);
+      return response;
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/programs"] });
       toast({
         title: "Program Created!",
-        description: "Your personalized program is ready. Check the Programs page!",
+        description: "Your personalized program is ready.",
       });
       onOpenChange(false);
       resetWizard();
+      
+      // Navigate to the session page for the first loop
+      if (data.next_loop?.id) {
+        setLocation(`/session/${data.next_loop.id}`);
+      }
     },
     onError: (error: any) => {
       const errorMessage = error?.error || "Failed to create program. Please try again.";
@@ -69,58 +162,81 @@ export function ProgramWizard({ open, onOpenChange }: ProgramWizardProps) {
     },
   });
 
-  const resetWizard = () => {
-    setStep(1);
-    setPrompt("");
-    setData({
-      topic: "",
-      goal: "",
-      difficulty: "",
-      workspace: "",
+  const generateProgram = async (inputs: any) => {
+    createProgramMutation.mutate({
+      space: workspace === "professional" ? "work" : "personal",
+      inputs,
     });
   };
 
-  const handlePromptSubmit = () => {
+  const handlePromptSubmit = async () => {
     if (prompt.trim()) {
-      createProgramMutation.mutate({
-        prompt: prompt.trim(),
-        workspace,
-      });
+      setIsParsingIntent(true);
+      await parseIntentMutation.mutateAsync(prompt.trim());
+      setIsParsingIntent(false);
     }
   };
 
-  const handleNext = () => {
-    if (step < STEPS.length) {
-      setStep(step + 1);
+  const handleAnswerQuestion = (answer: any) => {
+    const currentQuestion = wizardQuestions[currentQuestionIndex];
+    const newAnswers = { ...answers, [currentQuestion.id]: answer };
+    setAnswers(newAnswers);
+
+    // Move to next question or generate program
+    if (currentQuestionIndex < wizardQuestions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
-      if (data.workspace) {
-        createProgramMutation.mutate(data as Omit<WizardData, "workspace"> & { workspace: "professional" | "personal" | "both" });
+      // All questions answered, generate program
+      if (intentContext) {
+        generateProgram({
+          topic: intentContext.topic,
+          tone: newAnswers.tone || getDefaultTone(intentContext.emotion),
+          series_type: newAnswers.scope || getSuggestedSeriesType(intentContext.scope_hint),
+          cadence_per_week: newAnswers.cadence || 3,
+          duration_weeks: newAnswers.duration,
+        });
       }
     }
   };
 
   const handleBack = () => {
-    if (step > 1) {
-      setStep(step - 1);
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    } else {
+      // Go back to intent parsing
+      setWizardQuestions([]);
+      setIntentContext(null);
+      setAnswers({});
     }
   };
 
-  const canProceed = () => {
-    switch (step) {
-      case 1:
-        return data.topic.trim().length > 0;
-      case 2:
-        return data.goal.trim().length > 0;
-      case 3:
-        return data.difficulty !== "";
-      case 4:
-        return data.workspace !== "";
-      default:
-        return false;
-    }
+  const getDefaultTone = (emotion: string): string => {
+    const toneMap: Record<string, string> = {
+      anxious: "calm",
+      stressed: "calm",
+      calm: "calm",
+      excited: "energizing",
+      frustrated: "reflective",
+      motivated: "energizing",
+      tired: "calm",
+      neutral: "instructional",
+    };
+    return toneMap[emotion] || "instructional";
   };
 
-  const progress = (step / STEPS.length) * 100;
+  const getSuggestedSeriesType = (scope: string): "one_off" | "short_series" | "mid_series" | "long_series" => {
+    const typeMap: Record<string, "one_off" | "short_series" | "mid_series" | "long_series"> = {
+      short_term: "one_off",
+      mid_term: "short_series",
+      long_term: "long_series",
+    };
+    return typeMap[scope] || "short_series";
+  };
+
+  const isLoading = isParsingIntent || isLoadingQuestions || createProgramMutation.isPending;
+  const progress = wizardQuestions.length > 0 
+    ? ((currentQuestionIndex + 1) / wizardQuestions.length) * 100 
+    : 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -134,169 +250,75 @@ export function ProgramWizard({ open, onOpenChange }: ProgramWizardProps) {
             Create Your Program
           </DialogTitle>
           <DialogDescription>
-            Let Tairo craft a personalized program just for you
+            Tell Tairo what you need and get a personalized growth program
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={mode} onValueChange={(v) => setMode(v as "prompt" | "wizard")} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="prompt" className="flex items-center gap-2">
-              <Zap className="w-4 h-4" />
-              Quick Prompt
-            </TabsTrigger>
-            <TabsTrigger value="wizard" className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
-              Step-by-Step
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="prompt" className="space-y-4 mt-4">
-            <div className="space-y-2">
-              <Label htmlFor="prompt">What do you need right now?</Label>
-              <Textarea
-                id="prompt"
-                placeholder="e.g., 'Help me relax before a big meeting', 'I need to focus on deep work', 'Boost my confidence for a presentation'..."
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                className="min-h-[120px]"
-                data-testid="input-prompt"
-              />
-              <p className="text-sm text-muted-foreground">
-                Tairo will understand your need and create the perfect program with dynamic timing
-              </p>
-            </div>
-
-            <div className="flex justify-end">
-              <Button
-                onClick={handlePromptSubmit}
-                disabled={!prompt.trim() || createProgramMutation.isPending}
-                className={cn(
-                  "text-white hover:text-white",
-                  workspace === "professional" ? "bg-workspace-professional" : "bg-workspace-personal"
-                )}
-                data-testid="button-create-from-prompt"
-              >
-                {createProgramMutation.isPending ? (
-                  "Creating..."
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Create Program
-                  </>
-                )}
-              </Button>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="wizard" className="space-y-4 mt-4">
+        {/* Show wizard questions if we have them */}
+        {wizardQuestions.length > 0 && intentContext ? (
+          <div className="space-y-4">
             <div>
               <DialogDescription>
-                Step {step} of {STEPS.length}: {STEPS[step - 1].description}
+                Question {currentQuestionIndex + 1} of {wizardQuestions.length}
               </DialogDescription>
               <Progress value={progress} className="h-2 mt-2" />
             </div>
 
             <div className="space-y-4">
-              {step === 1 && (
-                <div className="space-y-2">
-                  <Label htmlFor="topic">What would you like to focus on?</Label>
+              <div className="space-y-2">
+                <Label>{wizardQuestions[currentQuestionIndex].prompt}</Label>
+                {wizardQuestions[currentQuestionIndex].type === "choice" ? (
+                  <Select
+                    value={answers[wizardQuestions[currentQuestionIndex].id] || ""}
+                    onValueChange={(value) => handleAnswerQuestion(value)}
+                  >
+                    <SelectTrigger data-testid="select-wizard-answer">
+                      <SelectValue placeholder="Choose an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {wizardQuestions[currentQuestionIndex].options?.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
                   <Input
-                    id="topic"
-                    placeholder="e.g., Managing stress, Building confidence, Deep work..."
-                    value={data.topic}
-                    onChange={(e) => setData({ ...data, topic: e.target.value })}
-                    data-testid="input-topic"
+                    value={answers[wizardQuestions[currentQuestionIndex].id] || ""}
+                    onChange={(e) => setAnswers({ ...answers, [wizardQuestions[currentQuestionIndex].id]: e.target.value })}
+                    placeholder="Type your answer..."
+                    data-testid="input-wizard-answer"
                   />
-                  <p className="text-sm text-muted-foreground">
-                    Be specific about what you want to work on
-                  </p>
-                </div>
-              )}
-
-              {step === 2 && (
-                <div className="space-y-2">
-                  <Label htmlFor="goal">What specific goal do you want to achieve?</Label>
-                  <Textarea
-                    id="goal"
-                    placeholder="e.g., I want to reduce my stress levels and feel more calm during work hours..."
-                    value={data.goal}
-                    onChange={(e) => setData({ ...data, goal: e.target.value })}
-                    className="min-h-[100px]"
-                    data-testid="input-goal"
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Describe what success looks like for you
-                  </p>
-                </div>
-              )}
-
-              {step === 3 && (
-                <div className="space-y-2">
-                  <Label htmlFor="difficulty">What's your experience level with this topic?</Label>
-                  <Select
-                    value={data.difficulty}
-                    onValueChange={(value) => setData({ ...data, difficulty: value as WizardData["difficulty"] })}
-                  >
-                    <SelectTrigger data-testid="select-difficulty">
-                      <SelectValue placeholder="Choose your level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="beginner">Beginner - New to this area</SelectItem>
-                      <SelectItem value="intermediate">Intermediate - Some experience</SelectItem>
-                      <SelectItem value="advanced">Advanced - Ready for a challenge</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-sm text-muted-foreground">
-                    Tairo will adjust the content complexity to match your level
-                  </p>
-                </div>
-              )}
-
-              {step === 4 && (
-                <div className="space-y-2">
-                  <Label htmlFor="workspace">Which workspace should this program be in?</Label>
-                  <Select
-                    value={data.workspace}
-                    onValueChange={(value) => setData({ ...data, workspace: value as WizardData["workspace"] })}
-                  >
-                    <SelectTrigger data-testid="select-workspace">
-                      <SelectValue placeholder="Choose workspace" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="professional">Professional - Career & workplace</SelectItem>
-                      <SelectItem value="personal">Personal - Private self-discovery</SelectItem>
-                      <SelectItem value="both">Both - Available in both workspaces</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-sm text-muted-foreground">
-                    You can always access programs from the Programs page
-                  </p>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             <div className="flex justify-between">
               <Button
                 variant="outline"
                 onClick={handleBack}
-                disabled={step === 1 || createProgramMutation.isPending}
-                data-testid="button-back"
+                disabled={isLoading}
+                data-testid="button-wizard-back"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
               </Button>
               <Button
-                onClick={handleNext}
-                disabled={!canProceed() || createProgramMutation.isPending}
+                onClick={() => handleAnswerQuestion(answers[wizardQuestions[currentQuestionIndex].id])}
+                disabled={!answers[wizardQuestions[currentQuestionIndex].id] || isLoading}
                 className={cn(
                   "text-white hover:text-white",
                   workspace === "professional" ? "bg-workspace-professional" : "bg-workspace-personal"
                 )}
-                data-testid="button-next"
+                data-testid="button-wizard-next"
               >
-                {createProgramMutation.isPending ? (
-                  "Creating..."
-                ) : step === STEPS.length ? (
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : currentQuestionIndex === wizardQuestions.length - 1 ? (
                   <>
                     <Check className="w-4 h-4 mr-2" />
                     Create Program
@@ -309,8 +331,50 @@ export function ProgramWizard({ open, onOpenChange }: ProgramWizardProps) {
                 )}
               </Button>
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        ) : (
+          /* Initial prompt input */
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="prompt">What do you need right now?</Label>
+              <Textarea
+                id="prompt"
+                placeholder="e.g., 'I need help staying focused during work', 'I want to feel more confident in meetings', 'Help me manage stress and relax'..."
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                className="min-h-[120px]"
+                data-testid="input-prompt"
+              />
+              <p className="text-sm text-muted-foreground">
+                Describe what you're feeling or what you want to work on. Tairo will understand and create a personalized program.
+              </p>
+            </div>
+
+            <div className="flex justify-end">
+              <Button
+                onClick={handlePromptSubmit}
+                disabled={!prompt.trim() || isLoading}
+                className={cn(
+                  "text-white hover:text-white",
+                  workspace === "professional" ? "bg-workspace-professional" : "bg-workspace-personal"
+                )}
+                data-testid="button-create-from-prompt"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {isParsingIntent ? "Understanding..." : "Creating..."}
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Create Program
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

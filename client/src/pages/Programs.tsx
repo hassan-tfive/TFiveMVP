@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ProgramCard } from "@/components/ProgramCard";
 import { ProgramWizard } from "@/components/ProgramWizard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Filter, Sparkles } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Search, Filter, Sparkles, Clock, ChevronDown, ChevronUp, Play } from "lucide-react";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import {
   Select,
@@ -14,14 +17,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Program, ProgramCategory, ProgramDifficulty } from "@shared/schema";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import type { Program } from "@shared/schema";
+
+interface Loop {
+  id: string;
+  programId: string;
+  index: number;
+  title: string;
+  phaseLearnText: string;
+  phaseActText: string;
+  phaseEarnText: string;
+  durLearn: number;
+  durAct: number;
+  durEarn: number;
+}
 
 export default function Programs() {
   const { workspace } = useWorkspace();
+  const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<ProgramCategory | "all">("all");
-  const [difficultyFilter, setDifficultyFilter] = useState<ProgramDifficulty | "all">("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [expandedPrograms, setExpandedPrograms] = useState<Set<string>>(new Set());
 
   const { data: programs, isLoading } = useQuery<Program[]>({
     queryKey: ["/api/programs", workspace],
@@ -34,11 +56,23 @@ export default function Programs() {
 
   const filteredPrograms = programs?.filter((program) => {
     const matchesSearch = program.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      program.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === "all" || program.category === categoryFilter;
-    const matchesDifficulty = difficultyFilter === "all" || program.difficulty === difficultyFilter;
-    return matchesSearch && matchesCategory && matchesDifficulty;
+      (program.description || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = categoryFilter === "all" || 
+      (program.topic && program.topic === categoryFilter);
+    return matchesSearch && matchesCategory;
   }) || [];
+
+  const toggleProgramExpansion = (programId: string) => {
+    setExpandedPrograms((prev) => {
+      const next = new Set(prev);
+      if (next.has(programId)) {
+        next.delete(programId);
+      } else {
+        next.add(programId);
+      }
+      return next;
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -46,7 +80,7 @@ export default function Programs() {
         <div>
           <h1 className="text-4xl font-display font-bold mb-2">Program Library</h1>
           <p className="text-lg text-muted-foreground">
-            Discover 25-minute Pomodoro programs for personal growth
+            Discover growth programs with AI-powered 25-minute sessions
           </p>
         </div>
         <Button
@@ -73,35 +107,26 @@ export default function Programs() {
             data-testid="input-search-programs"
           />
         </div>
-        <Select value={categoryFilter} onValueChange={(value) => setCategoryFilter(value as any)}>
+        <Select value={categoryFilter} onValueChange={(value) => setCategoryFilter(value)}>
           <SelectTrigger className="w-full md:w-[180px]" data-testid="select-category">
-            <SelectValue placeholder="Category" />
+            <SelectValue placeholder="Topic" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="wellbeing">Wellbeing</SelectItem>
-            <SelectItem value="recovery">Recovery</SelectItem>
-            <SelectItem value="inclusion">Inclusion</SelectItem>
+            <SelectItem value="all">All Topics</SelectItem>
             <SelectItem value="focus">Focus</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={difficultyFilter} onValueChange={(value) => setDifficultyFilter(value as any)}>
-          <SelectTrigger className="w-full md:w-[180px]" data-testid="select-difficulty">
-            <SelectValue placeholder="Difficulty" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Levels</SelectItem>
-            <SelectItem value="beginner">Beginner</SelectItem>
-            <SelectItem value="intermediate">Intermediate</SelectItem>
-            <SelectItem value="advanced">Advanced</SelectItem>
+            <SelectItem value="confidence">Confidence</SelectItem>
+            <SelectItem value="leadership">Leadership</SelectItem>
+            <SelectItem value="recovery">Recovery</SelectItem>
+            <SelectItem value="stress">Stress Management</SelectItem>
+            <SelectItem value="creativity">Creativity</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-80 bg-muted animate-pulse rounded-lg" />
+        <div className="grid grid-cols-1 gap-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-40 bg-muted animate-pulse rounded-lg" />
           ))}
         </div>
       ) : filteredPrograms.length === 0 ? (
@@ -109,16 +134,18 @@ export default function Programs() {
           <Filter className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
           <p className="text-lg font-medium">No programs found</p>
           <p className="text-sm text-muted-foreground mt-2">
-            Try adjusting your filters or search query
+            Try adjusting your filters or create a new program
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-4">
           {filteredPrograms.map((program) => (
-            <ProgramCard
+            <ProgramCardWithLoops
               key={program.id}
               program={program}
-              onClick={() => window.location.href = `/session/${program.id}`}
+              isExpanded={expandedPrograms.has(program.id)}
+              onToggleExpand={() => toggleProgramExpansion(program.id)}
+              onStartSession={(loopId: string) => setLocation(`/session/${loopId}`)}
             />
           ))}
         </div>
@@ -126,5 +153,141 @@ export default function Programs() {
 
       <ProgramWizard open={wizardOpen} onOpenChange={setWizardOpen} />
     </div>
+  );
+}
+
+interface ProgramCardWithLoopsProps {
+  program: Program;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
+  onStartSession: (loopId: string) => void;
+}
+
+function ProgramCardWithLoops({ program, isExpanded, onToggleExpand, onStartSession }: ProgramCardWithLoopsProps) {
+  const { workspace } = useWorkspace();
+  
+  const { data: loops = [] } = useQuery<Loop[]>({
+    queryKey: ["/api/programs", program.id, "loops"],
+    queryFn: async () => {
+      const res = await fetch(`/api/programs/${program.id}/loops`);
+      if (!res.ok) throw new Error("Failed to fetch loops");
+      return res.json();
+    },
+    enabled: isExpanded,
+  });
+
+  const programType = program.type || "one_off";
+  const totalLoops = loops.length;
+  const completedLoops = 0; // TODO: Track completed loops
+
+  const typeLabel = {
+    one_off: "One-time Session",
+    short_series: "Short Series",
+    mid_series: "Mid Series",
+    long_series: "Long Series",
+  }[programType] || "Program";
+
+  return (
+    <Collapsible open={isExpanded} onOpenChange={onToggleExpand}>
+      <Card className="hover-elevate">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <CardTitle className="text-xl font-display">{program.title}</CardTitle>
+                <Badge variant="outline" className="text-xs">
+                  {typeLabel}
+                </Badge>
+                {program.topic && (
+                  <Badge 
+                    className={cn(
+                      "text-xs",
+                      workspace === "professional" ? "bg-workspace-professional text-white" : "bg-workspace-personal text-white"
+                    )}
+                  >
+                    {program.topic}
+                  </Badge>
+                )}
+              </div>
+              <CardDescription className="line-clamp-2">
+                {program.description || "AI-generated growth program"}
+              </CardDescription>
+            </div>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" data-testid={`button-expand-${program.id}`}>
+                {isExpanded ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+              </Button>
+            </CollapsibleTrigger>
+          </div>
+        </CardHeader>
+
+        <CollapsibleContent>
+          <CardContent className="space-y-3 pt-0">
+            {totalLoops > 0 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {completedLoops} of {totalLoops} sessions completed
+                </span>
+                <Progress value={(completedLoops / totalLoops) * 100} className="w-32 h-2" />
+              </div>
+            )}
+
+            <div className="space-y-2">
+              {loops.length === 0 ? (
+                <div className="text-center py-6 text-sm text-muted-foreground">
+                  No sessions available yet
+                </div>
+              ) : (
+                loops.map((loop) => (
+                  <Card key={loop.id} className="bg-muted/30">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-medium text-sm">Session {loop.index}</span>
+                            <span className="text-sm text-muted-foreground">•</span>
+                            <span className="text-sm text-muted-foreground">{loop.title}</span>
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <span className="w-2 h-2 rounded-full bg-timer-learn" />
+                              {loop.durLearn}m Learn
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="w-2 h-2 rounded-full bg-timer-act" />
+                              {loop.durAct}m Act
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="w-2 h-2 rounded-full bg-timer-earn" />
+                              {loop.durEarn}m Earn
+                            </div>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          onClick={() => onStartSession(loop.id)}
+                          className={cn(
+                            "text-white hover:text-white",
+                            workspace === "professional" ? "bg-workspace-professional" : "bg-workspace-personal"
+                          )}
+                          data-testid={`button-start-session-${loop.id}`}
+                        >
+                          <Play className="w-3 h-3 mr-1" />
+                          Start
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
   );
 }
