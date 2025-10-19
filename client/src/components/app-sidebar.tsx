@@ -8,6 +8,7 @@ import type { User } from "@shared/schema";
 import { TairoGlowIcon, GrowthStepsIcon, FingerprintLinesIcon, EyeFrameIcon } from "@/components/CustomIcons";
 import tairoAvatar from "@assets/generated_images/Modern_innovative_Tairo_avatar_6577fdec.png";
 import achievementIcon from "@assets/generated_images/Modern_achievement_growth_icon_674335b9.png";
+import profileIcon from "@assets/generated_images/Modern_profile_fingerprint_icon_7845f54d.png";
 
 const menuItems = [
   { 
@@ -37,7 +38,7 @@ const menuItems = [
   { 
     title: "Profile", 
     url: "/profile", 
-    icon: FingerprintLinesIcon,
+    icon: () => <img src={profileIcon} alt="Profile" className="w-16 h-16 object-contain" />,
     description: "Your settings"
   },
 ];
@@ -83,7 +84,7 @@ export function AppSidebar() {
                       ? "bg-primary-foreground/20" 
                       : "bg-muted"
                   )}>
-                    {typeof item.icon === 'function' && (item.title === 'Programs' || item.title === 'TAIRO' || item.title === 'Achievements') ? (
+                    {typeof item.icon === 'function' && (item.title === 'Programs' || item.title === 'TAIRO' || item.title === 'Achievements' || item.title === 'Profile') ? (
                       <item.icon />
                     ) : (
                       <item.icon className="w-16 h-16" />
