@@ -1,6 +1,6 @@
 import { SVGProps } from 'react';
 
-export function RisingSpiralIcon(props: SVGProps<SVGSVGElement>) {
+export function TairoGlowIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg 
       width="48" 
@@ -11,13 +11,13 @@ export function RisingSpiralIcon(props: SVGProps<SVGSVGElement>) {
       {...props}
     >
       <defs>
-        <linearGradient id="spiralGradient" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" style={{ stopColor: '#003C51', stopOpacity: 1 }} />
-          <stop offset="50%" style={{ stopColor: '#2D9DA8', stopOpacity: 1 }} />
-          <stop offset="100%" style={{ stopColor: '#E3B34A', stopOpacity: 1 }} />
-        </linearGradient>
-        <filter id="glow">
-          <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+        <radialGradient id="tairoGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" style={{ stopColor: '#E3B34A', stopOpacity: 1 }} />
+          <stop offset="70%" style={{ stopColor: '#2D9DA8', stopOpacity: 1 }} />
+          <stop offset="100%" style={{ stopColor: '#003C51', stopOpacity: 1 }} />
+        </radialGradient>
+        <filter id="outerGlow">
+          <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
           <feMerge>
             <feMergeNode in="coloredBlur"/>
             <feMergeNode in="SourceGraphic"/>
@@ -25,37 +25,133 @@ export function RisingSpiralIcon(props: SVGProps<SVGSVGElement>) {
         </filter>
       </defs>
       
-      <path d="M 256 420 Q 220 400 200 360 Q 180 320 190 280 Q 200 240 230 220 Q 260 200 290 210 Q 320 220 330 250 Q 340 280 325 310 Q 310 340 280 350 Q 250 360 230 345 Q 210 330 210 305 Q 210 280 230 270 Q 250 260 270 270 Q 285 280 285 295" 
-        stroke="url(#spiralGradient)" 
+      <path d="M 100 350 Q 100 330 120 320 L 190 290 Q 200 285 210 290 L 245 310 Q 255 315 255 325 L 255 380 Q 255 390 245 395 L 120 370 Q 100 365 100 350 Z" 
+        fill="#003C51" 
+        opacity="0.15"/>
+      
+      <path d="M 100 350 Q 100 330 120 320 L 190 290 Q 200 285 210 290 L 245 310 Q 255 315 255 325 L 255 360 Q 255 370 245 375 L 120 350 Q 100 345 100 335 Z" 
+        stroke="#003C51" 
         strokeWidth="3" 
         strokeLinecap="round" 
         strokeLinejoin="round"
-        fill="none" 
-        filter="url(#glow)"/>
+        fill="none"/>
       
-      <path d="M 256 370 Q 240 350 235 320 Q 230 290 245 270 Q 260 250 285 255 Q 310 260 320 285 Q 330 310 315 330 Q 300 350 275 350 Q 255 350 245 335 Q 235 320 240 305 Q 245 290 260 290" 
-        stroke="url(#spiralGradient)" 
+      <circle cx="340" cy="256" r="95" 
+        fill="url(#tairoGlow)" 
+        filter="url(#outerGlow)" 
+        opacity="0.3"/>
+      
+      <circle cx="340" cy="256" r="70" 
+        stroke="#2D9DA8" 
         strokeWidth="3" 
-        strokeLinecap="round" 
-        strokeLinejoin="round"
-        fill="none" 
-        filter="url(#glow)"/>
-      
-      <path d="M 256 320 Q 245 305 245 285 Q 245 265 260 255 Q 275 245 290 255 Q 305 265 305 280 Q 305 295 295 305 Q 285 315 270 310 Q 260 305 258 295" 
-        stroke="url(#spiralGradient)" 
-        strokeWidth="3" 
-        strokeLinecap="round" 
-        strokeLinejoin="round"
-        fill="none" 
-        filter="url(#glow)"/>
-      
-      <path d="M 256 450 Q 180 430 140 360 Q 100 290 110 210 Q 120 130 180 85 Q 240 40 310 60 Q 380 80 410 150 Q 440 220 415 290 Q 390 360 330 395" 
-        stroke="url(#spiralGradient)" 
-        strokeWidth="2.5" 
-        strokeLinecap="round"
-        strokeDasharray="5,8"
         fill="none" 
         opacity="0.6"/>
+      
+      <circle cx="340" cy="256" r="50" 
+        stroke="#E3B34A" 
+        strokeWidth="2.5" 
+        fill="none"/>
+      
+      <circle cx="340" cy="256" r="12" 
+        fill="#E3B34A"/>
+      
+      <path d="M 310 240 Q 315 235 325 235" 
+        stroke="#E3B34A" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        opacity="0.7"/>
+      <path d="M 350 235 Q 360 235 365 240" 
+        stroke="#E3B34A" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        opacity="0.7"/>
+      <path d="M 310 272 Q 315 277 325 277" 
+        stroke="#E3B34A" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        opacity="0.7"/>
+      <path d="M 350 277 Q 360 277 365 272" 
+        stroke="#E3B34A" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        opacity="0.7"/>
+    </svg>
+  );
+}
+
+export function GrowthStepsIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg 
+      width="48" 
+      height="48" 
+      viewBox="0 0 512 512" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <defs>
+        <linearGradient id="stepsGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" style={{ stopColor: '#003C51', stopOpacity: 1 }} />
+          <stop offset="50%" style={{ stopColor: '#2D9DA8', stopOpacity: 1 }} />
+          <stop offset="100%" style={{ stopColor: '#E3B34A', stopOpacity: 1 }} />
+        </linearGradient>
+        <filter id="stepGlow">
+          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+      
+      <rect x="90" y="360" width="90" height="70" rx="8" 
+        fill="#003C51" 
+        opacity="0.3"/>
+      <rect x="90" y="360" width="90" height="70" rx="8" 
+        stroke="#003C51" 
+        strokeWidth="3" 
+        fill="none"/>
+      
+      <rect x="210" y="280" width="90" height="150" rx="8" 
+        fill="#2D9DA8" 
+        opacity="0.3"/>
+      <rect x="210" y="280" width="90" height="150" rx="8" 
+        stroke="#2D9DA8" 
+        strokeWidth="3" 
+        fill="none"/>
+      
+      <rect x="330" y="190" width="90" height="240" rx="8" 
+        fill="#E3B34A" 
+        opacity="0.3"/>
+      <rect x="330" y="190" width="90" height="240" rx="8" 
+        stroke="#E3B34A" 
+        strokeWidth="3" 
+        fill="none"/>
+      
+      <circle cx="135" cy="380" r="8" fill="#003C51" filter="url(#stepGlow)"/>
+      <circle cx="255" cy="310" r="8" fill="#2D9DA8" filter="url(#stepGlow)"/>
+      <circle cx="375" cy="230" r="10" fill="#E3B34A" filter="url(#stepGlow)"/>
+      
+      <path d="M 180 380 L 210 320" 
+        stroke="url(#stepsGradient)" 
+        strokeWidth="2.5" 
+        strokeDasharray="8,6" 
+        strokeLinecap="round" 
+        opacity="0.6"/>
+      <path d="M 300 310 L 330 240" 
+        stroke="url(#stepsGradient)" 
+        strokeWidth="2.5" 
+        strokeDasharray="8,6" 
+        strokeLinecap="round" 
+        opacity="0.6"/>
+      
+      <polygon points="375,140 390,170 360,170" 
+        fill="#E3B34A" 
+        filter="url(#stepGlow)"/>
+      <path d="M 375 170 L 375 190" 
+        stroke="#E3B34A" 
+        strokeWidth="2.5" 
+        strokeLinecap="round"/>
     </svg>
   );
 }

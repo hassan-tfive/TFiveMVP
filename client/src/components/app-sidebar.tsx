@@ -5,7 +5,7 @@ import { Sidebar, SidebarContent } from "@/components/ui/sidebar";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { User } from "@shared/schema";
-import { RisingSpiralIcon, FingerprintLinesIcon, EyeFrameIcon } from "@/components/CustomIcons";
+import { TairoGlowIcon, GrowthStepsIcon, FingerprintLinesIcon, EyeFrameIcon } from "@/components/CustomIcons";
 
 const menuItems = [
   { 
@@ -23,13 +23,13 @@ const menuItems = [
   { 
     title: "Chat with Tairo", 
     url: "/chat", 
-    icon: MessageSquare,
+    icon: TairoGlowIcon,
     description: "AI guidance"
   },
   { 
     title: "Achievements", 
     url: "/achievements", 
-    icon: RisingSpiralIcon,
+    icon: GrowthStepsIcon,
     description: "Your progress"
   },
   { 
