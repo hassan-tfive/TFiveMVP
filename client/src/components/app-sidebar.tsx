@@ -1,10 +1,11 @@
-import { Home, MessageSquare, Trophy, Shield, UserCircle } from "lucide-react";
+import { Home, MessageSquare } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Sidebar, SidebarContent } from "@/components/ui/sidebar";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { User } from "@shared/schema";
+import { RisingSpiralIcon, FingerprintLinesIcon, EyeFrameIcon } from "@/components/CustomIcons";
 
 const menuItems = [
   { 
@@ -28,13 +29,13 @@ const menuItems = [
   { 
     title: "Achievements", 
     url: "/achievements", 
-    icon: Trophy,
+    icon: RisingSpiralIcon,
     description: "Your progress"
   },
   { 
     title: "Profile", 
     url: "/profile", 
-    icon: UserCircle,
+    icon: FingerprintLinesIcon,
     description: "Your settings"
   },
 ];
@@ -42,7 +43,7 @@ const menuItems = [
 const adminMenuItem = { 
   title: "Admin", 
   url: "/admin", 
-  icon: Shield,
+  icon: EyeFrameIcon,
   description: "Management"
 };
 
