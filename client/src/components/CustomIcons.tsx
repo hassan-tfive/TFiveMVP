@@ -3,8 +3,8 @@ import { SVGProps } from 'react';
 export function RisingSpiralIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg 
-      width="32" 
-      height="32" 
+      width="48" 
+      height="48" 
       viewBox="0 0 512 512" 
       fill="none" 
       xmlns="http://www.w3.org/2000/svg"
@@ -63,8 +63,8 @@ export function RisingSpiralIcon(props: SVGProps<SVGSVGElement>) {
 export function FingerprintLinesIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg 
-      width="32" 
-      height="32" 
+      width="48" 
+      height="48" 
       viewBox="0 0 512 512" 
       fill="none" 
       xmlns="http://www.w3.org/2000/svg"
@@ -161,8 +161,8 @@ export function FingerprintLinesIcon(props: SVGProps<SVGSVGElement>) {
 export function EyeFrameIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg 
-      width="32" 
-      height="32" 
+      width="48" 
+      height="48" 
       viewBox="0 0 512 512" 
       fill="none" 
       xmlns="http://www.w3.org/2000/svg"
