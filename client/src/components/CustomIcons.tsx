@@ -3,8 +3,8 @@ import { SVGProps } from 'react';
 export function TairoGlowIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg 
-      width="48" 
-      height="48" 
+      width="64" 
+      height="64" 
       viewBox="0 0 512 512" 
       fill="none" 
       xmlns="http://www.w3.org/2000/svg"
@@ -82,8 +82,8 @@ export function TairoGlowIcon(props: SVGProps<SVGSVGElement>) {
 export function GrowthStepsIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg 
-      width="48" 
-      height="48" 
+      width="64" 
+      height="64" 
       viewBox="0 0 512 512" 
       fill="none" 
       xmlns="http://www.w3.org/2000/svg"
@@ -159,8 +159,8 @@ export function GrowthStepsIcon(props: SVGProps<SVGSVGElement>) {
 export function FingerprintLinesIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg 
-      width="48" 
-      height="48" 
+      width="64" 
+      height="64" 
       viewBox="0 0 512 512" 
       fill="none" 
       xmlns="http://www.w3.org/2000/svg"
@@ -257,8 +257,8 @@ export function FingerprintLinesIcon(props: SVGProps<SVGSVGElement>) {
 export function EyeFrameIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg 
-      width="48" 
-      height="48" 
+      width="64" 
+      height="64" 
       viewBox="0 0 512 512" 
       fill="none" 
       xmlns="http://www.w3.org/2000/svg"
