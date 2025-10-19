@@ -25,6 +25,12 @@ import {
   type InsertRewardCatalog,
   type Redemption,
   type InsertRedemption,
+  type Identity,
+  type InsertIdentity,
+  type Loop,
+  type InsertLoop,
+  type AnalyticsEvent,
+  type InsertAnalyticsEvent,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -93,6 +99,19 @@ export interface IStorage {
 
   // Stats
   getUserStats(userId: string): Promise<{ completedSessions: number; streak: number }>;
+
+  // Identity operations (for Tairo space separation)
+  getUserIdentity(userId: string, space: string): Promise<Identity | undefined>;
+  createIdentity(identity: InsertIdentity): Promise<Identity>;
+
+  // Loop operations (25-minute session units)
+  getLoop(id: string): Promise<Loop | undefined>;
+  getProgramLoops(programId: string): Promise<Loop[]>;
+  createLoop(loop: InsertLoop): Promise<Loop>;
+  
+  // Analytics event operations
+  createAnalyticsEvent(event: InsertAnalyticsEvent): Promise<AnalyticsEvent>;
+  getAnalyticsEvents(organizationId: string | null, space: string): Promise<AnalyticsEvent[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -109,6 +128,9 @@ export class MemStorage implements IStorage {
   private reflections: Map<string, Reflection>;
   private rewardCatalog: Map<string, RewardCatalog>;
   private redemptions: Map<string, Redemption>;
+  private identities: Map<string, Identity>;
+  private loops: Map<string, Loop>;
+  private analyticsEvents: Map<string, AnalyticsEvent>;
 
   constructor() {
     this.organizations = new Map();
@@ -124,6 +146,9 @@ export class MemStorage implements IStorage {
     this.reflections = new Map();
     this.rewardCatalog = new Map();
     this.redemptions = new Map();
+    this.identities = new Map();
+    this.loops = new Map();
+    this.analyticsEvents = new Map();
     
     // Initialize with default user
     this.initializeDefaultData();
@@ -486,12 +511,72 @@ export class MemStorage implements IStorage {
       streak,
     };
   }
+
+  // Identity operations (for Tairo space separation)
+  async getUserIdentity(userId: string, space: string): Promise<Identity | undefined> {
+    return Array.from(this.identities.values()).find(
+      (i) => i.userId === userId && i.space === space
+    );
+  }
+
+  async createIdentity(identity: InsertIdentity): Promise<Identity> {
+    const newIdentity: Identity = {
+      id: randomUUID(),
+      ...identity,
+      createdAt: new Date(),
+    };
+    this.identities.set(newIdentity.id, newIdentity);
+    return newIdentity;
+  }
+
+  // Loop operations (25-minute session units)
+  async getLoop(id: string): Promise<Loop | undefined> {
+    return this.loops.get(id);
+  }
+
+  async getProgramLoops(programId: string): Promise<Loop[]> {
+    return Array.from(this.loops.values())
+      .filter((l) => l.programId === programId)
+      .sort((a, b) => a.index - b.index);
+  }
+
+  async createLoop(loop: InsertLoop): Promise<Loop> {
+    const newLoop: Loop = {
+      id: randomUUID(),
+      ...loop,
+      createdAt: new Date(),
+    };
+    this.loops.set(newLoop.id, newLoop);
+    return newLoop;
+  }
+  
+  // Analytics event operations
+  async createAnalyticsEvent(event: InsertAnalyticsEvent): Promise<AnalyticsEvent> {
+    const newEvent: AnalyticsEvent = {
+      id: randomUUID(),
+      ...event,
+      createdAt: new Date(),
+    };
+    this.analyticsEvents.set(newEvent.id, newEvent);
+    return newEvent;
+  }
+
+  async getAnalyticsEvents(organizationId: string | null, space: string): Promise<AnalyticsEvent[]> {
+    return Array.from(this.analyticsEvents.values())
+      .filter((e) => {
+        const orgMatch = organizationId 
+          ? e.organizationId === organizationId 
+          : e.organizationId === null;
+        return orgMatch && e.space === space;
+      })
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
 }
 
 import { drizzle } from "drizzle-orm/neon-serverless";
 import { neonConfig, Pool } from "@neondatabase/serverless";
 import ws from "ws";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, isNull } from "drizzle-orm";
 import * as schema from "@shared/schema";
 
 neonConfig.webSocketConstructor = ws;
@@ -863,6 +948,77 @@ export class DbStorage implements IStorage {
       completedSessions: sessions.length,
       streak,
     };
+  }
+
+  // Identity operations (for Tairo space separation)
+  async getUserIdentity(userId: string, space: string): Promise<Identity | undefined> {
+    const [identity] = await this.db
+      .select()
+      .from(schema.identities)
+      .where(
+        and(
+          eq(schema.identities.userId, userId),
+          eq(schema.identities.space, space)
+        )
+      );
+    return identity;
+  }
+
+  async createIdentity(insertIdentity: InsertIdentity): Promise<Identity> {
+    const [identity] = await this.db
+      .insert(schema.identities)
+      .values(insertIdentity)
+      .returning();
+    return identity;
+  }
+
+  // Loop operations (25-minute session units)
+  async getLoop(id: string): Promise<Loop | undefined> {
+    const [loop] = await this.db
+      .select()
+      .from(schema.loops)
+      .where(eq(schema.loops.id, id));
+    return loop;
+  }
+
+  async getProgramLoops(programId: string): Promise<Loop[]> {
+    return await this.db
+      .select()
+      .from(schema.loops)
+      .where(eq(schema.loops.programId, programId))
+      .orderBy(schema.loops.index);
+  }
+
+  async createLoop(insertLoop: InsertLoop): Promise<Loop> {
+    const [loop] = await this.db
+      .insert(schema.loops)
+      .values(insertLoop)
+      .returning();
+    return loop;
+  }
+  
+  // Analytics event operations
+  async createAnalyticsEvent(insertEvent: InsertAnalyticsEvent): Promise<AnalyticsEvent> {
+    const [event] = await this.db
+      .insert(schema.analyticsEvents)
+      .values(insertEvent)
+      .returning();
+    return event;
+  }
+
+  async getAnalyticsEvents(organizationId: string | null, space: string): Promise<AnalyticsEvent[]> {
+    return await this.db
+      .select()
+      .from(schema.analyticsEvents)
+      .where(
+        and(
+          organizationId 
+            ? eq(schema.analyticsEvents.organizationId, organizationId)
+            : isNull(schema.analyticsEvents.organizationId),
+          eq(schema.analyticsEvents.space, space)
+        )
+      )
+      .orderBy(desc(schema.analyticsEvents.createdAt));
   }
 }
 
