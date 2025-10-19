@@ -866,6 +866,8 @@ Return ONLY valid JSON in this exact format:
   // POST /api/wizard/next - Get next wizard question(s)
   app.post("/api/wizard/next", async (req, res) => {
     try {
+      console.log("Wizard /next request body:", JSON.stringify(req.body, null, 2));
+      
       const schema = z.object({
         context: z.object({
           topic: z.string(),
@@ -883,6 +885,7 @@ Return ONLY valid JSON in this exact format:
       res.json({ questions });
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Wizard validation error:", JSON.stringify(error.errors, null, 2));
         return res.status(400).json({ error: error.errors });
       }
       console.error("Wizard error:", error);

@@ -73,10 +73,14 @@ export function ProgramWizard({ open, onOpenChange }: ProgramWizardProps) {
         text,
         space: workspace === "professional" ? "work" : "personal",
       });
-      return response as unknown as IntentContext;
+      const data = await response.json();
+      console.log("Intent parse response:", data);
+      return data;
     },
     onSuccess: async (data: IntentContext) => {
+      console.log("Intent parse onSuccess data:", data);
       setIntentContext(data);
+      setIsParsingIntent(false);
       
       // If confidence is high enough, skip wizard and generate directly
       if (data.confidence >= 0.8) {
@@ -89,13 +93,16 @@ export function ProgramWizard({ open, onOpenChange }: ProgramWizardProps) {
         });
       } else {
         // Load wizard questions
-        loadWizardQuestions(data);
+        console.log("Calling loadWizardQuestions with context:", data);
+        await loadWizardQuestions(data);
       }
     },
-    onError: () => {
+    onError: (error: any) => {
+      setIsParsingIntent(false);
+      console.error("Intent parsing error:", error);
       toast({
         title: "Error",
-        description: "Failed to understand your request. Please try again.",
+        description: error?.error || "Failed to understand your request. Please try again.",
         variant: "destructive",
       });
     },
@@ -105,13 +112,14 @@ export function ProgramWizard({ open, onOpenChange }: ProgramWizardProps) {
   const loadWizardQuestions = async (context: IntentContext) => {
     setIsLoadingQuestions(true);
     try {
-      const response: any = await apiRequest("POST", "/api/wizard/next", {
+      const response = await apiRequest("POST", "/api/wizard/next", {
         context,
         previous_answers: answers,
       });
+      const data: any = await response.json();
       
-      if (response.questions && response.questions.length > 0) {
-        setWizardQuestions(response.questions);
+      if (data.questions && data.questions.length > 0) {
+        setWizardQuestions(data.questions);
         setCurrentQuestionIndex(0);
       } else {
         // No questions needed, generate program
@@ -122,10 +130,11 @@ export function ProgramWizard({ open, onOpenChange }: ProgramWizardProps) {
           cadence_per_week: 3,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Wizard questions error:", error);
       toast({
         title: "Error",
-        description: "Failed to load wizard questions.",
+        description: error?.error || "Failed to load wizard questions.",
         variant: "destructive",
       });
     } finally {
@@ -136,7 +145,7 @@ export function ProgramWizard({ open, onOpenChange }: ProgramWizardProps) {
   const createProgramMutation = useMutation({
     mutationFn: async (requestData: any): Promise<any> => {
       const response = await apiRequest("POST", "/api/programs/generate", requestData);
-      return response;
+      return response.json();
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/programs"] });
