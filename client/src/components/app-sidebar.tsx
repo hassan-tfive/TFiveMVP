@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import type { User } from "@shared/schema";
 import { TairoGlowIcon, GrowthStepsIcon, FingerprintLinesIcon, EyeFrameIcon } from "@/components/CustomIcons";
 import tairoAvatar from "@assets/generated_images/Modern_innovative_Tairo_avatar_6577fdec.png";
+import achievementIcon from "@assets/generated_images/Modern_achievement_growth_icon_674335b9.png";
 
 const menuItems = [
   { 
@@ -30,7 +31,7 @@ const menuItems = [
   { 
     title: "Achievements", 
     url: "/achievements", 
-    icon: GrowthStepsIcon,
+    icon: () => <img src={achievementIcon} alt="Achievements" className="w-16 h-16 object-contain" />,
     description: "Your progress"
   },
   { 
@@ -82,7 +83,7 @@ export function AppSidebar() {
                       ? "bg-primary-foreground/20" 
                       : "bg-muted"
                   )}>
-                    {typeof item.icon === 'function' && (item.title === 'Programs' || item.title === 'TAIRO') ? (
+                    {typeof item.icon === 'function' && (item.title === 'Programs' || item.title === 'TAIRO' || item.title === 'Achievements') ? (
                       <item.icon />
                     ) : (
                       <item.icon className="w-16 h-16" />
