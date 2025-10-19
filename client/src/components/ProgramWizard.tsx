@@ -58,10 +58,11 @@ export function ProgramWizard({ open, onOpenChange }: ProgramWizardProps) {
       onOpenChange(false);
       resetWizard();
     },
-    onError: () => {
+    onError: (error: any) => {
+      const errorMessage = error?.error || "Failed to create program. Please try again.";
       toast({
         title: "Error",
-        description: "Failed to create program. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     },

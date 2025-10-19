@@ -171,10 +171,54 @@ Return ONLY valid JSON in this exact format:
         max_tokens: 1500,
       });
 
-      const responseText = completion.choices[0]?.message?.content || "{}";
-      const generatedContent = JSON.parse(responseText);
+      const responseText = completion.choices[0]?.message?.content;
+      
+      // Helper function to create fallback content
+      const createFallbackContent = (reason: string) => {
+        console.log(`Using fallback content. Reason: ${reason}`);
+        return {
+          title: `${wizardData.category.charAt(0).toUpperCase() + wizardData.category.slice(1)}: ${wizardData.topic}`,
+          description: wizardData.goal,
+          learn: `Explore the fundamentals of ${wizardData.topic}. Understand key concepts and insights that will help you ${wizardData.goal.toLowerCase()}.`,
+          act: `Practice exercises related to ${wizardData.topic}. Apply what you've learned through actionable steps.`,
+          earnMessage: `Great work exploring ${wizardData.topic}! You're one step closer to ${wizardData.goal.toLowerCase()}.`,
+        };
+      };
 
-      // Create the program
+      // Define validation schema for OpenAI response
+      const aiResponseSchema = z.object({
+        title: z.string().min(3).max(100),
+        description: z.string().min(10).max(500),
+        learn: z.string().min(20),
+        act: z.string().min(20),
+        earnMessage: z.string().min(10),
+      });
+
+      let generatedContent;
+
+      // Try to parse and validate AI response, fall back if anything fails
+      if (!responseText) {
+        console.error("OpenAI returned empty response");
+        generatedContent = createFallbackContent("Empty AI response");
+      } else {
+        try {
+          const parsedContent = JSON.parse(responseText);
+          const validationResult = aiResponseSchema.safeParse(parsedContent);
+          
+          if (validationResult.success) {
+            generatedContent = validationResult.data;
+          } else {
+            console.error("OpenAI response validation failed:", validationResult.error);
+            console.error("Raw content:", parsedContent);
+            generatedContent = createFallbackContent("Schema validation failed");
+          }
+        } catch (parseError) {
+          console.error("Failed to parse OpenAI JSON:", responseText);
+          generatedContent = createFallbackContent("JSON parsing failed");
+        }
+      }
+
+      // Create the program (always succeeds with either AI or fallback content)
       const programData = {
         title: generatedContent.title,
         description: generatedContent.description,
