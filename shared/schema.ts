@@ -131,6 +131,7 @@ export const chatMessages = pgTable("chat_messages", {
   role: text("role").notNull(), // user | assistant
   content: text("content").notNull(),
   workspace: text("workspace").notNull(), // professional | personal
+  metadata: jsonb("metadata"), // wizard state, program creation data, etc
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

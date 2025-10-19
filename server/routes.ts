@@ -125,6 +125,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create program from wizard data with AI-generated content
+  app.post("/api/programs/generate", async (req, res) => {
+    try {
+      const wizardSchema = z.object({
+        topic: z.string(),
+        goal: z.string(),
+        difficulty: z.enum(["beginner", "intermediate", "advanced"]),
+        category: z.enum(["wellbeing", "recovery", "inclusion", "focus"]),
+        workspace: z.enum(["professional", "personal", "both"]),
+      });
+
+      const wizardData = wizardSchema.parse(req.body);
+
+      // Use OpenAI to generate program content
+      const systemPrompt = `You are Tairo, an AI coach creating a 25-minute personal development program.
+        
+Generate a complete program based on these details:
+- Topic: ${wizardData.topic}
+- Goal: ${wizardData.goal}
+- Difficulty: ${wizardData.difficulty}
+- Category: ${wizardData.category}
+- Workspace: ${wizardData.workspace}
+
+Create:
+1. A compelling title (3-6 words)
+2. An engaging description (2-3 sentences)
+3. Learn phase content (8 minutes): Educational content, key concepts, insights
+4. Act phase content (13 minutes): Practical exercises, steps to practice, actionable activities
+5. Earn phase message: Celebration message with specific takeaway
+
+Return ONLY valid JSON in this exact format:
+{
+  "title": "string",
+  "description": "string",
+  "learn": "string",
+  "act": "string",
+  "earnMessage": "string"
+}`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "system", content: systemPrompt }],
+        temperature: 0.8,
+        max_tokens: 1500,
+      });
+
+      const responseText = completion.choices[0]?.message?.content || "{}";
+      const generatedContent = JSON.parse(responseText);
+
+      // Create the program
+      const programData = {
+        title: generatedContent.title,
+        description: generatedContent.description,
+        category: wizardData.category,
+        difficulty: wizardData.difficulty,
+        duration: 25,
+        content: {
+          learn: generatedContent.learn,
+          act: generatedContent.act,
+          earn: {
+            points: 50,
+            message: generatedContent.earnMessage,
+          },
+        },
+        workspace: wizardData.workspace,
+        imageUrl: null,
+      };
+
+      const program = await storage.createProgram(programData);
+      res.status(201).json(program);
+    } catch (error) {
+      console.error("Program generation error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Failed to generate program" });
+    }
+  });
+
   // Session routes
   app.get("/api/sessions/:id", async (req, res) => {
     const session = await storage.getSession(req.params.id);
