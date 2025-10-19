@@ -53,12 +53,22 @@ export default function Dashboard() {
                 : "Your personal sanctuary - private space for self-discovery"}
             </p>
           </div>
-          <img 
-            src={tfiveLogoUrl} 
-            alt="Tfive" 
-            className="h-32 w-auto relative z-10 flex-shrink-0 -my-6 -mr-8" 
-            data-testid="img-banner-logo" 
-          />
+          <div className={cn(
+            "relative z-10 flex-shrink-0 -my-6 -mr-8 rounded-lg overflow-hidden",
+            workspace === "professional" 
+              ? "bg-black p-4" 
+              : "bg-gradient-to-br from-[hsl(318,100%,55%)] to-[hsl(266,73%,45%)] p-3"
+          )}>
+            <img 
+              src={tfiveLogoUrl} 
+              alt="Tfive" 
+              className={cn(
+                "h-24 w-auto",
+                workspace === "professional" && "invert"
+              )} 
+              data-testid="img-banner-logo" 
+            />
+          </div>
         </div>
       </div>
 
