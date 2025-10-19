@@ -21,7 +21,7 @@ const menuItems = [
     description: "Learning library"
   },
   { 
-    title: "Chat with Tairo", 
+    title: "TAIRO", 
     url: "/chat", 
     icon: TairoGlowIcon,
     description: "AI guidance"
