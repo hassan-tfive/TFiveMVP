@@ -9,6 +9,7 @@ import { TairoGlowIcon, GrowthStepsIcon, FingerprintLinesIcon, EyeFrameIcon } fr
 import tairoAvatar from "@assets/generated_images/Modern_innovative_Tairo_avatar_6577fdec.png";
 import achievementIcon from "@assets/generated_images/Modern_achievement_growth_icon_674335b9.png";
 import profileIcon from "@assets/generated_images/Modern_profile_fingerprint_icon_7845f54d.png";
+import adminIcon from "@assets/generated_images/Modern_admin_eye_icon_169abb78.png";
 
 const menuItems = [
   { 
@@ -46,7 +47,7 @@ const menuItems = [
 const adminMenuItem = { 
   title: "Admin", 
   url: "/admin", 
-  icon: EyeFrameIcon,
+  icon: () => <img src={adminIcon} alt="Admin" className="w-16 h-16 object-contain" />,
   description: "Management"
 };
 
@@ -84,7 +85,7 @@ export function AppSidebar() {
                       ? "bg-primary-foreground/20" 
                       : "bg-muted"
                   )}>
-                    {typeof item.icon === 'function' && (item.title === 'Programs' || item.title === 'TAIRO' || item.title === 'Achievements' || item.title === 'Profile') ? (
+                    {typeof item.icon === 'function' && (item.title === 'Programs' || item.title === 'TAIRO' || item.title === 'Achievements' || item.title === 'Profile' || item.title === 'Admin') ? (
                       <item.icon />
                     ) : (
                       <item.icon className="w-16 h-16" />
