@@ -132,254 +132,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create program from wizard data or natural prompt with AI-generated content
-  app.post("/api/programs/generate", async (req, res) => {
-    try {
-      // Support both wizard mode (structured) and prompt mode (natural language)
-      const requestSchema = z.union([
-        // Wizard mode
-        z.object({
-          topic: z.string(),
-          goal: z.string(),
-          difficulty: z.enum(["beginner", "intermediate", "advanced"]),
-          workspace: z.enum(["professional", "personal", "both"]),
-        }),
-        // Prompt mode
-        z.object({
-          prompt: z.string(),
-          workspace: z.enum(["professional", "personal", "both"]).optional(),
-        }),
-      ]);
-
-      const requestData = requestSchema.parse(req.body);
-      const isWizardMode = 'topic' in requestData;
-
-      // Sophisticated Tairo system prompt with dynamic duration allocation
-      const systemPrompt = `You are Tairo, TFIVE's AI companion that creates personalized 25-minute (or shorter) Learn→Act→Earn development programs.
-
-Your task is to:
-1. Understand the user's request and emotional/professional context
-2. Identify the topic DOMAIN and CATEGORY that best fits (choose from these options):
-   DOMAINS: focus, leadership, recovery, stress, inclusion, wellbeing
-   CATEGORIES: wellbeing, recovery, inclusion, focus
-3. Dynamically assign phase durations based on domain (total ≤ 25 minutes):
-   - Focus/Productivity: Learn 6min, Act 15min, Earn 4min
-   - Leadership: Learn 12min, Act 9min, Earn 4min
-   - Recovery: Learn 14min, Act 7min, Earn 4min
-   - Wellbeing: Learn 10min, Act 11min, Earn 4min
-   - Stress: Learn 8min, Act 12min, Earn 5min
-   - Inclusion/Empathy: Learn 9min, Act 12min, Earn 4min
-4. Write rich, actionable content for each phase
-5. Create a visual description for the program image
-6. Suggest a follow-up program
-
-${isWizardMode ? `User provided structured input:
-- Topic: ${requestData.topic}
-- Goal: ${requestData.goal}
-- Difficulty: ${requestData.difficulty}
-- Workspace: ${requestData.workspace}` : `User's natural language request: "${requestData.prompt}"
-Workspace context: ${requestData.workspace || 'professional'}`}
-
-Return ONLY valid JSON in this exact format:
-{
-  "title": "Compelling title (3-6 words)",
-  "description": "Brief engaging description (2-3 sentences)",
-  "domain": "focus|leadership|recovery|stress|inclusion|wellbeing",
-  "category": "wellbeing|recovery|inclusion|focus",
-  "difficulty": "beginner|intermediate|advanced",
-  "goal": "Specific user goal statement",
-  "imagePrompt": "Detailed visual description for an abstract, calming image that represents this program's theme (be specific about colors, mood, elements)",
-  "durations": {
-    "learn": <number>,
-    "act": <number>,
-    "earn": <number>
-  },
-  "content": {
-    "learn": "Educational content, key concepts, insights",
-    "act": "Practical exercises, specific steps to practice",
-    "earnMessage": "Celebration message with specific takeaway"
-  },
-  "followupSuggestion": "Suggested next program title"
-}`;
-
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [{ role: "system", content: systemPrompt }],
-        temperature: 0.8,
-        max_tokens: 2000,
-      });
-
-      const responseText = completion.choices[0]?.message?.content;
-      
-      // Helper function to create fallback content
-      const createFallbackContent = (reason: string) => {
-        console.log(`Using fallback content. Reason: ${reason}`);
-        
-        // Determine values from request
-        const topic = isWizardMode ? requestData.topic : requestData.prompt;
-        const goal = isWizardMode ? requestData.goal : `Achieve progress with ${topic}`;
-        const category = 'wellbeing';
-        const difficulty = isWizardMode ? requestData.difficulty : 'beginner';
-        const workspace = isWizardMode ? requestData.workspace : (requestData.workspace || 'professional');
-        
-        // Default domain-based durations (wellbeing)
-        const durations = { learn: 10, act: 11, earn: 4 };
-        
-        return {
-          title: `${topic.charAt(0).toUpperCase()}${topic.slice(1, 40)}`,
-          description: goal,
-          domain: 'wellbeing',
-          category,
-          difficulty,
-          goal,
-          imagePrompt: `Calming abstract background with soft gradients, peaceful colors like blue and purple, representing mindfulness and personal growth, minimalist design, serene atmosphere`,
-          durations,
-          content: {
-            learn: `Explore the fundamentals of ${topic}. Understand key concepts and insights that will help you ${goal.toLowerCase()}.`,
-            act: `Practice exercises related to ${topic}. Apply what you've learned through actionable steps.`,
-            earnMessage: `Great work exploring ${topic}! You're one step closer to ${goal.toLowerCase()}.`,
-          },
-          followupSuggestion: `Continue your journey with ${category}`,
-        };
-      };
-
-      // Define validation schema for OpenAI response
-      const aiResponseSchema = z.object({
-        title: z.string().min(3).max(100),
-        description: z.string().min(10).max(500),
-        domain: z.enum(["focus", "leadership", "recovery", "stress", "inclusion", "wellbeing"]),
-        category: z.enum(["wellbeing", "recovery", "inclusion", "focus"]),
-        difficulty: z.enum(["beginner", "intermediate", "advanced"]),
-        goal: z.string().min(5),
-        imagePrompt: z.string().min(20),
-        durations: z.object({
-          learn: z.number().min(1).max(20),
-          act: z.number().min(1).max(20),
-          earn: z.number().min(1).max(10),
-        }).refine(d => d.learn + d.act + d.earn <= 25, {
-          message: "Total duration must be ≤ 25 minutes"
-        }),
-        content: z.object({
-          learn: z.string().min(20),
-          act: z.string().min(20),
-          earnMessage: z.string().min(10),
-        }),
-        followupSuggestion: z.string().optional(),
-      });
-
-      let generatedContent;
-
-      // Try to parse and validate AI response, fall back if anything fails
-      if (!responseText) {
-        console.error("OpenAI returned empty response");
-        generatedContent = createFallbackContent("Empty AI response");
-      } else {
-        try {
-          const parsedContent = JSON.parse(responseText);
-          const validationResult = aiResponseSchema.safeParse(parsedContent);
-          
-          if (validationResult.success) {
-            generatedContent = validationResult.data;
-          } else {
-            console.error("OpenAI response validation failed:", validationResult.error);
-            console.error("Raw content:", parsedContent);
-            generatedContent = createFallbackContent("Schema validation failed");
-          }
-        } catch (parseError) {
-          console.error("Failed to parse OpenAI JSON:", responseText);
-          generatedContent = createFallbackContent("JSON parsing failed");
-        }
-      }
-
-      // Calculate total duration
-      const totalDuration = generatedContent.durations.learn + 
-                           generatedContent.durations.act + 
-                           generatedContent.durations.earn;
-
-      // Generate program image using DALL-E 2 (more compatible)
-      let imageUrl: string | null = null;
-      try {
-        console.log('[Image Generation] Generating image with prompt:', generatedContent.imagePrompt);
-        const imageResponse = await openai.images.generate({
-          model: "dall-e-2",
-          prompt: generatedContent.imagePrompt,
-          n: 1,
-          size: "512x512",
-        });
-        imageUrl = imageResponse.data?.[0]?.url || null;
-        console.log('[Image Generation] Image generated successfully:', imageUrl ? 'Yes' : 'No');
-      } catch (imageError: any) {
-        console.error('[Image Generation] Failed to generate image:', imageError?.message || imageError);
-        // Set a placeholder/fallback image URL based on domain
-        const domainImages: Record<string, string> = {
-          'focus': 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&h=600&fit=crop',
-          'leadership': 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop',
-          'recovery': 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&h=600&fit=crop',
-          'stress': 'https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=800&h=600&fit=crop',
-          'inclusion': 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&h=600&fit=crop',
-          'wellbeing': 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&h=600&fit=crop',
-        };
-        imageUrl = domainImages[generatedContent.domain] || domainImages['wellbeing'];
-        console.log('[Image Generation] Using fallback image for domain:', generatedContent.domain);
-      }
-
-      // Create the program with dynamic durations
-      const programData = {
-        title: generatedContent.title,
-        description: generatedContent.description,
-        category: generatedContent.category,
-        difficulty: generatedContent.difficulty,
-        duration: totalDuration,
-        content: {
-          learn: generatedContent.content.learn,
-          act: generatedContent.content.act,
-          earn: {
-            points: 50,
-            message: generatedContent.content.earnMessage,
-          },
-        },
-        workspace: isWizardMode ? requestData.workspace : (requestData.workspace || 'both'),
-        imageUrl,
-        // Enhanced fields
-        domain: generatedContent.domain,
-        goal: generatedContent.goal,
-        durationLearn: generatedContent.durations.learn,
-        durationAct: generatedContent.durations.act,
-        durationEarn: generatedContent.durations.earn,
-        metadata: {
-          followupSuggestion: generatedContent.followupSuggestion,
-          generatedAt: new Date().toISOString(),
-          mode: isWizardMode ? 'wizard' : 'prompt',
-        },
-      };
-
-      console.log('[Program Generation] Creating program with data:', {
-        domain: programData.domain,
-        durationLearn: programData.durationLearn,
-        durationAct: programData.durationAct,
-        durationEarn: programData.durationEarn,
-      });
-
-      const program = await storage.createProgram(programData);
-      
-      console.log('[Program Generation] Program created:', {
-        id: program.id,
-        domain: program.domain,
-        durationLearn: program.durationLearn,
-        durationAct: program.durationAct,
-        durationEarn: program.durationEarn,
-      });
-      
-      res.status(201).json(program);
-    } catch (error) {
-      console.error("Program generation error:", error);
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors });
-      }
-      res.status(500).json({ error: "Failed to generate program" });
-    }
-  });
-
   // Session routes
   app.get("/api/sessions/:id", async (req, res) => {
     const session = await storage.getSession(req.params.id);
@@ -920,6 +672,36 @@ Return ONLY valid JSON in this exact format:
         space,
       });
 
+      // Generate program image using DALL-E 2
+      let imageUrl: string | null = null;
+      try {
+        const imagePrompt = `Abstract, calming visual representing ${inputs.topic}, minimalist design, soft gradients, peaceful atmosphere, personal growth theme`;
+        console.log('[Image Generation] Generating image with prompt:', imagePrompt);
+        const imageResponse = await openai.images.generate({
+          model: "dall-e-2",
+          prompt: imagePrompt,
+          n: 1,
+          size: "512x512",
+        });
+        imageUrl = imageResponse.data?.[0]?.url || null;
+        console.log('[Image Generation] Image generated successfully:', imageUrl ? 'Yes' : 'No');
+      } catch (imageError: any) {
+        console.error('[Image Generation] Failed to generate image:', imageError?.message || imageError);
+        // Set a placeholder/fallback image URL based on topic
+        const topicImages: Record<string, string> = {
+          'focus': 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&h=600&fit=crop',
+          'leadership': 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop',
+          'recovery': 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&h=600&fit=crop',
+          'stress': 'https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=800&h=600&fit=crop',
+          'inclusion': 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&h=600&fit=crop',
+          'confidence': 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&h=600&fit=crop',
+          'creativity': 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&h=600&fit=crop',
+          'motivation': 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop',
+        };
+        imageUrl = topicImages[inputs.topic.toLowerCase()] || topicImages['focus'];
+        console.log('[Image Generation] Using fallback image for topic:', inputs.topic);
+      }
+
       // Create the program in the database
       const program = await storage.createProgram({
         title: programOutput.program.title,
@@ -931,6 +713,7 @@ Return ONLY valid JSON in this exact format:
         tone: inputs.tone,
         durationWeeks: programOutput.program.duration_weeks,
         metadata: programOutput.program.metadata,
+        imageUrl,
       });
 
       // Create the first loop
@@ -1148,7 +931,37 @@ async function initializeSeedData() {
 
   // Check if data already exists
   const existingPrograms = await storage.getPrograms();
+  
+  // If programs exist, check if they have loops and create them if needed
   if (existingPrograms.length > 0) {
+    const phaseDurations: Record<string, { learn: number; act: number; earn: number }> = {
+      wellbeing: { learn: 10, act: 11, earn: 4 },
+      focus: { learn: 6, act: 15, earn: 4 },
+      recovery: { learn: 14, act: 7, earn: 4 },
+      inclusion: { learn: 9, act: 12, earn: 4 },
+    };
+    
+    // Create loops for programs that don't have any
+    for (const program of existingPrograms) {
+      const loops = await storage.getProgramLoops(program.id);
+      if (loops.length === 0 && program.content) {
+        // This is an old seed program without loops, create one
+        const durations = phaseDurations[program.category as keyof typeof phaseDurations] || phaseDurations.wellbeing;
+        await storage.createLoop({
+          programId: program.id,
+          index: 1,
+          title: `${program.title} - Session 1`,
+          phaseLearnText: program.content.learn,
+          phaseActText: program.content.act,
+          phaseEarnText: program.content.earn?.message || "Great work!",
+          durLearn: durations.learn,
+          durAct: durations.act,
+          durEarn: durations.earn,
+        });
+      }
+    }
+    
+    console.log("✅ Updated existing programs with loops");
     return; // Already seeded
   }
 
@@ -1241,8 +1054,30 @@ async function initializeSeedData() {
     },
   ];
 
-  for (const program of programs) {
-    await storage.createProgram(program);
+  // Domain-based phase durations (for seed data)
+  const phaseDurations: Record<string, { learn: number; act: number; earn: number }> = {
+    wellbeing: { learn: 10, act: 11, earn: 4 },
+    focus: { learn: 6, act: 15, earn: 4 },
+    recovery: { learn: 14, act: 7, earn: 4 },
+    inclusion: { learn: 9, act: 12, earn: 4 },
+  };
+
+  for (const programData of programs) {
+    const createdProgram = await storage.createProgram(programData);
+    
+    // Create a first loop for each seed program so they're playable immediately
+    const durations = phaseDurations[programData.category] || phaseDurations.wellbeing;
+    await storage.createLoop({
+      programId: createdProgram.id,
+      index: 1,
+      title: `${createdProgram.title} - Session 1`,
+      phaseLearnText: programData.content.learn,
+      phaseActText: programData.content.act,
+      phaseEarnText: programData.content.earn.message,
+      durLearn: durations.learn,
+      durAct: durations.act,
+      durEarn: durations.earn,
+    });
   }
 
   // Seed achievements
