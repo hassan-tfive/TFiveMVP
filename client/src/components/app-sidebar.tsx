@@ -1,4 +1,3 @@
-import { Home, MessageSquare } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Sidebar, SidebarContent } from "@/components/ui/sidebar";
@@ -6,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { User } from "@shared/schema";
 import { TairoGlowIcon, GrowthStepsIcon, FingerprintLinesIcon, EyeFrameIcon } from "@/components/CustomIcons";
+import dashboardIcon from "@assets/generated_images/Modern_dashboard_overview_icon_969eb363.png";
 import tairoAvatar from "@assets/generated_images/Modern_innovative_Tairo_avatar_6577fdec.png";
 import achievementIcon from "@assets/generated_images/Modern_achievement_growth_icon_674335b9.png";
 import profileIcon from "@assets/generated_images/Modern_profile_fingerprint_icon_7845f54d.png";
@@ -16,7 +16,7 @@ const menuItems = [
   { 
     title: "Dashboard", 
     url: "/", 
-    icon: Home,
+    icon: () => <img src={dashboardIcon} alt="Dashboard" className="w-16 h-16 object-contain" />,
     description: "Your overview"
   },
   { 
@@ -86,7 +86,7 @@ export function AppSidebar() {
                       ? "bg-primary-foreground/20" 
                       : "bg-muted"
                   )}>
-                    {typeof item.icon === 'function' && (item.title === 'Programs' || item.title === 'TAIRO' || item.title === 'Achievements' || item.title === 'Profile' || item.title === 'Admin') ? (
+                    {typeof item.icon === 'function' ? (
                       <item.icon />
                     ) : (
                       <item.icon className="w-16 h-16" />
