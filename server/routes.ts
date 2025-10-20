@@ -17,6 +17,8 @@ import {
   getWizardQuestions,
   composeLoop,
   buildSeries,
+  generateAudioNarration,
+  getCuratedVideoUrl,
 } from "./ai-workflows";
 
 // Initialize OpenAI with Replit AI Integrations
@@ -716,6 +718,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         imageUrl,
       });
 
+      // Generate audio narration for all three phases
+      console.log('[Audio] Generating TTS audio for Learn, Act, and Earn phases...');
+      const [audioLearnUrl, audioActUrl, audioEarnUrl] = await Promise.all([
+        generateAudioNarration(programOutput.next_loop.learn, "learn", inputs.tone),
+        generateAudioNarration(programOutput.next_loop.act, "act", inputs.tone),
+        generateAudioNarration(programOutput.next_loop.earn, "earn", inputs.tone),
+      ]);
+      console.log('[Audio] Generated audio URLs:', { audioLearnUrl, audioActUrl, audioEarnUrl });
+
+      // Get curated video URL based on topic
+      const videoUrl = getCuratedVideoUrl(inputs.topic);
+      console.log('[Video] Selected video URL:', videoUrl);
+
       // Create the first loop
       const firstLoop = await storage.createLoop({
         programId: program.id,
@@ -727,6 +742,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         durLearn: programOutput.next_loop.durations.learn,
         durAct: programOutput.next_loop.durations.act,
         durEarn: programOutput.next_loop.durations.earn,
+        audioLearnUrl: audioLearnUrl || undefined,
+        audioActUrl: audioActUrl || undefined,
+        audioEarnUrl: audioEarnUrl || undefined,
+        videoUrl: videoUrl || undefined,
       });
 
       res.json({
@@ -941,12 +960,23 @@ async function initializeSeedData() {
       inclusion: { learn: 9, act: 12, earn: 4 },
     };
     
-    // Create loops for programs that don't have any
+    // Create loops for programs that don't have any, and backfill audio/video for existing loops
     for (const program of existingPrograms) {
       const loops = await storage.getProgramLoops(program.id);
+      
       if (loops.length === 0 && program.content) {
-        // This is an old seed program without loops, create one
+        // This is an old seed program without loops, create one with audio/video
         const durations = phaseDurations[program.category as keyof typeof phaseDurations] || phaseDurations.wellbeing;
+        
+        console.log(`[Seed] Generating audio for ${program.title}...`);
+        const [audioLearnUrl, audioActUrl, audioEarnUrl] = await Promise.all([
+          generateAudioNarration(program.content.learn, "learn", "calm"),
+          generateAudioNarration(program.content.act, "act", "calm"),
+          generateAudioNarration(program.content.earn?.message || "Great work!", "earn", "calm"),
+        ]);
+        
+        const videoUrl = getCuratedVideoUrl(program.topic || program.category || "focus");
+        
         await storage.createLoop({
           programId: program.id,
           index: 1,
@@ -957,7 +987,49 @@ async function initializeSeedData() {
           durLearn: durations.learn,
           durAct: durations.act,
           durEarn: durations.earn,
+          audioLearnUrl: audioLearnUrl || undefined,
+          audioActUrl: audioActUrl || undefined,
+          audioEarnUrl: audioEarnUrl || undefined,
+          videoUrl: videoUrl || undefined,
         });
+        console.log(`[Seed] Created loop with audio and video for ${program.title}`);
+      } else {
+        // Backfill audio/video for existing loops that don't have media
+        for (const loop of loops) {
+          const needsAudio = !loop.audioLearnUrl || !loop.audioActUrl || !loop.audioEarnUrl;
+          const needsVideo = !loop.videoUrl;
+          
+          if (needsAudio || needsVideo) {
+            console.log(`[Seed] Backfilling media for loop: ${loop.title}`);
+            
+            let audioLearnUrl = loop.audioLearnUrl;
+            let audioActUrl = loop.audioActUrl;
+            let audioEarnUrl = loop.audioEarnUrl;
+            let videoUrl = loop.videoUrl;
+            
+            if (needsAudio) {
+              console.log(`[Seed] Generating audio for loop ${loop.id}...`);
+              [audioLearnUrl, audioActUrl, audioEarnUrl] = await Promise.all([
+                loop.audioLearnUrl || generateAudioNarration(loop.phaseLearnText, "learn", "calm"),
+                loop.audioActUrl || generateAudioNarration(loop.phaseActText, "act", "calm"),
+                loop.audioEarnUrl || generateAudioNarration(loop.phaseEarnText, "earn", "calm"),
+              ]);
+            }
+            
+            if (needsVideo) {
+              videoUrl = getCuratedVideoUrl(program.topic || program.category || "focus");
+            }
+            
+            // Update the loop with new media URLs
+            await storage.updateLoop(loop.id, {
+              audioLearnUrl: audioLearnUrl || undefined,
+              audioActUrl: audioActUrl || undefined,
+              audioEarnUrl: audioEarnUrl || undefined,
+              videoUrl: videoUrl || undefined,
+            });
+            console.log(`[Seed] Backfilled media for ${loop.title}`);
+          }
+        }
       }
     }
     

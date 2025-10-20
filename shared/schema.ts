@@ -83,6 +83,10 @@ export const loops = pgTable("loops", {
   durLearn: integer("dur_learn").notNull(), // minutes
   durAct: integer("dur_act").notNull(), // minutes
   durEarn: integer("dur_earn").notNull(), // minutes (sum must = 25)
+  audioLearnUrl: text("audio_learn_url"), // TTS audio for Learn phase
+  audioActUrl: text("audio_act_url"), // TTS audio for Act phase
+  audioEarnUrl: text("audio_earn_url"), // TTS audio for Earn phase
+  videoUrl: text("video_url"), // Video content URL
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

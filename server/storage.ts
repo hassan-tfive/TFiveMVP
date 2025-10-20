@@ -108,6 +108,7 @@ export interface IStorage {
   getLoop(id: string): Promise<Loop | undefined>;
   getProgramLoops(programId: string): Promise<Loop[]>;
   createLoop(loop: InsertLoop): Promise<Loop>;
+  updateLoop(id: string, updates: Partial<Loop>): Promise<Loop | undefined>;
   
   // Analytics event operations
   createAnalyticsEvent(event: InsertAnalyticsEvent): Promise<AnalyticsEvent>;
@@ -548,6 +549,14 @@ export class MemStorage implements IStorage {
     };
     this.loops.set(newLoop.id, newLoop);
     return newLoop;
+  }
+
+  async updateLoop(id: string, updates: Partial<Loop>): Promise<Loop | undefined> {
+    const loop = this.loops.get(id);
+    if (!loop) return undefined;
+    const updatedLoop = { ...loop, ...updates };
+    this.loops.set(id, updatedLoop);
+    return updatedLoop;
   }
   
   // Analytics event operations
@@ -993,6 +1002,15 @@ export class DbStorage implements IStorage {
     const [loop] = await this.db
       .insert(schema.loops)
       .values(insertLoop)
+      .returning();
+    return loop;
+  }
+
+  async updateLoop(id: string, updates: Partial<Loop>): Promise<Loop | undefined> {
+    const [loop] = await this.db
+      .update(schema.loops)
+      .set(updates)
+      .where(eq(schema.loops.id, id))
       .returning();
     return loop;
   }

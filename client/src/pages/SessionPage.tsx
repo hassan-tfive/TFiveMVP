@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Play, Pause, SkipForward, CheckCircle2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowLeft, Play, Pause, SkipForward, CheckCircle2, BookOpen, Headphones, Video } from "lucide-react";
 import { Link } from "wouter";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -24,6 +25,10 @@ interface Loop {
   durLearn: number;
   durAct: number;
   durEarn: number;
+  audioLearnUrl?: string | null;
+  audioActUrl?: string | null;
+  audioEarnUrl?: string | null;
+  videoUrl?: string | null;
 }
 
 interface Session {
@@ -51,6 +56,30 @@ export default function SessionPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [reflection, setReflection] = useState("");
   const [showReflection, setShowReflection] = useState(false);
+
+  // Helper function to get current phase's audio URL
+  const getCurrentAudioUrl = (): string | null => {
+    if (!loop) return null;
+    if (currentPhase === "learn") return loop.audioLearnUrl || null;
+    if (currentPhase === "act") return loop.audioActUrl || null;
+    if (currentPhase === "earn") return loop.audioEarnUrl || null;
+    return null;
+  };
+
+  // Helper function to convert YouTube/Vimeo URLs to embed format
+  const getEmbedUrl = (url: string): string => {
+    // YouTube
+    const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?\/]+)/);
+    if (youtubeMatch) {
+      return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+    }
+    // Vimeo
+    const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+    if (vimeoMatch) {
+      return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+    }
+    return url; // Return as-is if not recognized
+  };
 
   // Fetch loop data
   const { data: loop, isLoading: isLoadingLoop } = useQuery<Loop>({
@@ -233,16 +262,97 @@ export default function SessionPage() {
             <Progress value={progress} className="mt-4 h-3" />
           </div>
 
-          {/* Phase Content */}
+          {/* Phase Content with Read/Listen/Watch Tabs */}
           <Card className="bg-muted/50">
             <CardContent className="pt-6">
-              <p className="text-base leading-relaxed">
-                {currentPhase === "learn" 
-                  ? loop.phaseLearnText 
-                  : currentPhase === "act" 
-                  ? loop.phaseActText 
-                  : loop.phaseEarnText}
-              </p>
+              <Tabs defaultValue="read" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 mb-4">
+                  <TabsTrigger value="read" className="flex items-center gap-2" data-testid="tab-read">
+                    <BookOpen className="w-4 h-4" />
+                    Read
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="listen" 
+                    className="flex items-center gap-2" 
+                    data-testid="tab-listen"
+                    disabled={!getCurrentAudioUrl()}
+                  >
+                    <Headphones className="w-4 h-4" />
+                    Listen
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="watch" 
+                    className="flex items-center gap-2" 
+                    data-testid="tab-watch"
+                    disabled={!loop.videoUrl}
+                  >
+                    <Video className="w-4 h-4" />
+                    Watch
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="read" className="min-h-[120px]">
+                  <p className="text-base leading-relaxed">
+                    {currentPhase === "learn" 
+                      ? loop.phaseLearnText 
+                      : currentPhase === "act" 
+                      ? loop.phaseActText 
+                      : loop.phaseEarnText}
+                  </p>
+                </TabsContent>
+                
+                <TabsContent value="listen" className="min-h-[120px]">
+                  {getCurrentAudioUrl() ? (
+                    <div className="space-y-4">
+                      <audio
+                        controls
+                        className="w-full"
+                        src={getCurrentAudioUrl() || ""}
+                        data-testid="audio-player"
+                      >
+                        Your browser does not support audio playback.
+                      </audio>
+                      <p className="text-sm text-muted-foreground">
+                        {currentPhase === "learn" 
+                          ? loop.phaseLearnText 
+                          : currentPhase === "act" 
+                          ? loop.phaseActText 
+                          : loop.phaseEarnText}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">Audio not available for this phase.</p>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="watch" className="min-h-[120px]">
+                  {loop.videoUrl ? (
+                    <div className="space-y-4">
+                      <div className="aspect-video w-full bg-black rounded-lg overflow-hidden">
+                        <iframe
+                          width="100%"
+                          height="100%"
+                          src={getEmbedUrl(loop.videoUrl)}
+                          title="Session Video"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          data-testid="video-player"
+                        />
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {currentPhase === "learn" 
+                          ? loop.phaseLearnText 
+                          : currentPhase === "act" 
+                          ? loop.phaseActText 
+                          : loop.phaseEarnText}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">Video not available for this session.</p>
+                  )}
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
 

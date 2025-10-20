@@ -1,4 +1,6 @@
 import OpenAI from "openai";
+import fs from "fs";
+import path from "path";
 
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
@@ -283,4 +285,77 @@ Respond ONLY with valid JSON:
     console.error("Failed to parse series response:", content);
     throw new Error("AI returned malformed response");
   }
+}
+
+/**
+ * Generate audio narration using OpenAI Text-to-Speech
+ */
+export async function generateAudioNarration(
+  text: string,
+  phase: "learn" | "act" | "earn",
+  tone: string = "calm"
+): Promise<string | null> {
+  try {
+    // Select voice based on tone
+    const voiceMap: Record<string, "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer"> = {
+      calm: "nova",
+      energizing: "echo",
+      instructional: "alloy",
+      reflective: "shimmer",
+    };
+    const voice = voiceMap[tone] || "nova";
+
+    console.log(`[TTS] Generating audio for ${phase} phase with ${voice} voice`);
+
+    // Generate audio using OpenAI TTS
+    const mp3Response = await openai.audio.speech.create({
+      model: "tts-1",
+      voice,
+      input: text,
+      speed: 1.0,
+    });
+
+    // Create audio directory if it doesn't exist
+    const audioDir = path.join(process.cwd(), "attached_assets", "audio");
+    if (!fs.existsSync(audioDir)) {
+      fs.mkdirSync(audioDir, { recursive: true });
+    }
+
+    // Generate unique filename
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(7);
+    const filename = `${phase}_${voice}_${timestamp}_${randomId}.mp3`;
+    const filepath = path.join(audioDir, filename);
+
+    // Convert response to buffer and save
+    const buffer = Buffer.from(await mp3Response.arrayBuffer());
+    fs.writeFileSync(filepath, buffer);
+
+    console.log(`[TTS] Audio saved to ${filepath}`);
+
+    // Return relative URL path
+    return `/attached_assets/audio/${filename}`;
+  } catch (error: any) {
+    console.error(`[TTS] Failed to generate audio:`, error?.message || error);
+    return null;
+  }
+}
+
+/**
+ * Get curated video URL based on topic
+ */
+export function getCuratedVideoUrl(topic: string): string | null {
+  // Curated YouTube/Vimeo videos for each topic (embedded, royalty-free content)
+  const videoMap: Record<string, string> = {
+    focus: "https://www.youtube.com/watch?v=5qap5aO4i9A", // Calm focus music/nature
+    leadership: "https://www.youtube.com/watch?v=8CrOL-ydFMI", // Leadership principles
+    recovery: "https://www.youtube.com/watch?v=inpok4MKVLM", // Peaceful recovery/meditation
+    stress: "https://www.youtube.com/watch?v=inpok4MKVLM", // Stress relief meditation
+    inclusion: "https://www.youtube.com/watch?v=kBdfcR-8hEY", // Inclusion and diversity
+    confidence: "https://www.youtube.com/watch?v=w-HYZv6HzAs", // Confidence building
+    creativity: "https://www.youtube.com/watch?v=arj7oStGLkU", // Creative inspiration
+    motivation: "https://www.youtube.com/watch?v=ZXsQAXx_ao0", // Motivational content
+  };
+
+  return videoMap[topic.toLowerCase()] || videoMap["focus"];
 }
