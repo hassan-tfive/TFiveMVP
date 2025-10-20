@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { User } from "@shared/schema";
 import { TairoGlowIcon, GrowthStepsIcon, FingerprintLinesIcon, EyeFrameIcon } from "@/components/CustomIcons";
-import dashboardIcon from "@assets/generated_images/Modern_dashboard_overview_icon_969eb363.png";
+import dashboardIcon from "@assets/generated_images/Geometric_dashboard_grid_icon_d1448535.png";
 import tairoAvatar from "@assets/generated_images/Modern_innovative_Tairo_avatar_6577fdec.png";
 import achievementIcon from "@assets/generated_images/Modern_achievement_growth_icon_674335b9.png";
 import profileIcon from "@assets/generated_images/Modern_profile_fingerprint_icon_7845f54d.png";
