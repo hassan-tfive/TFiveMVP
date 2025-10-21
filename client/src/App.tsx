@@ -30,17 +30,67 @@ import Achievements from "@/pages/Achievements";
 import AdminDashboard from "@/pages/AdminDashboard";
 import NotFound from "@/pages/not-found";
 import Profile from "@/pages/Profile";
+import Login from "@/pages/Login";
+import AdminSignup from "@/pages/AdminSignup";
+import AdminOnboarding from "@/pages/AdminOnboarding";
+import UserSignup from "@/pages/UserSignup";
+import TeamManagement from "@/pages/TeamManagement";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
-      <Route path="/programs" component={Programs} />
-      <Route path="/chat" component={ChatPage} />
-      <Route path="/session/:id" component={SessionPage} />
-      <Route path="/achievements" component={Achievements} />
-      <Route path="/profile" component={Profile} />
-      <Route path="/admin" component={AdminDashboard} />
+      {/* Public routes */}
+      <Route path="/login" component={Login} />
+      <Route path="/admin/signup" component={AdminSignup} />
+      <Route path="/signup/:token" component={UserSignup} />
+      
+      {/* Protected routes */}
+      <Route path="/">
+        <ProtectedRoute>
+          <Dashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/programs">
+        <ProtectedRoute>
+          <Programs />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/chat">
+        <ProtectedRoute>
+          <ChatPage />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/session/:id">
+        <ProtectedRoute>
+          <SessionPage />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/achievements">
+        <ProtectedRoute>
+          <Achievements />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/profile">
+        <ProtectedRoute>
+          <Profile />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/onboarding">
+        <ProtectedRoute>
+          <AdminOnboarding />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/team">
+        <ProtectedRoute requireAdmin>
+          <TeamManagement />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin">
+        <ProtectedRoute requireAdmin>
+          <AdminDashboard />
+        </ProtectedRoute>
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );
@@ -91,7 +141,13 @@ function UserMenu() {
           </DropdownMenuItem>
         </Link>
         <DropdownMenuSeparator />
-        <DropdownMenuItem disabled className="cursor-not-allowed opacity-50">
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={() => {
+            window.location.href = "/api/logout";
+          }}
+          data-testid="menu-item-logout"
+        >
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>

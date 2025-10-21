@@ -5,6 +5,8 @@ import {
   type InsertTeam,
   type User,
   type InsertUser,
+  type Invitation,
+  type InsertInvitation,
   type Program,
   type InsertProgram,
   type Session,
@@ -53,6 +55,11 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
   upsertUser(user: { id: string; email: string; username: string; displayName?: string | null; avatarUrl?: string | null }): Promise<User>;
+
+  // Invitation operations
+  createInvitation(invitation: InsertInvitation): Promise<Invitation>;
+  getInvitationByToken(token: string): Promise<Invitation | undefined>;
+  updateInvitation(id: string, updates: Partial<Invitation>): Promise<Invitation | undefined>;
 
   // Program operations
   getPrograms(workspace?: string): Promise<Program[]>;
@@ -120,6 +127,7 @@ export class MemStorage implements IStorage {
   private organizations: Map<string, Organization>;
   private teams: Map<string, Team>;
   private users: Map<string, User>;
+  private invitations: Map<string, Invitation>;
   private programs: Map<string, Program>;
   private sessions: Map<string, Session>;
   private progress: Map<string, Progress>;
@@ -138,6 +146,7 @@ export class MemStorage implements IStorage {
     this.organizations = new Map();
     this.teams = new Map();
     this.users = new Map();
+    this.invitations = new Map();
     this.programs = new Map();
     this.sessions = new Map();
     this.progress = new Map();
@@ -296,6 +305,32 @@ export class MemStorage implements IStorage {
       this.users.set(userData.id, newUser);
       return newUser;
     }
+  }
+
+  // Invitation operations
+  async createInvitation(insertInvitation: InsertInvitation): Promise<Invitation> {
+    const id = randomUUID();
+    const invitation: Invitation = {
+      id,
+      ...insertInvitation,
+      status: "pending",
+      acceptedAt: null,
+      createdAt: new Date(),
+    };
+    this.invitations.set(id, invitation);
+    return invitation;
+  }
+
+  async getInvitationByToken(token: string): Promise<Invitation | undefined> {
+    return Array.from(this.invitations.values()).find((inv) => inv.token === token);
+  }
+
+  async updateInvitation(id: string, updates: Partial<Invitation>): Promise<Invitation | undefined> {
+    const invitation = this.invitations.get(id);
+    if (!invitation) return undefined;
+    const updated = { ...invitation, ...updates };
+    this.invitations.set(id, updated);
+    return updated;
   }
 
   // Program operations
@@ -753,6 +788,32 @@ export class DbStorage implements IStorage {
       })
       .returning();
     return user;
+  }
+
+  // Invitation operations
+  async createInvitation(insertInvitation: InsertInvitation): Promise<Invitation> {
+    const [invitation] = await this.db
+      .insert(schema.invitations)
+      .values(insertInvitation as any)
+      .returning();
+    return invitation;
+  }
+
+  async getInvitationByToken(token: string): Promise<Invitation | undefined> {
+    const [invitation] = await this.db
+      .select()
+      .from(schema.invitations)
+      .where(eq(schema.invitations.token, token));
+    return invitation;
+  }
+
+  async updateInvitation(id: string, updates: Partial<Invitation>): Promise<Invitation | undefined> {
+    const [invitation] = await this.db
+      .update(schema.invitations)
+      .set(updates)
+      .where(eq(schema.invitations.id, id))
+      .returning();
+    return invitation;
   }
 
   // Program operations

@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import OpenAI from "openai";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 import {
   insertProgramSchema,
   insertSessionSchema,
@@ -36,12 +37,20 @@ function getUserId(req: any): string {
 }
 
 // Admin authorization middleware
-async function requireAdmin(req: Request, res: Response, next: NextFunction) {
+async function requireAdmin(req: any, res: Response, next: NextFunction) {
   try {
-    const user = await storage.getUser(DEFAULT_USER_ID);
+    // First check if user is authenticated
+    if (!req.user || !req.user.claims || !req.user.claims.sub) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
+    const userId = req.user.claims.sub;
+    const user = await storage.getUser(userId);
+    
     if (!user || user.role !== "admin") {
       return res.status(403).json({ error: "Admin access required" });
     }
+    
     next();
   } catch (error) {
     res.status(500).json({ error: "Authorization failed" });
@@ -523,6 +532,191 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(users);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch team users" });
+    }
+  });
+
+  // Admin onboarding endpoint
+  app.post("/api/admin/organizations/onboard", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const email = req.user.claims.email;
+      const session = req.session as any;
+      
+      // Security: Verify admin signup intent
+      if (session.signupIntent !== "admin") {
+        return res.status(403).json({ error: "Unauthorized: Not an admin signup flow" });
+      }
+      
+      // Security: Only allow users who don't already have an organization
+      const existingUser = await storage.getUser(userId);
+      if (existingUser?.organizationId) {
+        return res.status(403).json({ error: "User already belongs to an organization" });
+      }
+      
+      const onboardingSchema = z.object({
+        companySize: z.string(),
+        industry: z.string(),
+        values: z.string(),
+        goals: z.string(),
+      });
+      
+      const data = onboardingSchema.parse(req.body);
+      
+      // Create organization (use email domain as default name)
+      const domain = email.split("@")[1];
+      const orgName = domain.split(".")[0].charAt(0).toUpperCase() + domain.split(".")[0].slice(1);
+      const slug = domain.replace(/\./g, "-");
+      
+      const org = await storage.createOrganization({
+        name: orgName,
+        slug: slug,
+      });
+      
+      // Update user to be admin of this organization
+      await storage.updateUser(userId, {
+        organizationId: org.id,
+        role: "admin",
+      });
+      
+      // Clear the signup intent now that onboarding is complete
+      delete session.signupIntent;
+      
+      // TODO: Store onboarding data (companySize, industry, values, goals) 
+      // in organization metadata once schema is updated to include these fields
+      
+      res.json({ success: true, organizationId: org.id });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      console.error("Error completing onboarding:", error);
+      res.status(500).json({ error: "Failed to complete onboarding" });
+    }
+  });
+
+  // Invitation routes
+  app.get("/api/invitations/:token", async (req, res) => {
+    try {
+      const invitation = await storage.getInvitationByToken(req.params.token);
+      if (!invitation) {
+        return res.status(404).json({ error: "Invitation not found" });
+      }
+      
+      // Check if invitation has expired
+      if (new Date() > new Date(invitation.expiresAt)) {
+        return res.status(410).json({ error: "Invitation has expired" });
+      }
+      
+      // Get organization name
+      const org = await storage.getOrganization(invitation.organizationId);
+      
+      res.json({
+        id: invitation.id,
+        email: invitation.email,
+        organizationId: invitation.organizationId,
+        organizationName: org?.name || "Unknown Organization",
+        teamId: invitation.teamId || null,
+        status: invitation.status,
+      });
+    } catch (error) {
+      console.error("Error fetching invitation:", error);
+      res.status(500).json({ error: "Failed to fetch invitation" });
+    }
+  });
+
+  app.post("/api/invitations/:token/accept", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const email = req.user.claims.email;
+      
+      // Get invitation
+      const invitation = await storage.getInvitationByToken(req.params.token);
+      if (!invitation) {
+        return res.status(404).json({ error: "Invitation not found" });
+      }
+      
+      if (invitation.status !== "pending") {
+        return res.status(400).json({ error: "Invitation already accepted or cancelled" });
+      }
+      
+      if (new Date() > new Date(invitation.expiresAt)) {
+        return res.status(410).json({ error: "Invitation has expired" });
+      }
+      
+      if (invitation.email !== email) {
+        return res.status(403).json({ error: "Email does not match invitation" });
+      }
+      
+      // Create or update user
+      const username = email.split("@")[0] + "-" + userId.substring(0, 8);
+      const displayName = req.user.claims.name || username;
+      
+      await storage.upsertUser({
+        id: userId,
+        email: email,
+        username: username,
+        displayName: displayName,
+        avatarUrl: req.user.claims.picture || null,
+      });
+      
+      // Update user with organization and team
+      await storage.updateUser(userId, {
+        organizationId: invitation.organizationId,
+        teamId: invitation.teamId || undefined,
+        role: invitation.role || "user",
+      });
+      
+      // Mark invitation as accepted
+      await storage.updateInvitation(invitation.id, {
+        status: "accepted",
+        acceptedAt: new Date(),
+      });
+      
+      res.json({ success: true, message: "Invitation accepted" });
+    } catch (error) {
+      console.error("Error accepting invitation:", error);
+      res.status(500).json({ error: "Failed to accept invitation" });
+    }
+  });
+
+  app.post("/api/admin/invitations", requireAdmin, async (req: any, res) => {
+    try {
+      const inviteSchema = z.object({
+        email: z.string().email(),
+        organizationId: z.string(),
+        teamId: z.string().optional().nullable(),
+      });
+      
+      const data = inviteSchema.parse(req.body);
+      const userId = req.user.claims.sub;
+      
+      // Generate unique token
+      const token = randomUUID() + "-" + Date.now();
+      
+      // Set expiration to 7 days from now
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7);
+      
+      // Create invitation
+      const invitation = await storage.createInvitation({
+        email: data.email,
+        role: "user",
+        organizationId: data.organizationId,
+        invitedBy: userId,
+        token: token,
+        expiresAt: expiresAt,
+      });
+      
+      // TODO: Send email with invitation link
+      // For now, just return the token
+      
+      res.json({ success: true, token: invitation.token });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      console.error("Error creating invitation:", error);
+      res.status(500).json({ error: "Failed to create invitation" });
     }
   });
 

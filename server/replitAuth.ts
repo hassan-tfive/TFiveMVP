@@ -100,6 +100,13 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
+    // Store signup intent in session
+    if (req.query.signup === "admin") {
+      (req.session as any).signupIntent = "admin";
+    } else if (req.query.token) {
+      (req.session as any).invitationToken = req.query.token;
+    }
+    
     passport.authenticate(`replitauth:${req.hostname}`, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
@@ -107,9 +114,29 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/callback", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      successReturnToOrRedirect: "/",
-      failureRedirect: "/api/login",
+    passport.authenticate(`replitauth:${req.hostname}`, (err: any, user: any) => {
+      if (err || !user) {
+        return res.redirect("/api/login");
+      }
+      
+      req.login(user, (loginErr) => {
+        if (loginErr) {
+          return res.redirect("/api/login");
+        }
+        
+        // Check signup intent (don't delete yet - needed for onboarding validation)
+        const session = req.session as any;
+        if (session.signupIntent === "admin") {
+          return res.redirect("/admin/onboarding");
+        } else if (session.invitationToken) {
+          const token = session.invitationToken;
+          delete session.invitationToken; // Clear the token
+          return res.redirect(`/signup/${token}`);
+        }
+        
+        // Default redirect
+        return res.redirect("/");
+      });
     })(req, res, next);
   });
 
