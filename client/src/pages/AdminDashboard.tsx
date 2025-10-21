@@ -140,6 +140,87 @@ export default function AdminDashboard() {
             </div>
           </div>
 
+          {/* Member Roster */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold">Member Roster</h2>
+              <Link href="/admin/team">
+                <Button variant="outline" size="sm">
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Invite Members
+                </Button>
+              </Link>
+            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">All Organization Members</CardTitle>
+                <CardDescription>
+                  {users.length} member{users.length !== 1 ? "s" : ""} in {organizations[0]?.name || "organization"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {users.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Users className="mx-auto h-12 w-12 mb-3 opacity-50" />
+                    <p className="text-sm">No members yet. Start by inviting team members.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {users.map((user) => (
+                      <div
+                        key={user.id}
+                        className="flex items-center justify-between py-3 border-b last:border-0"
+                        data-testid={`member-row-${user.id}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                            <span className="text-sm font-semibold text-primary">
+                              {(user.displayName || user.username)
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")
+                                .toUpperCase()
+                                .slice(0, 2)}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium" data-testid={`member-name-${user.id}`}>
+                              {user.displayName || user.username}
+                            </p>
+                            <p className="text-xs text-muted-foreground" data-testid={`member-email-${user.id}`}>
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {user.teamId && (
+                            <Badge variant="outline" className="text-xs">
+                              {teams.find((t) => t.id === user.teamId)?.name || "Team"}
+                            </Badge>
+                          )}
+                          <Badge
+                            className={
+                              user.role === "admin"
+                                ? "bg-purple-600 text-white"
+                                : "bg-slate-600 text-white"
+                            }
+                            data-testid={`member-role-${user.id}`}
+                          >
+                            {user.role === "admin" ? "Admin" : "Member"}
+                          </Badge>
+                          <div className="text-right">
+                            <p className="text-xs text-muted-foreground">Level {user.level}</p>
+                            <p className="text-xs font-medium">{user.points} pts</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Teams */}
           <div>
             <h2 className="text-lg font-semibold mb-3">Teams</h2>
