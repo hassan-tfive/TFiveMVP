@@ -63,7 +63,7 @@ export default function TeamManagement() {
       return res.json();
     },
     onSuccess: (data) => {
-      setInvitedToken(data.token);
+      setInvitedToken(data.invitation.token);
       toast({
         title: "Invitation sent!",
         description: `An invitation has been sent to ${form.getValues("email")}`,

@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Users, UserPlus, TrendingUp, Target, Award, AlertTriangle } from "lucide-react";
+import { Link } from "wouter";
 import type { Organization, Team, User } from "@shared/schema";
 
 interface EngagementAnalytics {
@@ -66,12 +68,22 @@ export default function AdminDashboard() {
     <div className="flex flex-col h-full">
       <div className="border-b bg-background">
         <div className="container mx-auto px-6 py-4">
-          <h1 className="text-2xl font-display font-bold" data-testid="text-admin-title">
-            Enterprise Admin Dashboard
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Team management, analytics, and wellbeing insights
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-display font-bold" data-testid="text-admin-title">
+                Enterprise Admin Dashboard
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Team management, analytics, and wellbeing insights
+              </p>
+            </div>
+            <Link href="/admin/team">
+              <Button data-testid="button-manage-teams">
+                <Users className="mr-2 h-4 w-4" />
+                Manage Teams
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
