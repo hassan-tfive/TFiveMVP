@@ -28,6 +28,7 @@ Tfive uses **custom authentication** with Passport.js supporting both **Google O
 - **Security**: httpOnly, secure cookies with sameSite: lax, OAuth state CSRF protection
 - **Validation**: Zod schema validation for registration endpoints
 - **Password Hashing**: bcrypt with 10 salt rounds
+- **Critical Fix (2025-10-21)**: Passport `deserializeUser` and local strategy callback now return the **full user object** instead of just `{ id, email }`, ensuring `req.user` contains all fields including `role`, `organizationId`, `teamId`, etc. This was the root cause of "Access denied" issues after admin onboarding.
 
 ### Authentication Flow
 **Enterprise Admin Signup:**
@@ -42,15 +43,18 @@ Tfive uses **custom authentication** with Passport.js supporting both **Google O
 9. Access admin dashboard with full team management capabilities
 
 **Team Member Invitation:**
-1. Admin invites user via email from Team Management page
-2. System creates invitation token (7-day expiration) and sends branded HTML email via **Resend**
-3. User receives professional invitation email with organization name and one-click accept link
-4. User clicks link → Redirected to `/signup/:token` with beautiful standalone page
-5. Frontend stores `invitationToken` in session via `POST /api/store-invitation-token`
-6. User authenticates via Google OAuth OR email/password registration
-7. Backend creates user with `role: "member"`, logs them in
-8. Redirected back to `/signup/:token`, invitation auto-accepted via `POST /api/invitations/:token/accept`
-9. User assigned to organization and team, redirected to dashboard
+1. Admin navigates to `/admin/team` (Team Management page) via "Manage Teams" button on Admin Dashboard
+2. Admin invites user via **two methods**:
+   - **Email Invitation**: Enter email → click "Send Invitation" → System sends branded HTML email via Resend
+   - **Shareable Link**: Click "Copy invite link" button → Link copied to clipboard for sharing
+3. System creates invitation token (7-day expiration) with `organizationId` and optional `teamId`
+4. User receives email with one-click accept link OR uses shared link
+5. User clicks link → Redirected to `/signup/:token` with beautiful standalone page
+6. Frontend stores `invitationToken` in session via `POST /api/store-invitation-token`
+7. User authenticates via Google OAuth OR email/password registration
+8. Backend creates user with `role: "member"`, logs them in
+9. Redirected back to `/signup/:token`, invitation auto-accepted via `POST /api/invitations/:token/accept`
+10. User assigned to organization and team, redirected to dashboard
 
 ### Security Features
 - **Session-based signup intent tracking** prevents privilege escalation

@@ -135,7 +135,8 @@ export async function setupAuth(app: Express) {
             return done(null, false, { message: "Invalid email or password" });
           }
 
-          return done(null, { id: user.id, email: user.email });
+          // Return full user object so it gets properly serialized
+          return done(null, user);
         } catch (error) {
           return done(error);
         }
@@ -154,7 +155,8 @@ export async function setupAuth(app: Express) {
       if (!user) {
         return done(new Error("User not found"), null);
       }
-      done(null, { id: user.id, email: user.email });
+      // Return the FULL user object so req.user has all fields (role, organizationId, etc.)
+      done(null, user);
     } catch (error) {
       done(error, null);
     }
