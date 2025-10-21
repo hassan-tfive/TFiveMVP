@@ -12,7 +12,7 @@ import profileIcon from "@assets/generated_images/Modern_profile_fingerprint_ico
 import adminIcon from "@assets/generated_images/Modern_admin_eye_icon_169abb78.png";
 import programsIcon from "@assets/generated_images/Modern_pomodoro_productivity_icon_9fdad59d.png";
 
-const menuItems = [
+const userMenuItems = [
   { 
     title: "Dashboard", 
     url: "/", 
@@ -45,12 +45,26 @@ const menuItems = [
   },
 ];
 
-const adminMenuItem = { 
-  title: "Admin", 
-  url: "/admin", 
-  icon: () => <img src={adminIcon} alt="Admin" className="w-16 h-16 object-contain" />,
-  description: "Management"
-};
+const adminMenuItems = [
+  { 
+    title: "Admin Dashboard", 
+    url: "/admin", 
+    icon: () => <img src={adminIcon} alt="Admin Dashboard" className="w-16 h-16 object-contain" />,
+    description: "Team management"
+  },
+  { 
+    title: "Billings", 
+    url: "/admin/billings", 
+    icon: () => <img src={dashboardIcon} alt="Billings" className="w-16 h-16 object-contain" />,
+    description: "Payment & invoices"
+  },
+  { 
+    title: "Plans", 
+    url: "/admin/plans", 
+    icon: () => <img src={programsIcon} alt="Plans" className="w-16 h-16 object-contain" />,
+    description: "Subscription plans"
+  },
+];
 
 export function AppSidebar() {
   const [location] = useLocation();
@@ -61,7 +75,9 @@ export function AppSidebar() {
 
   const isAdmin = user?.role === "admin";
 
-  const allMenuItems = isAdmin ? [...menuItems, adminMenuItem] : menuItems;
+  // For admins: show admin items first, then user items
+  // For regular users: show only user items
+  const allMenuItems = isAdmin ? [...adminMenuItems, ...userMenuItems] : userMenuItems;
 
   return (
     <Sidebar className="h-auto max-h-[98vh] rounded-lg overflow-visible">

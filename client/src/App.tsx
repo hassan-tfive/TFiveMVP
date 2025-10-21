@@ -35,6 +35,8 @@ import AdminSignup from "@/pages/AdminSignup";
 import AdminOnboarding from "@/pages/AdminOnboarding";
 import UserSignup from "@/pages/UserSignup";
 import TeamManagement from "@/pages/TeamManagement";
+import Billings from "@/pages/Billings";
+import Plans from "@/pages/Plans";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 // Public auth routes that don't need app shell
@@ -91,6 +93,16 @@ function AppRoutes() {
       <Route path="/admin/team">
         <ProtectedRoute requireAdmin>
           <TeamManagement />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/billings">
+        <ProtectedRoute requireAdmin>
+          <Billings />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/plans">
+        <ProtectedRoute requireAdmin>
+          <Plans />
         </ProtectedRoute>
       </Route>
       <Route path="/admin">
