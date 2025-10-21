@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -37,15 +37,22 @@ import UserSignup from "@/pages/UserSignup";
 import TeamManagement from "@/pages/TeamManagement";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
-function Router() {
+// Public auth routes that don't need app shell
+function AuthRoutes() {
   return (
     <Switch>
-      {/* Public routes */}
       <Route path="/login" component={Login} />
       <Route path="/admin/signup" component={AdminSignup} />
       <Route path="/signup/:token" component={UserSignup} />
-      
-      {/* Protected routes */}
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
+
+// Protected app routes with sidebar/header
+function AppRoutes() {
+  return (
+    <Switch>
       <Route path="/">
         <ProtectedRoute>
           <Dashboard />
@@ -156,42 +163,63 @@ function UserMenu() {
   );
 }
 
-export default function App() {
+function AppLayout() {
   const style = {
     "--sidebar-width": "16rem",
     "--sidebar-width-icon": "3rem",
   };
 
   return (
+    <SidebarProvider style={style as React.CSSProperties}>
+      <div className="flex h-screen w-full">
+        <AppSidebar />
+        <div className="flex flex-col flex-1">
+          <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="max-w-[1800px] mx-auto flex items-center justify-between px-8 py-4">
+              <div className="flex items-center gap-6">
+                <SidebarTrigger 
+                  data-testid="button-sidebar-toggle" 
+                  className="hover-elevate active-elevate-2" 
+                />
+                <WorkspaceSwitcher />
+              </div>
+              <div className="flex items-center gap-4">
+                <ThemeToggle />
+                <UserMenu />
+              </div>
+            </div>
+          </header>
+          <main className="flex-1 overflow-auto p-6">
+            <AppRoutes />
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
+  );
+}
+
+function MainRouter() {
+  const [location] = useLocation();
+  
+  // Check if we're on an auth route
+  const isAuthRoute = location === "/login" || 
+                      location === "/admin/signup" || 
+                      location.startsWith("/signup/");
+
+  if (isAuthRoute) {
+    return <AuthRoutes />;
+  }
+
+  return <AppLayout />;
+}
+
+export default function App() {
+  return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <WorkspaceProvider>
           <TooltipProvider>
-            <SidebarProvider style={style as React.CSSProperties}>
-              <div className="flex h-screen w-full">
-                <AppSidebar />
-                <div className="flex flex-col flex-1">
-                  <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                    <div className="max-w-[1800px] mx-auto flex items-center justify-between px-8 py-4">
-                      <div className="flex items-center gap-6">
-                        <SidebarTrigger 
-                          data-testid="button-sidebar-toggle" 
-                          className="hover-elevate active-elevate-2" 
-                        />
-                        <WorkspaceSwitcher />
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <ThemeToggle />
-                        <UserMenu />
-                      </div>
-                    </div>
-                  </header>
-                  <main className="flex-1 overflow-auto p-6">
-                    <Router />
-                  </main>
-                </div>
-              </div>
-            </SidebarProvider>
+            <MainRouter />
             <Toaster />
           </TooltipProvider>
         </WorkspaceProvider>
