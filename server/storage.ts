@@ -52,6 +52,7 @@ export interface IStorage {
   getTeamUsers(teamId: string): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
+  upsertUser(user: { id: string; email: string; username: string; displayName?: string | null; avatarUrl?: string | null }): Promise<User>;
 
   // Program operations
   getPrograms(workspace?: string): Promise<Program[]>;
@@ -260,6 +261,41 @@ export class MemStorage implements IStorage {
     const updated = { ...user, ...updates };
     this.users.set(id, updated);
     return updated;
+  }
+
+  async upsertUser(userData: { id: string; email: string; username: string; displayName?: string | null; avatarUrl?: string | null }): Promise<User> {
+    const existing = this.users.get(userData.id);
+    if (existing) {
+      // Update existing user
+      const updated: User = {
+        ...existing,
+        email: userData.email,
+        username: userData.username,
+        displayName: userData.displayName ?? existing.displayName,
+        avatarUrl: userData.avatarUrl ?? existing.avatarUrl,
+      };
+      this.users.set(userData.id, updated);
+      return updated;
+    } else {
+      // Create new user
+      const newUser: User = {
+        id: userData.id,
+        email: userData.email,
+        username: userData.username,
+        displayName: userData.displayName ?? null,
+        avatarUrl: userData.avatarUrl ?? null,
+        passwordHash: null,
+        role: "user",
+        organizationId: null,
+        teamId: null,
+        currentWorkspace: "professional",
+        points: 0,
+        level: 1,
+        createdAt: new Date(),
+      };
+      this.users.set(userData.id, newUser);
+      return newUser;
+    }
   }
 
   // Program operations
@@ -689,6 +725,32 @@ export class DbStorage implements IStorage {
       .update(schema.users)
       .set(updates)
       .where(eq(schema.users.id, id))
+      .returning();
+    return user;
+  }
+
+  async upsertUser(userData: { id: string; email: string; username: string; displayName?: string | null; avatarUrl?: string | null }): Promise<User> {
+    const [user] = await this.db
+      .insert(schema.users)
+      .values({
+        id: userData.id,
+        email: userData.email,
+        username: userData.username,
+        displayName: userData.displayName ?? null,
+        avatarUrl: userData.avatarUrl ?? null,
+        passwordHash: null,
+        role: "user",
+        currentWorkspace: "professional",
+      })
+      .onConflictDoUpdate({
+        target: schema.users.id,
+        set: {
+          email: userData.email,
+          username: userData.username,
+          displayName: userData.displayName,
+          avatarUrl: userData.avatarUrl,
+        },
+      })
       .returning();
     return user;
   }

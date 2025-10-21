@@ -1,6 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 import OpenAI from "openai";
 import { z } from "zod";
 import {
@@ -28,6 +29,11 @@ const openai = new OpenAI({
 });
 
 const DEFAULT_USER_ID = "default-user";
+
+// Helper to get userId from authenticated request
+function getUserId(req: any): string {
+  return req.user?.claims?.sub || DEFAULT_USER_ID;
+}
 
 // Admin authorization middleware
 async function requireAdmin(req: Request, res: Response, next: NextFunction) {
@@ -73,6 +79,21 @@ function getPhaseGuidance(phase: string, workspace: string): string {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup authentication
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
   // User routes
   app.get("/api/user", async (req, res) => {
     const user = await storage.getUser(DEFAULT_USER_ID);
