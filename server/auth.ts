@@ -248,15 +248,14 @@ export async function setupAuth(app: Express) {
         role,
       });
 
-      // Log them in
-      req.login({ id: user.id, email: user.email }, (err) => {
+      // Log them in (pass full user object so session has all fields including role)
+      req.login(user, (err) => {
         if (err) {
           return res.status(500).json({ error: "Registration successful but login failed" });
         }
 
-        // Clear signup intent after use
+        // Redirect based on signup type (don't clear signupIntent yet - onboarding needs it)
         if (isAdminSignup) {
-          delete session.signupIntent;
           return res.json({ success: true, redirect: "/admin/onboarding" });
         } else if (session.invitationToken) {
           const token = session.invitationToken;

@@ -108,8 +108,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const { intent } = req.body;
     if (intent === 'admin') {
       req.session.signupIntent = 'admin';
+      // Explicitly save session to ensure it persists
+      req.session.save((err: any) => {
+        if (err) {
+          console.error('Failed to save session:', err);
+          return res.status(500).json({ error: 'Failed to save session' });
+        }
+        res.json({ success: true });
+      });
+    } else {
+      res.json({ success: true });
     }
-    res.json({ success: true });
   });
 
   // Store invitation token in session
@@ -556,12 +565,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin onboarding endpoint
   app.post("/api/admin/organizations/onboard", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const email = req.user.claims.email;
+      const userId = req.user.id;
+      const email = req.user.email;
       const session = req.session as any;
+      
+      // Debug logging
+      console.log("[ONBOARDING] Session data:", {
+        signupIntent: session.signupIntent,
+        hasSession: !!session,
+        sessionId: session.id,
+        user: { id: userId, email }
+      });
       
       // Security: Verify admin signup intent
       if (session.signupIntent !== "admin") {
+        console.log("[ONBOARDING] Access denied - signupIntent:", session.signupIntent);
         return res.status(403).json({ error: "Unauthorized: Not an admin signup flow" });
       }
       
