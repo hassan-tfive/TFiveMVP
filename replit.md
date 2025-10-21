@@ -15,7 +15,43 @@ Gamification elements like points, leveling, reward systems, and achievement bad
 
 The frontend is built with React, TypeScript, Tailwind CSS, Shadcn UI, Wouter for routing, TanStack Query for data fetching, and Framer Motion for animations. The backend uses Express.js, integrates OpenAI, and utilizes a PostgreSQL database with Drizzle ORM (Neon). Zod is used for validation, and a role-based authorization middleware secures admin features. The design system employs Inter, Sora, and JetBrains Mono fonts, with a distinct color palette for brand elements (Navy Blue #003C51, Soft Gold #E3B34A, Teal #2D9DA8), workspaces, and timer phases, supporting dark mode. Custom SVG icons enhance the UI: "Rising Spiral" for Achievements (growth), "Fingerprint Lines" for Profile (uniqueness), and "Eye with Frame" for Admin (oversight).
 
+## Authentication & User Management
+Tfive uses **Replit Auth** for secure OAuth-based authentication with session management and role-based access control.
+
+### Authentication Flow
+**Enterprise Admin Signup:**
+1. Visit `/admin/signup` → Beautiful standalone signup page (no sidebar/header)
+2. Click Google/GitHub/Email → Triggers OAuth with `signup=admin` intent stored in session
+3. After authentication → Redirected to `/admin/onboarding` wizard
+4. Complete 2-step onboarding → Creates organization and assigns admin role
+5. Session `signupIntent` cleared after successful onboarding
+6. Access admin dashboard with full team management capabilities
+
+**Team Member Invitation:**
+1. Admin invites user via email from Team Management page
+2. System creates invitation token (7-day expiration) and sends branded HTML email via **Resend**
+3. User receives professional invitation email with organization name and one-click accept link
+4. User clicks link → Redirected to `/signup/:token` with beautiful standalone page
+5. User authenticates via Google/GitHub/Email → OAuth stores invitation token in session
+6. After auth → Redirected back to `/signup/:token`, invitation auto-accepted
+7. User assigned to organization and team, redirected to dashboard
+
+### Security Features
+- **Session-based signup intent tracking** prevents privilege escalation
+- **Email verification** ensures invitation matches authenticated user's email
+- **Token expiration** (7 days) limits invitation validity
+- **Role-based middleware** (`requireAdmin`) protects admin endpoints
+- **Standalone auth layout** for login/signup pages (no app shell, gradient background)
+
+### Email Integration
+- **Resend connector** for reliable email delivery with Replit-managed API keys
+- **Branded HTML templates** with Tfive design system
+- **Automatic email sending** when admins invite team members
+- Fallback logging if email fails (invitation still created)
+
 ## External Dependencies
+- **Replit Auth**: OAuth authentication (Google, GitHub, Email) with session management
+- **Resend**: Email delivery service for invitation emails, integrated via Replit connectors
 - **OpenAI**: Integrated via Replit AI Integrations for the AI companion "Tairo" and AI-powered content generation in the Program Creation Wizard.
 - **PostgreSQL**: Used as the primary database, managed with Drizzle ORM and hosted on Neon.
 - **Tailwind CSS**: Utility-first CSS framework for styling.
