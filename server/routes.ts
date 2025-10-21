@@ -486,10 +486,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes - Organization and Team Management
-  app.get("/api/admin/organizations", requireAdmin, async (req, res) => {
+  app.get("/api/admin/organizations", requireAdmin, async (req: any, res) => {
     try {
-      const orgs = await storage.getOrganizations();
-      res.json(orgs);
+      const userId = getUserId(req);
+      const user = await storage.getUser(userId);
+      
+      if (!user?.organizationId) {
+        return res.json([]);
+      }
+      
+      // Admin should only see their own organization
+      const org = await storage.getOrganization(user.organizationId);
+      res.json(org ? [org] : []);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch organizations" });
     }
