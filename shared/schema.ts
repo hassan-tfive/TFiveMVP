@@ -22,14 +22,29 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
+  passwordHash: text("password_hash"), // hashed password (null for social auth)
   displayName: text("display_name"),
   avatarUrl: text("avatar_url"),
-  role: text("role").notNull().default("user"), // user | admin | team_lead
+  role: text("role").notNull().default("user"), // user | admin | enterprise_admin
   organizationId: varchar("organization_id").references(() => organizations.id),
   teamId: varchar("team_id").references(() => teams.id),
   currentWorkspace: text("current_workspace").notNull().default("professional"), // professional | personal
   points: integer("points").notNull().default(0),
   level: integer("level").notNull().default(1),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Invitations for user onboarding
+export const invitations = pgTable("invitations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: text("email").notNull(),
+  role: text("role").notNull().default("user"), // user | admin
+  organizationId: varchar("organization_id").notNull().references(() => organizations.id),
+  invitedBy: varchar("invited_by").notNull().references(() => users.id),
+  token: text("token").notNull().unique(), // unique token for invitation link
+  status: text("status").notNull().default("pending"), // pending | accepted | expired | cancelled
+  expiresAt: timestamp("expires_at").notNull(),
+  acceptedAt: timestamp("accepted_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -210,6 +225,12 @@ export const insertUserSchema = createInsertSchema(users).omit({
   createdAt: true,
 });
 
+export const insertInvitationSchema = createInsertSchema(invitations).omit({
+  id: true,
+  createdAt: true,
+  acceptedAt: true,
+});
+
 export const insertProgramSchema = createInsertSchema(programs).omit({
   id: true,
   createdAt: true,
@@ -285,6 +306,9 @@ export type Team = typeof teams.$inferSelect;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+export type InsertInvitation = z.infer<typeof insertInvitationSchema>;
+export type Invitation = typeof invitations.$inferSelect;
 
 export type InsertProgram = z.infer<typeof insertProgramSchema>;
 export type Program = typeof programs.$inferSelect;
