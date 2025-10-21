@@ -690,6 +690,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const data = inviteSchema.parse(req.body);
       const userId = req.user.claims.sub;
       
+      // Get organization details
+      const organization = await storage.getOrganization(data.organizationId);
+      if (!organization) {
+        return res.status(404).json({ error: "Organization not found" });
+      }
+      
       // Generate unique token
       const token = randomUUID() + "-" + Date.now();
       
@@ -707,10 +713,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         expiresAt: expiresAt,
       });
       
-      // TODO: Send email with invitation link
-      // For now, just return the token
+      // Send invitation email
+      try {
+        const { sendInvitationEmail } = await import("./email");
+        await sendInvitationEmail(data.email, organization.name, token);
+        console.log(`Invitation email sent to ${data.email}`);
+      } catch (emailError) {
+        console.error("Failed to send invitation email:", emailError);
+        // Don't fail the whole request if email fails
+        // The invitation is still created and can be resent
+      }
       
-      res.json({ success: true, token: invitation.token });
+      res.json({ success: true, invitationId: invitation.id });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
