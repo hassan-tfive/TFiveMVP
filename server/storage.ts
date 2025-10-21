@@ -50,6 +50,7 @@ export interface IStorage {
   
   // User operations
   getUser(id: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   getOrganizationUsers(organizationId: string): Promise<User[]>;
   getTeamUsers(teamId: string): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
@@ -243,6 +244,10 @@ export class MemStorage implements IStorage {
   // User operations
   async getUser(id: string): Promise<User | undefined> {
     return this.users.get(id);
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(u => u.email === email);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -730,6 +735,14 @@ export class DbStorage implements IStorage {
       .select()
       .from(schema.users)
       .where(eq(schema.users.id, id));
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await this.db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.email, email));
     return user;
   }
 
