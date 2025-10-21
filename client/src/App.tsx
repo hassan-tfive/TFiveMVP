@@ -44,6 +44,11 @@ function AuthRoutes() {
       <Route path="/login" component={Login} />
       <Route path="/admin/signup" component={AdminSignup} />
       <Route path="/signup/:token" component={UserSignup} />
+      <Route path="/admin/onboarding">
+        <ProtectedRoute>
+          <AdminOnboarding />
+        </ProtectedRoute>
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );
@@ -81,11 +86,6 @@ function AppRoutes() {
       <Route path="/profile">
         <ProtectedRoute>
           <Profile />
-        </ProtectedRoute>
-      </Route>
-      <Route path="/admin/onboarding">
-        <ProtectedRoute>
-          <AdminOnboarding />
         </ProtectedRoute>
       </Route>
       <Route path="/admin/team">
@@ -201,9 +201,10 @@ function AppLayout() {
 function MainRouter() {
   const [location] = useLocation();
   
-  // Check if we're on an auth route
+  // Check if we're on an auth route (no sidebar/header)
   const isAuthRoute = location === "/login" || 
                       location === "/admin/signup" || 
+                      location === "/admin/onboarding" ||
                       location.startsWith("/signup/");
 
   if (isAuthRoute) {
