@@ -131,8 +131,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User routes
-  app.get("/api/user", async (req, res) => {
-    const user = await storage.getUser(DEFAULT_USER_ID);
+  app.get("/api/user", async (req: any, res) => {
+    // If authenticated, return the authenticated user; otherwise return demo user
+    const userId = req.user?.id || DEFAULT_USER_ID;
+    const user = await storage.getUser(userId);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -601,7 +603,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create organization (use email domain as default name)
       const domain = email.split("@")[1];
       const orgName = domain.split(".")[0].charAt(0).toUpperCase() + domain.split(".")[0].slice(1);
-      const slug = domain.replace(/\./g, "-");
+      // Add random suffix to ensure slug uniqueness
+      const baseSlug = domain.replace(/\./g, "-");
+      const uniqueSuffix = crypto.randomUUID().substring(0, 8);
+      const slug = `${baseSlug}-${uniqueSuffix}`;
       
       const org = await storage.createOrganization({
         name: orgName,
@@ -614,13 +619,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: "admin",
       });
       
+      // Fetch the updated user from DB and update session
+      const updatedUser = await storage.getUser(userId);
+      if (updatedUser) {
+        req.user = updatedUser; // Update session with latest user data
+      }
+      
       // Clear the signup intent now that onboarding is complete
       delete session.signupIntent;
       
-      // TODO: Store onboarding data (companySize, industry, values, goals) 
-      // in organization metadata once schema is updated to include these fields
-      
-      res.json({ success: true, organizationId: org.id });
+      // Explicitly save session to ensure updated user persists
+      req.session.save((saveErr: any) => {
+        if (saveErr) {
+          console.error("[ONBOARDING] Failed to save session:", saveErr);
+          return res.status(500).json({ error: "Session save failed" });
+        }
+        
+        console.log("[ONBOARDING] Onboarding complete. User updated:", {
+          userId,
+          organizationId: org.id,
+          role: updatedUser?.role
+        });
+        
+        // TODO: Store onboarding data (companySize, industry, values, goals) 
+        // in organization metadata once schema is updated to include these fields
+        
+        res.json({ success: true, organizationId: org.id });
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });

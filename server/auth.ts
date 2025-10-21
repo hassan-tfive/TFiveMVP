@@ -249,20 +249,41 @@ export async function setupAuth(app: Express) {
       });
 
       // Log them in (pass full user object so session has all fields including role)
+      // Note: req.login() can regenerate session, so we preserve signupIntent/invitationToken
+      const savedSignupIntent = session.signupIntent;
+      const savedInvitationToken = session.invitationToken;
+      
       req.login(user, (err) => {
         if (err) {
           return res.status(500).json({ error: "Registration successful but login failed" });
         }
 
-        // Redirect based on signup type (don't clear signupIntent yet - onboarding needs it)
-        if (isAdminSignup) {
-          return res.json({ success: true, redirect: "/admin/onboarding" });
-        } else if (session.invitationToken) {
-          const token = session.invitationToken;
-          return res.json({ success: true, redirect: `/signup/${token}` });
+        // Restore preserved session values (in case req.login regenerated session)
+        if (savedSignupIntent) {
+          req.session.signupIntent = savedSignupIntent;
         }
+        if (savedInvitationToken) {
+          req.session.invitationToken = savedInvitationToken;
+        }
+        
+        // Explicitly save session to ensure persistence
+        req.session.save((saveErr: any) => {
+          if (saveErr) {
+            console.error("[REGISTRATION] Failed to save session after login:", saveErr);
+            return res.status(500).json({ error: "Session save failed" });
+          }
+          
+          console.log("[REGISTRATION] Session saved. SignupIntent:", req.session.signupIntent);
+          
+          // Redirect based on signup type (don't clear signupIntent yet - onboarding needs it)
+          if (isAdminSignup) {
+            return res.json({ success: true, redirect: "/admin/onboarding" });
+          } else if (savedInvitationToken) {
+            return res.json({ success: true, redirect: `/signup/${savedInvitationToken}` });
+          }
 
-        res.json({ success: true, redirect: "/" });
+          res.json({ success: true, redirect: "/" });
+        });
       });
     } catch (error) {
       console.error("Registration error:", error);

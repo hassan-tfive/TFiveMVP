@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Building2, Target, Sparkles, CheckCircle2 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 const step1Schema = z.object({
   companySize: z.string().min(1, "Please select company size"),
@@ -51,9 +51,15 @@ export default function AdminOnboarding() {
     mutationFn: async (data: Step1Form & Step2Form) => {
       return await apiRequest("POST", "/api/admin/organizations/onboard", data);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       setCurrentStep(3);
-      setTimeout(() => navigate("/admin"), 2000);
+      // Refetch (not just invalidate) user queries to ensure fresh data before navigation
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: ["/api/user"] }),
+        queryClient.refetchQueries({ queryKey: ["/api/auth/user"] }),
+      ]);
+      // Navigate after ensuring fresh user data is fetched
+      setTimeout(() => navigate("/admin"), 1500);
     },
   });
 
