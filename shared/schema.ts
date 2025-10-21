@@ -33,7 +33,9 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
-  passwordHash: text("password_hash"), // hashed password (null for social auth)
+  passwordHash: text("password_hash"), // hashed password (null for OAuth providers)
+  provider: text("provider").notNull().default("local"), // local | google | replit (for migration)
+  oauthSubject: text("oauth_subject"), // OAuth provider's user ID (null for local auth)
   displayName: text("display_name"),
   avatarUrl: text("avatar_url"),
   role: text("role").notNull().default("user"), // user | admin | enterprise_admin
