@@ -60,6 +60,7 @@ export interface IStorage {
   // Invitation operations
   createInvitation(invitation: InsertInvitation): Promise<Invitation>;
   getInvitationByToken(token: string): Promise<Invitation | undefined>;
+  getOrganizationInvitations(organizationId: string): Promise<Invitation[]>;
   updateInvitation(id: string, updates: Partial<Invitation>): Promise<Invitation | undefined>;
 
   // Program operations
@@ -328,6 +329,12 @@ export class MemStorage implements IStorage {
 
   async getInvitationByToken(token: string): Promise<Invitation | undefined> {
     return Array.from(this.invitations.values()).find((inv) => inv.token === token);
+  }
+
+  async getOrganizationInvitations(organizationId: string): Promise<Invitation[]> {
+    return Array.from(this.invitations.values())
+      .filter((inv) => inv.organizationId === organizationId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
   async updateInvitation(id: string, updates: Partial<Invitation>): Promise<Invitation | undefined> {

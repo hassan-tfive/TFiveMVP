@@ -53,6 +53,7 @@ export const invitations = pgTable("invitations", {
   email: text("email").notNull(),
   role: text("role").notNull().default("user"), // user | admin
   organizationId: varchar("organization_id").notNull().references(() => organizations.id),
+  teamId: varchar("team_id").references(() => teams.id), // optional team assignment
   invitedBy: varchar("invited_by").notNull().references(() => users.id),
   token: text("token").notNull().unique(), // unique token for invitation link
   status: text("status").notNull().default("pending"), // pending | accepted | expired | cancelled

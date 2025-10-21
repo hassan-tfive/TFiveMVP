@@ -644,8 +644,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/invitations/:token/accept", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const email = req.user.claims.email;
+      const userId = req.user.id;
+      const email = req.user.email;
       
       // Get invitation
       const invitation = await storage.getInvitationByToken(req.params.token);
@@ -664,18 +664,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (invitation.email !== email) {
         return res.status(403).json({ error: "Email does not match invitation" });
       }
-      
-      // Create or update user
-      const username = email.split("@")[0] + "-" + userId.substring(0, 8);
-      const displayName = req.user.claims.name || username;
-      
-      await storage.upsertUser({
-        id: userId,
-        email: email,
-        username: username,
-        displayName: displayName,
-        avatarUrl: req.user.claims.picture || null,
-      });
       
       // Update user with organization and team
       await storage.updateUser(userId, {
@@ -697,6 +685,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all invitations for an organization
+  app.get("/api/admin/organizations/:id/invitations", requireAdmin, async (req, res) => {
+    try {
+      const invitations = await storage.getOrganizationInvitations(req.params.id);
+      res.json(invitations);
+    } catch (error) {
+      console.error("Error fetching invitations:", error);
+      res.status(500).json({ error: "Failed to fetch invitations" });
+    }
+  });
+
   app.post("/api/admin/invitations", requireAdmin, async (req: any, res) => {
     try {
       const inviteSchema = z.object({
@@ -706,7 +705,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const data = inviteSchema.parse(req.body);
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       
       // Get organization details
       const organization = await storage.getOrganization(data.organizationId);
@@ -726,6 +725,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: data.email,
         role: "user",
         organizationId: data.organizationId,
+        teamId: data.teamId || undefined,
         invitedBy: userId,
         token: token,
         expiresAt: expiresAt,
@@ -742,7 +742,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // The invitation is still created and can be resent
       }
       
-      res.json({ success: true, invitationId: invitation.id });
+      // Return the full invitation with token for copy link functionality
+      res.json({ 
+        success: true, 
+        invitation: {
+          id: invitation.id,
+          email: data.email,
+          token: token,
+          organizationId: data.organizationId,
+          teamId: data.teamId || null,
+        }
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
