@@ -8,6 +8,7 @@ import bcrypt from "bcryptjs";
 import type { Express, RequestHandler } from "express";
 import { storage } from "./storage";
 import crypto from "crypto";
+import { z } from "zod";
 
 if (!process.env.REPLIT_DOMAINS) {
   throw new Error("Environment variable REPLIT_DOMAINS not provided");
@@ -65,8 +66,10 @@ export async function setupAuth(app: Express) {
           clientID: process.env.GOOGLE_CLIENT_ID,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET,
           callbackURL: callbackURL,
+          passReqToCallback: true,
+          state: true,
         },
-        async (accessToken, refreshToken, profile, done) => {
+        async (req: any, accessToken, refreshToken, profile, done) => {
           try {
             const email = profile.emails?.[0]?.value;
             if (!email) {
@@ -77,6 +80,11 @@ export async function setupAuth(app: Express) {
             let user = await storage.getUserByEmail(email);
 
             if (!user) {
+              // Check signup intent to determine role
+              const session = req.session as any;
+              const isAdminSignup = session.signupIntent === "admin";
+              const role = isAdminSignup ? "admin" : "member";
+
               // Create new user with Google OAuth
               const username = email.split("@")[0] + "-" + crypto.randomUUID().substring(0, 8);
               user = await storage.createUser({
@@ -87,6 +95,7 @@ export async function setupAuth(app: Express) {
                 provider: "google",
                 oauthSubject: profile.id,
                 passwordHash: null,
+                role,
               });
             } else if (user.provider !== "google") {
               // User exists with different provider
@@ -182,6 +191,7 @@ export async function setupAuth(app: Express) {
         // Check signup intent
         const session = req.session as any;
         if (session.signupIntent === "admin") {
+          delete session.signupIntent;
           return res.redirect("/admin/onboarding");
         } else if (session.invitationToken) {
           const token = session.invitationToken;
@@ -197,15 +207,19 @@ export async function setupAuth(app: Express) {
   // Local email/password registration
   app.post("/api/auth/register", async (req, res) => {
     try {
-      const { email, password, name } = req.body;
+      // Validate request body
+      const registerSchema = z.object({
+        email: z.string().email("Invalid email address"),
+        password: z.string().min(8, "Password must be at least 8 characters"),
+        name: z.string().optional(),
+      });
 
-      if (!email || !password) {
-        return res.status(400).json({ error: "Email and password are required" });
+      const validation = registerSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ error: validation.error.errors[0].message });
       }
 
-      if (password.length < 8) {
-        return res.status(400).json({ error: "Password must be at least 8 characters" });
-      }
+      const { email, password, name } = validation.data;
 
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(email);
@@ -215,6 +229,11 @@ export async function setupAuth(app: Express) {
 
       // Hash password
       const passwordHash = await hashPassword(password);
+
+      // Check signup intent to determine role
+      const session = req.session as any;
+      const isAdminSignup = session.signupIntent === "admin";
+      const role = isAdminSignup ? "admin" : "member";
 
       // Create user
       const username = email.split("@")[0] + "-" + crypto.randomUUID().substring(0, 8);
@@ -226,6 +245,7 @@ export async function setupAuth(app: Express) {
         provider: "local",
         oauthSubject: null,
         avatarUrl: null,
+        role,
       });
 
       // Log them in
@@ -234,9 +254,9 @@ export async function setupAuth(app: Express) {
           return res.status(500).json({ error: "Registration successful but login failed" });
         }
 
-        // Check signup intent
-        const session = req.session as any;
-        if (session.signupIntent === "admin") {
+        // Clear signup intent after use
+        if (isAdminSignup) {
+          delete session.signupIntent;
           return res.json({ success: true, redirect: "/admin/onboarding" });
         } else if (session.invitationToken) {
           const token = session.invitationToken;

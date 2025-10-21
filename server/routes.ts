@@ -1,7 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./auth";
 import OpenAI from "openai";
 import { z } from "zod";
 import { randomUUID } from "crypto";
@@ -33,18 +33,18 @@ const DEFAULT_USER_ID = "default-user";
 
 // Helper to get userId from authenticated request
 function getUserId(req: any): string {
-  return req.user?.claims?.sub || DEFAULT_USER_ID;
+  return req.user?.id || DEFAULT_USER_ID;
 }
 
 // Admin authorization middleware
 async function requireAdmin(req: any, res: Response, next: NextFunction) {
   try {
     // First check if user is authenticated
-    if (!req.user || !req.user.claims || !req.user.claims.sub) {
+    if (!req.user || !req.user.id) {
       return res.status(401).json({ error: "Authentication required" });
     }
     
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     const user = await storage.getUser(userId);
     
     if (!user || user.role !== "admin") {
@@ -94,13 +94,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = getUserId(req);
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
     }
+  });
+
+  // Signup intent endpoint
+  app.post('/api/signup-intent', (req: any, res) => {
+    const { intent } = req.body;
+    if (intent === 'admin') {
+      req.session.signupIntent = 'admin';
+    }
+    res.json({ success: true });
+  });
+
+  // Store invitation token in session
+  app.post('/api/store-invitation-token', (req: any, res) => {
+    const { token } = req.body;
+    if (token) {
+      req.session.invitationToken = token;
+    }
+    res.json({ success: true });
   });
 
   // User routes
