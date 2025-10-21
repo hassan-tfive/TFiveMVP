@@ -2,9 +2,17 @@ import OpenAI from "openai";
 import fs from "fs";
 import path from "path";
 
+// Main OpenAI client for chat completions (uses Replit proxy)
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+});
+
+// Separate OpenAI client for TTS (direct to OpenAI API)
+// This uses the same API key but connects directly to OpenAI's servers
+const openaiDirect = new OpenAI({
+  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+  // No baseURL means it uses the default: https://api.openai.com/v1
 });
 
 // Types for AI workflow outputs
@@ -307,8 +315,8 @@ export async function generateAudioNarration(
 
     console.log(`[TTS] Generating audio for ${phase} phase with ${voice} voice`);
 
-    // Generate audio using OpenAI TTS
-    const mp3Response = await openai.audio.speech.create({
+    // Generate audio using OpenAI TTS (direct API, not Replit proxy)
+    const mp3Response = await openaiDirect.audio.speech.create({
       model: "tts-1",
       voice,
       input: text,
