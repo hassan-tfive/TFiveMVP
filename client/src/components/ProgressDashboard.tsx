@@ -1,4 +1,4 @@
-import { Trophy, Target, Flame, Award } from "lucide-react";
+import { Crown, Sparkles, Brain, Zap } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -24,7 +24,7 @@ export function ProgressDashboard({ points, level, completedSessions, streak }: 
       )}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Level</CardTitle>
-          <Trophy className={cn(
+          <Crown className={cn(
             "w-5 h-5",
             workspace === "professional" ? "text-workspace-professional" : "text-workspace-personal"
           )} />
@@ -44,7 +44,7 @@ export function ProgressDashboard({ points, level, completedSessions, streak }: 
       <Card className="hover-elevate">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Points</CardTitle>
-          <Target className="w-5 h-5 text-chart-3" />
+          <Sparkles className="w-5 h-5 text-chart-3" />
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-bold font-display" data-testid="text-points">{points.toLocaleString()}</div>
@@ -57,7 +57,7 @@ export function ProgressDashboard({ points, level, completedSessions, streak }: 
       <Card className="hover-elevate">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Sessions</CardTitle>
-          <Award className="w-5 h-5 text-chart-2" />
+          <Brain className="w-5 h-5 text-chart-2" />
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-bold font-display" data-testid="text-sessions">{completedSessions}</div>
@@ -70,7 +70,7 @@ export function ProgressDashboard({ points, level, completedSessions, streak }: 
       <Card className="hover-elevate">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Streak</CardTitle>
-          <Flame className="w-5 h-5 text-chart-4" />
+          <Zap className="w-5 h-5 text-chart-4" />
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-bold font-display" data-testid="text-streak">{streak}</div>
