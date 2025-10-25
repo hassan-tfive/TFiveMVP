@@ -38,7 +38,7 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
       {/* Overlay */}
       {open && (
         <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
           onClick={() => onOpenChange(false)}
         />
       )}
@@ -46,8 +46,8 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed lg:relative inset-y-0 left-0 z-50 w-64 bg-background border-r transition-transform duration-200",
-          open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          "fixed inset-y-0 left-0 z-50 w-64 bg-background border-r transition-transform duration-200",
+          open ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex flex-col h-full">
@@ -58,7 +58,7 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
               variant="ghost"
               size="icon"
               onClick={() => onOpenChange(false)}
-              className="lg:hidden"
+              data-testid="button-close-sidebar"
             >
               <X className="w-4 h-4" />
             </Button>
