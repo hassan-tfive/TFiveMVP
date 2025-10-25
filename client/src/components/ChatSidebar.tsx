@@ -136,7 +136,7 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation }: ChatSi
                       <Button
                         key={conversation.id}
                         variant="ghost"
-                        className="w-full justify-start text-xs h-auto py-2"
+                        className="w-full justify-start text-xs h-auto py-2 overflow-hidden"
                         onClick={() => {
                           onSelectConversation?.(conversation.id);
                           onOpenChange(false);
@@ -144,9 +144,9 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation }: ChatSi
                         data-testid={`chat-history-${idx}`}
                       >
                         <MessageSquare className="w-3 h-3 mr-2 flex-shrink-0" />
-                        <div className="truncate text-left">
+                        <span className="truncate text-left">
                           {conversation.title || "New Chat"}
-                        </div>
+                        </span>
                       </Button>
                     ))}
                   </div>
@@ -164,13 +164,13 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation }: ChatSi
                       <Link key={program.id} href="/programs">
                         <Button
                           variant="ghost"
-                          className="w-full justify-start text-xs h-auto py-2"
+                          className="w-full justify-start text-xs h-auto py-2 overflow-hidden"
                           data-testid={`recent-program-${program.id}`}
                         >
                           <Clock className="w-3 h-3 mr-2 flex-shrink-0" />
-                          <div className="truncate text-left">
+                          <span className="truncate text-left">
                             {program.title}
-                          </div>
+                          </span>
                         </Button>
                       </Link>
                     ))}
