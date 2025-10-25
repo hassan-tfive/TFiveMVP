@@ -79,7 +79,7 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation, onNewCha
           </div>
 
           <ScrollArea className="flex-1">
-            <div className="p-4 space-y-6">
+            <div className="p-4 space-y-6 max-w-full overflow-hidden">
               {/* Main Navigation */}
               <div className="space-y-2">
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
@@ -140,8 +140,8 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation, onNewCha
               </div>
 
               {/* Recent Chats */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between mb-2">
+              <div className="space-y-2 max-w-full overflow-hidden">
+                <div className="flex items-center justify-between mb-2 gap-2">
                   <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Recent Chats
                   </h3>
@@ -162,7 +162,7 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation, onNewCha
                   )}
                 </div>
                 {recentChats.length > 0 && (
-                  <div className="space-y-1 min-w-0">
+                  <div className="space-y-1 max-w-full overflow-hidden">
                     {recentChats.map((conversation, idx) => (
                       <Button
                         key={conversation.id}
@@ -186,13 +186,13 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation, onNewCha
 
               {/* Recent Programs */}
               {recentPrograms.length > 0 && (
-                <div className="space-y-2">
+                <div className="space-y-2 max-w-full overflow-hidden">
                   <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                     Recent Programs
                   </h3>
-                  <div className="space-y-1">
+                  <div className="space-y-1 max-w-full overflow-hidden">
                     {recentPrograms.map((program) => (
-                      <Link key={program.id} href="/programs">
+                      <Link key={program.id} href="/programs" className="block max-w-full">
                         <Button
                           variant="ghost"
                           className="w-full justify-start text-xs h-auto py-2 overflow-hidden"
