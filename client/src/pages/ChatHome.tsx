@@ -37,14 +37,21 @@ export default function ChatHome() {
       return apiRequest("POST", "/api/chat", { content, workspace });
     },
     onSuccess: (data: any) => {
-      // Add both user message and assistant response to local state
+      // Replace optimistic messages with real ones from server
       if (data.userMessage && data.assistantMessage) {
-        setMessages(prev => [...prev, data.userMessage, data.assistantMessage]);
+        setMessages(prev => {
+          // Remove the last message (optimistic user message)
+          const withoutOptimistic = prev.slice(0, -1);
+          // Add both real messages
+          return [...withoutOptimistic, data.userMessage, data.assistantMessage];
+        });
       }
       // Also invalidate chat history in sidebar
       queryClient.invalidateQueries({ queryKey: ["/api/chat", workspace] });
     },
     onError: () => {
+      // Remove optimistic message on error
+      setMessages(prev => prev.slice(0, -1));
       toast({
         title: "Error",
         description: "Failed to send message. Please try again.",
