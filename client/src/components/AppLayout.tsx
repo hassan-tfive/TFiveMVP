@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChatSidebar } from "@/components/ChatSidebar";
-import { ProfileMenu } from "@/components/ProfileMenu";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -56,11 +55,6 @@ export function ChatLayout({ children, showTairoTitle = false, onSelectConversat
         {/* Main Content */}
         <div className="flex-1 overflow-auto p-6">
           {children}
-        </div>
-
-        {/* Profile Menu - Fixed bottom-left */}
-        <div className="absolute bottom-4 left-4 z-30">
-          <ProfileMenu />
         </div>
       </div>
     </div>

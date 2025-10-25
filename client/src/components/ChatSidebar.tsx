@@ -1,10 +1,19 @@
 import { Link, useLocation } from "wouter";
-import { X, MessageSquare, LayoutDashboard, BookOpen, Award, Clock, Plus } from "lucide-react";
+import { X, MessageSquare, LayoutDashboard, BookOpen, Award, Clock, Plus, UserCircle, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import type { Conversation, Program } from "@shared/schema";
+import type { Conversation, Program, User } from "@shared/schema";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import logoLight from "@assets/v3 - crimson text font-06_1761388223780.png";
 import logoDark from "@assets/v3 - crimson text font-08_1761388214633.png";
@@ -35,6 +44,24 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation, onNewCha
 
   const recentChats = conversations.slice(0, 5);
   const recentPrograms = programs?.slice(0, 3) || [];
+
+  const { data: user } = useQuery<User>({
+    queryKey: ["/api/user"],
+  });
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const handleLogout = async () => {
+    await fetch("/api/logout");
+    window.location.href = "/login";
+  };
 
   return (
     <>
@@ -210,6 +237,68 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation, onNewCha
               )}
             </div>
           </ScrollArea>
+
+          {/* Footer - Profile Menu */}
+          {user && (
+            <div className="border-t p-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start h-auto p-2 hover-elevate"
+                    data-testid="button-profile-menu"
+                  >
+                    <Avatar className="h-10 w-10 mr-3">
+                      <AvatarImage src={user.avatarUrl || undefined} alt={user.username} />
+                      <AvatarFallback className="bg-primary text-primary-foreground">
+                        {getInitials(user.username)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col items-start min-w-0 flex-1">
+                      <p className="text-sm font-medium truncate w-full">{user.username}</p>
+                      <p className="text-xs text-muted-foreground">Level {user.level} • {user.points} pts</p>
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" side="right" className="w-64">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user.username}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user.email}
+                      </p>
+                      <div className="flex items-center gap-3 mt-2 pt-2 border-t">
+                        <div className="text-xs">
+                          <span className="font-semibold">Level {user.level}</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {user.points} points
+                        </div>
+                      </div>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile">
+                      <UserCircle className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} data-testid="button-logout">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
         </div>
       </div>
     </>
