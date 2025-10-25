@@ -209,8 +209,19 @@ export const userAchievements = pgTable("user_achievements", {
   unlockedAt: timestamp("unlocked_at").notNull().defaultNow(),
 });
 
+// Conversations for organizing chat history
+export const conversations = pgTable("conversations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  workspace: text("workspace").notNull(), // professional | personal
+  title: text("title"), // Auto-generated from first message or user-defined
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const chatMessages = pgTable("chat_messages", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  conversationId: varchar("conversation_id").references(() => conversations.id),
   userId: varchar("user_id").notNull().references(() => users.id),
   role: text("role").notNull(), // user | assistant
   content: text("content").notNull(),
@@ -268,6 +279,12 @@ export const insertAchievementSchema = createInsertSchema(achievements).omit({
 export const insertUserAchievementSchema = createInsertSchema(userAchievements).omit({
   id: true,
   unlockedAt: true,
+});
+
+export const insertConversationSchema = createInsertSchema(conversations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
@@ -338,6 +355,9 @@ export type Achievement = typeof achievements.$inferSelect;
 
 export type InsertUserAchievement = z.infer<typeof insertUserAchievementSchema>;
 export type UserAchievement = typeof userAchievements.$inferSelect;
+
+export type InsertConversation = z.infer<typeof insertConversationSchema>;
+export type Conversation = typeof conversations.$inferSelect;
 
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
