@@ -9,9 +9,10 @@ interface ChatLayoutProps {
   children: React.ReactNode;
   showTairoTitle?: boolean;
   onSelectConversation?: (conversationId: string) => void;
+  onNewChat?: () => void;
 }
 
-export function ChatLayout({ children, showTairoTitle = false, onSelectConversation }: ChatLayoutProps) {
+export function ChatLayout({ children, showTairoTitle = false, onSelectConversation, onNewChat }: ChatLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -21,6 +22,7 @@ export function ChatLayout({ children, showTairoTitle = false, onSelectConversat
         open={sidebarOpen} 
         onOpenChange={setSidebarOpen}
         onSelectConversation={onSelectConversation}
+        onNewChat={onNewChat}
       />
 
       {/* Main Area */}

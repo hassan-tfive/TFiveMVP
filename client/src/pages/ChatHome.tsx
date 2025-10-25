@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Send, Loader2, LayoutDashboard, BookOpen, Award, Plus } from "lucide-react";
+import { Send, Loader2, LayoutDashboard, BookOpen, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
@@ -146,7 +146,7 @@ export default function ChatHome() {
   const hasMessages = messages.length > 0;
 
   return (
-    <ChatLayout showTairoTitle onSelectConversation={loadConversation}>
+    <ChatLayout showTairoTitle onSelectConversation={loadConversation} onNewChat={startNewChat}>
       <div className="flex flex-col h-full">
         {/* Messages Area */}
         <ScrollArea className="flex-1">
@@ -235,19 +235,6 @@ export default function ChatHome() {
               </div>
             ) : (
               <div className="space-y-4" data-testid="chat-messages">
-                {/* New Chat Button */}
-                <div className="flex justify-end mb-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={startNewChat}
-                    data-testid="button-new-chat"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    New Chat
-                  </Button>
-                </div>
-                
                 {messages.map((message) => (
                   <div
                     key={message.id}

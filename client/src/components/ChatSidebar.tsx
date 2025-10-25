@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { X, MessageSquare, LayoutDashboard, BookOpen, Award, Clock } from "lucide-react";
+import { X, MessageSquare, LayoutDashboard, BookOpen, Award, Clock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery } from "@tanstack/react-query";
@@ -11,9 +11,10 @@ interface ChatSidebarProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelectConversation?: (conversationId: string) => void;
+  onNewChat?: () => void;
 }
 
-export function ChatSidebar({ open, onOpenChange, onSelectConversation }: ChatSidebarProps) {
+export function ChatSidebar({ open, onOpenChange, onSelectConversation, onNewChat }: ChatSidebarProps) {
   const [location] = useLocation();
   const { workspace } = useWorkspace();
 
@@ -53,7 +54,7 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation }: ChatSi
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b">
-            <h2 className="font-semibold">Navigation</h2>
+            <h2 className="font-display text-xl font-bold text-primary">Tfive</h2>
             <Button
               variant="ghost"
               size="icon"
@@ -126,17 +127,34 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation }: ChatSi
               </div>
 
               {/* Recent Chats */}
-              {recentChats.length > 0 && (
-                <div className="space-y-2">
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Recent Chats
                   </h3>
-                  <div className="space-y-1">
+                  {location === "/" && onNewChat && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-xs"
+                      onClick={() => {
+                        onNewChat();
+                        onOpenChange(false);
+                      }}
+                      data-testid="button-new-chat"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      New
+                    </Button>
+                  )}
+                </div>
+                {recentChats.length > 0 && (
+                  <div className="space-y-1 min-w-0">
                     {recentChats.map((conversation, idx) => (
                       <Button
                         key={conversation.id}
                         variant="ghost"
-                        className="w-full justify-start text-xs h-auto py-2 overflow-hidden"
+                        className="w-full justify-start text-xs h-auto py-2 min-w-0"
                         onClick={() => {
                           onSelectConversation?.(conversation.id);
                           onOpenChange(false);
@@ -144,14 +162,14 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation }: ChatSi
                         data-testid={`chat-history-${idx}`}
                       >
                         <MessageSquare className="w-3 h-3 mr-2 flex-shrink-0" />
-                        <span className="truncate text-left">
+                        <span className="truncate flex-1 text-left min-w-0">
                           {conversation.title || "New Chat"}
                         </span>
                       </Button>
                     ))}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               {/* Recent Programs */}
               {recentPrograms.length > 0 && (
@@ -164,11 +182,11 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation }: ChatSi
                       <Link key={program.id} href="/programs">
                         <Button
                           variant="ghost"
-                          className="w-full justify-start text-xs h-auto py-2 overflow-hidden"
+                          className="w-full justify-start text-xs h-auto py-2 min-w-0"
                           data-testid={`recent-program-${program.id}`}
                         >
                           <Clock className="w-3 h-3 mr-2 flex-shrink-0" />
-                          <span className="truncate text-left">
+                          <span className="truncate flex-1 text-left min-w-0">
                             {program.title}
                           </span>
                         </Button>
