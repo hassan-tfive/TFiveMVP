@@ -5,10 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { ChatSidebar } from "@/components/ChatSidebar";
-import { ProfileMenu } from "@/components/ProfileMenu";
+import { AppLayout } from "@/components/AppLayout";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
@@ -18,7 +15,6 @@ export default function ChatHome() {
   const { workspace } = useWorkspace();
   const { toast } = useToast();
   const [input, setInput] = useState("");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { data: messages = [] } = useQuery<ChatMessage[]>({
@@ -78,36 +74,8 @@ export default function ChatHome() {
   const hasMessages = messages.length > 0;
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* Sidebar */}
-      <ChatSidebar open={sidebarOpen} onOpenChange={setSidebarOpen} />
-
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Bar */}
-        <div className="flex items-center justify-between px-6 py-3 border-b">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              data-testid="button-toggle-sidebar"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
-              </svg>
-            </Button>
-            <span className="text-lg font-semibold font-display">TAIRO</span>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <WorkspaceSwitcher />
-            <ThemeToggle />
-          </div>
-        </div>
-
+    <AppLayout showTairoTitle>
+      <div className="flex flex-col h-full">
         {/* Messages Area */}
         <ScrollArea className="flex-1">
           <div className="max-w-3xl mx-auto px-6 py-8">
@@ -241,7 +209,7 @@ export default function ChatHome() {
         </ScrollArea>
 
         {/* Input Area */}
-        <div className="border-t">
+        <div className="border-t flex-shrink-0">
           <div className="max-w-3xl mx-auto px-6 py-4 space-y-3">
             {/* Quick Action Buttons */}
             <div className="flex items-center gap-2">
@@ -307,9 +275,6 @@ export default function ChatHome() {
           </div>
         </div>
       </div>
-
-      {/* Profile Menu (Bottom Left) */}
-      <ProfileMenu />
-    </div>
+    </AppLayout>
   );
 }
