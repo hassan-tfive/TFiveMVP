@@ -17,7 +17,7 @@ export default function Dashboard() {
     queryKey: ["/api/user"],
   });
 
-  const { data: programs } = useQuery<Program[]>({
+  const { data: programs, isLoading: programsLoading } = useQuery<Program[]>({
     queryKey: ["/api/programs", workspace],
     queryFn: async () => {
       const res = await fetch(`/api/programs?workspace=${workspace}`);
@@ -87,7 +87,13 @@ export default function Dashboard() {
           </Button>
         </div>
 
-        {recommendedPrograms.length === 0 ? (
+        {programsLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
+            ))}
+          </div>
+        ) : recommendedPrograms.length === 0 ? (
           <div className="text-center py-12 bg-muted/30 rounded-lg">
             <p className="text-muted-foreground">No programs available yet.</p>
             <p className="text-sm text-muted-foreground mt-2">Check back soon for new content!</p>
