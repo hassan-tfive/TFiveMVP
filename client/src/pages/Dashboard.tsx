@@ -105,7 +105,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      <Link href="/chat" data-testid="link-chat-with-tairo">
+      <Link href="/" data-testid="link-chat-with-tairo">
         <div className={cn(
           "rounded-lg p-6 cursor-pointer transition-all hover-elevate active-elevate-2 group",
           workspace === "professional" 
