@@ -244,28 +244,30 @@ export default function ChatHome() {
                     )}
                     data-testid={`message-${message.role}`}
                   >
-                    <div
-                      className={cn(
-                        "max-w-[75%] rounded-lg px-4 py-3",
-                        message.role === "user"
-                          ? workspace === "professional"
+                    {message.role === "user" ? (
+                      <div
+                        className={cn(
+                          "max-w-[75%] rounded-lg px-4 py-3",
+                          workspace === "professional"
                             ? "bg-workspace-professional text-white"
                             : "bg-workspace-personal text-white"
-                          : "bg-muted text-foreground"
-                      )}
-                    >
-                      {message.role === "assistant" && (
+                        )}
+                      >
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                      </div>
+                    ) : (
+                      <div className="max-w-[75%] py-3">
                         <div className="flex items-center gap-2 mb-2">
                           <span className="text-xs font-semibold text-muted-foreground">TAIRO</span>
                         </div>
-                      )}
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
-                    </div>
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground">{message.content}</p>
+                      </div>
+                    )}
                   </div>
                 ))}
                 {sendMessageMutation.isPending && (
                   <div className="flex justify-start gap-3">
-                    <div className="bg-muted rounded-lg px-4 py-3">
+                    <div className="py-3">
                       <div className="flex items-center gap-2">
                         <Loader2 className="w-4 h-4 animate-spin" />
                         <span className="text-sm text-muted-foreground">TAIRO is thinking...</span>
