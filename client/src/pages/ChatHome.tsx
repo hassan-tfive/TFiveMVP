@@ -17,14 +17,8 @@ export default function ChatHome() {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { data: messages = [] } = useQuery<ChatMessage[]>({
-    queryKey: ["/api/chat", workspace],
-    queryFn: async () => {
-      const res = await fetch(`/api/chat?workspace=${workspace}`);
-      if (!res.ok) throw new Error("Failed to fetch messages");
-      return res.json();
-    },
-  });
+  // Track current conversation messages (start with empty for new chat)
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   const { data: programs = [] } = useQuery<Program[]>({
     queryKey: ["/api/programs", workspace],
@@ -39,7 +33,12 @@ export default function ChatHome() {
     mutationFn: async (content: string) => {
       return apiRequest("POST", "/api/chat", { content, workspace });
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
+      // Add both user message and assistant response to local state
+      if (data.userMessage && data.assistantMessage) {
+        setMessages(prev => [...prev, data.userMessage, data.assistantMessage]);
+      }
+      // Also invalidate chat history in sidebar
       queryClient.invalidateQueries({ queryKey: ["/api/chat", workspace] });
     },
     onError: () => {
@@ -51,6 +50,11 @@ export default function ChatHome() {
     },
   });
 
+  // Reset messages when workspace changes (start fresh chat)
+  useEffect(() => {
+    setMessages([]);
+  }, [workspace]);
+
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -58,8 +62,22 @@ export default function ChatHome() {
 
   const handleSend = () => {
     if (input.trim() && !sendMessageMutation.isPending) {
-      sendMessageMutation.mutate(input.trim());
+      const userInput = input.trim();
+      
+      // Optimistically add user message to UI
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        userId: '',
+        role: 'user',
+        content: userInput,
+        workspace,
+        conversationId: null,
+        metadata: null,
+        createdAt: new Date()
+      } as ChatMessage]);
+      
       setInput("");
+      sendMessageMutation.mutate(userInput);
     }
   };
 

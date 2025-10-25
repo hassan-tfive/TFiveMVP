@@ -8,7 +8,6 @@ import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
 import { ChatLayout } from "@/components/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Programs from "@/pages/Programs";
-import ChatPage from "@/pages/ChatPage";
 import ChatHome from "@/pages/ChatHome";
 import SessionPage from "@/pages/SessionPage";
 import Achievements from "@/pages/Achievements";
@@ -54,11 +53,6 @@ function AppRoutes() {
         <Route path="/programs">
           <ProtectedRoute>
             <Programs />
-          </ProtectedRoute>
-        </Route>
-        <Route path="/chat">
-          <ProtectedRoute>
-            <ChatPage />
           </ProtectedRoute>
         </Route>
         <Route path="/session/:id">
