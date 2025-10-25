@@ -17,6 +17,8 @@ export default function ChatHome() {
   const [location] = useLocation();
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const previousLocationRef = useRef<string>("");
+  const previousWorkspaceRef = useRef<string>(workspace);
 
   // Track current conversation messages (start with empty for new chat)
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -51,9 +53,18 @@ export default function ChatHome() {
     },
   });
 
-  // Reset messages on mount and when returning to this page (fresh chat on every visit)
+  // Reset messages when entering ChatHome from another page or workspace changes
   useEffect(() => {
-    setMessages([]);
+    const isEnteringChat = previousLocationRef.current !== "" && previousLocationRef.current !== "/" && location === "/";
+    const isWorkspaceChange = previousWorkspaceRef.current !== workspace;
+    const isFirstMount = previousLocationRef.current === "";
+    
+    if (isFirstMount || isEnteringChat || isWorkspaceChange) {
+      setMessages([]);
+    }
+    
+    previousLocationRef.current = location;
+    previousWorkspaceRef.current = workspace;
   }, [location, workspace]);
 
   // Auto-scroll to bottom when messages change
