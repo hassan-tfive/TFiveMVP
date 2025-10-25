@@ -5,12 +5,12 @@ import { ProfileMenu } from "@/components/ProfileMenu";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-interface AppLayoutProps {
+interface ChatLayoutProps {
   children: React.ReactNode;
   showTairoTitle?: boolean;
 }
 
-export function AppLayout({ children, showTairoTitle = false }: AppLayoutProps) {
+export function ChatLayout({ children, showTairoTitle = false }: ChatLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (

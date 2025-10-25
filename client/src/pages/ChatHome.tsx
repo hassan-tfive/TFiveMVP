@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { AppLayout } from "@/components/AppLayout";
+import { ChatLayout } from "@/components/AppLayout";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
@@ -74,7 +74,7 @@ export default function ChatHome() {
   const hasMessages = messages.length > 0;
 
   return (
-    <AppLayout showTairoTitle>
+    <ChatLayout showTairoTitle>
       <div className="flex flex-col h-full">
         {/* Messages Area */}
         <ScrollArea className="flex-1">
@@ -275,6 +275,6 @@ export default function ChatHome() {
           </div>
         </div>
       </div>
-    </AppLayout>
+    </ChatLayout>
   );
 }
