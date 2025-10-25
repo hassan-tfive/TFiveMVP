@@ -69,6 +69,7 @@ export interface IStorage {
   getPrograms(workspace?: string): Promise<Program[]>;
   getProgram(id: string): Promise<Program | undefined>;
   createProgram(program: InsertProgram): Promise<Program>;
+  getStartedPrograms(userId: string, workspace?: string): Promise<Program[]>;
 
   // Session operations
   getSession(id: string): Promise<Session | undefined>;
@@ -367,6 +368,31 @@ export class MemStorage implements IStorage {
 
   async getProgram(id: string): Promise<Program | undefined> {
     return this.programs.get(id);
+  }
+
+  async getStartedPrograms(userId: string, workspace?: string): Promise<Program[]> {
+    const userSessions = Array.from(this.sessions.values()).filter(s => s.userId === userId);
+    const startedProgramIds = new Set<string>();
+    
+    for (const session of userSessions) {
+      if (session.programId) {
+        startedProgramIds.add(session.programId);
+      }
+      if (session.loopId) {
+        const loop = this.loops.get(session.loopId);
+        if (loop) {
+          startedProgramIds.add(loop.programId);
+        }
+      }
+    }
+    
+    const programs = Array.from(this.programs.values())
+      .filter(p => startedProgramIds.has(p.id));
+    
+    if (workspace) {
+      return programs.filter(p => p.workspace === workspace || p.workspace === "both");
+    }
+    return programs;
   }
 
   async createProgram(insertProgram: InsertProgram): Promise<Program> {
@@ -911,6 +937,57 @@ export class DbStorage implements IStorage {
       .from(schema.programs)
       .where(eq(schema.programs.id, id));
     return program;
+  }
+
+  async getStartedPrograms(userId: string, workspace?: string): Promise<Program[]> {
+    const { inArray, and, or } = await import("drizzle-orm");
+    
+    const userSessions = await this.db
+      .select({ programId: schema.sessions.programId, loopId: schema.sessions.loopId })
+      .from(schema.sessions)
+      .where(eq(schema.sessions.userId, userId));
+    
+    const programIds = new Set<string>();
+    for (const session of userSessions) {
+      if (session.programId) {
+        programIds.add(session.programId);
+      }
+      if (session.loopId) {
+        const [loop] = await this.db
+          .select({ programId: schema.loops.programId })
+          .from(schema.loops)
+          .where(eq(schema.loops.id, session.loopId));
+        if (loop) {
+          programIds.add(loop.programId);
+        }
+      }
+    }
+    
+    if (programIds.size === 0) {
+      return [];
+    }
+    
+    const programIdArray = Array.from(programIds);
+    
+    if (workspace) {
+      return await this.db
+        .select()
+        .from(schema.programs)
+        .where(
+          and(
+            inArray(schema.programs.id, programIdArray),
+            or(
+              eq(schema.programs.workspace, workspace),
+              eq(schema.programs.workspace, "both")
+            )
+          )
+        );
+    }
+    
+    return await this.db
+      .select()
+      .from(schema.programs)
+      .where(inArray(schema.programs.id, programIdArray));
   }
 
   async createProgram(insertProgram: InsertProgram): Promise<Program> {

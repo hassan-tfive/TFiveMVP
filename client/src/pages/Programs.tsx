@@ -54,6 +54,15 @@ export default function Programs() {
     },
   });
 
+  const { data: startedPrograms, isLoading: startedProgramsLoading } = useQuery<Program[]>({
+    queryKey: ["/api/programs/started", workspace],
+    queryFn: async () => {
+      const res = await fetch(`/api/programs/started?workspace=${workspace}`);
+      if (!res.ok) throw new Error("Failed to fetch started programs");
+      return res.json();
+    },
+  });
+
   const filteredPrograms = programs?.filter((program) => {
     const matchesSearch = program.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (program.description || "").toLowerCase().includes(searchQuery.toLowerCase());
@@ -122,6 +131,40 @@ export default function Programs() {
           </SelectContent>
         </Select>
       </div>
+
+      {/* Started Programs Section */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-display font-semibold">Started Programs</h2>
+        {startedProgramsLoading ? (
+          <div className="grid grid-cols-1 gap-4">
+            {[1, 2].map((i) => (
+              <div key={i} className="h-40 bg-muted animate-pulse rounded-lg" />
+            ))}
+          </div>
+        ) : startedPrograms && startedPrograms.length > 0 ? (
+          <div className="space-y-4">
+            {startedPrograms.map((program) => (
+              <ProgramCardWithLoops
+                key={program.id}
+                program={program}
+                isExpanded={expandedPrograms.has(program.id)}
+                onToggleExpand={() => toggleProgramExpansion(program.id)}
+                onStartSession={(loopId: string) => setLocation(`/session/${loopId}`)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-muted/30 rounded-lg">
+            <Filter className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+            <p className="text-lg font-medium">No programs started yet</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Once you start a program, you'll see it here to continue your progress
+            </p>
+          </div>
+        )}
+      </div>
+
+      <h2 className="text-2xl font-display font-semibold">All Programs</h2>
 
       {isLoading ? (
         <div className="grid grid-cols-1 gap-4">

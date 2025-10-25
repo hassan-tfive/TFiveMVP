@@ -172,6 +172,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(programs);
   });
 
+  app.get("/api/programs/started", async (req, res) => {
+    const workspace = req.query.workspace as string | undefined;
+    const userId = req.user?.id || DEFAULT_USER_ID;
+    const programs = await storage.getStartedPrograms(userId, workspace);
+    res.json(programs);
+  });
+
   app.get("/api/programs/:id", async (req, res) => {
     const program = await storage.getProgram(req.params.id);
     if (!program) {
