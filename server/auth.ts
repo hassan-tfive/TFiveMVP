@@ -201,7 +201,9 @@ export async function setupAuth(app: Express) {
           return res.redirect(`/signup/${token}`);
         }
 
-        return res.redirect("/");
+        // Redirect based on user role: admins to /admin, regular users to chat home
+        const redirectPath = user.role === "admin" ? "/admin" : "/";
+        return res.redirect(redirectPath);
       });
     })(req, res, next);
   });
@@ -318,7 +320,9 @@ export async function setupAuth(app: Express) {
           return res.json({ success: true, redirect: `/signup/${token}` });
         }
 
-        res.json({ success: true, redirect: "/" });
+        // Redirect based on user role: admins to /admin, regular users to chat home
+        const redirectPath = user.role === "admin" ? "/admin" : "/";
+        res.json({ success: true, redirect: redirectPath });
       });
     })(req, res, next);
   });

@@ -25,6 +25,7 @@ import type { User } from "@shared/schema";
 import Dashboard from "@/pages/Dashboard";
 import Programs from "@/pages/Programs";
 import ChatPage from "@/pages/ChatPage";
+import ChatHome from "@/pages/ChatHome";
 import SessionPage from "@/pages/SessionPage";
 import Achievements from "@/pages/Achievements";
 import AdminDashboard from "@/pages/AdminDashboard";
@@ -60,7 +61,7 @@ function AuthRoutes() {
 function AppRoutes() {
   return (
     <Switch>
-      <Route path="/">
+      <Route path="/dashboard">
         <ProtectedRoute>
           <Dashboard />
         </ProtectedRoute>
@@ -219,8 +220,19 @@ function MainRouter() {
                       location === "/admin/onboarding" ||
                       location.startsWith("/signup/");
 
+  // Check if we're on the chat home page (uses its own layout)
+  const isChatHome = location === "/";
+
   if (isAuthRoute) {
     return <AuthRoutes />;
+  }
+
+  if (isChatHome) {
+    return (
+      <ProtectedRoute>
+        <ChatHome />
+      </ProtectedRoute>
+    );
   }
 
   return <AppLayout />;

@@ -14,8 +14,14 @@ import programsIcon from "@assets/generated_images/Modern_pomodoro_productivity_
 
 const userMenuItems = [
   { 
-    title: "Dashboard", 
+    title: "TAIRO", 
     url: "/", 
+    icon: () => <img src={tairoAvatar} alt="Tairo" className="w-16 h-16 object-contain" />,
+    description: "AI companion"
+  },
+  { 
+    title: "Dashboard", 
+    url: "/dashboard", 
     icon: () => <img src={dashboardIcon} alt="Dashboard" className="w-16 h-16 object-contain" />,
     description: "Your overview"
   },
@@ -24,12 +30,6 @@ const userMenuItems = [
     url: "/programs", 
     icon: () => <img src={programsIcon} alt="Programs" className="w-16 h-16 object-contain" />,
     description: "Learning library"
-  },
-  { 
-    title: "TAIRO", 
-    url: "/chat", 
-    icon: () => <img src={tairoAvatar} alt="Tairo" className="w-16 h-16 object-contain" />,
-    description: "AI guidance"
   },
   { 
     title: "Achievements", 
