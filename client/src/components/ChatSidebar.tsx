@@ -6,6 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import type { Conversation, Program } from "@shared/schema";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import logoLight from "@assets/v3 - crimson text font-06_1761388223780.png";
+import logoDark from "@assets/v3 - crimson text font-08_1761388214633.png";
 
 interface ChatSidebarProps {
   open: boolean;
@@ -54,7 +56,18 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation, onNewCha
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b">
-            <h2 className="font-display text-xl font-bold text-primary">Tfive</h2>
+            <div className="flex items-center">
+              <img 
+                src={logoLight} 
+                alt="Tfive" 
+                className="h-8 w-auto dark:hidden"
+              />
+              <img 
+                src={logoDark} 
+                alt="Tfive" 
+                className="h-8 w-auto hidden dark:block"
+              />
+            </div>
             <Button
               variant="ghost"
               size="icon"
