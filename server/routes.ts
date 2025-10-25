@@ -187,6 +187,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(program);
   });
 
+  // Loop routes
+  app.get("/api/loops/:id", async (req, res) => {
+    const loop = await storage.getLoop(req.params.id);
+    if (!loop) {
+      return res.status(404).json({ error: "Loop not found" });
+    }
+    res.json(loop);
+  });
+
   app.post("/api/programs", async (req, res) => {
     try {
       const programData = insertProgramSchema.parse(req.body);

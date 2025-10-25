@@ -8,6 +8,7 @@ import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
 import { ChatLayout } from "@/components/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Programs from "@/pages/Programs";
+import ProgramDetail from "@/pages/ProgramDetail";
 import ChatHome from "@/pages/ChatHome";
 import SessionPage from "@/pages/SessionPage";
 import Achievements from "@/pages/Achievements";
@@ -109,6 +110,9 @@ function MainRouter() {
   // Check if we're on the chat home page (uses its own layout)
   const isChatHome = location === "/";
 
+  // Check if we're on the program detail page (full screen layout)
+  const isProgramDetail = location.startsWith("/program/");
+
   if (isAuthRoute) {
     return <AuthRoutes />;
   }
@@ -118,6 +122,18 @@ function MainRouter() {
       <ProtectedRoute>
         <ChatHome />
       </ProtectedRoute>
+    );
+  }
+
+  if (isProgramDetail) {
+    return (
+      <Switch>
+        <Route path="/program/:loopId">
+          <ProtectedRoute>
+            <ProgramDetail />
+          </ProtectedRoute>
+        </Route>
+      </Switch>
     );
   }
 

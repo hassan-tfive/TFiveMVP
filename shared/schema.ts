@@ -116,6 +116,8 @@ export const loops = pgTable("loops", {
   audioActUrl: text("audio_act_url"), // TTS audio for Act phase
   audioEarnUrl: text("audio_earn_url"), // TTS audio for Earn phase
   videoUrl: text("video_url"), // Video content URL
+  // Structured content items for rich program experience
+  contentItems: jsonb("content_items"), // Array of { type, title, duration, content, section }
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -397,3 +399,33 @@ export type UserRole = "user" | "admin" | "team_lead";
 export type RewardProvider = "employer" | "sponsor";
 export type RedemptionStatus = "pending" | "fulfilled" | "cancelled";
 export type Sentiment = "positive" | "neutral" | "negative";
+
+// Content types for program structure
+export type ContentItemType =
+  | "podcast" // Audio conversation format
+  | "lecture" // Audio presentation format
+  | "deep_dive" // Long-form reading (10 min)
+  | "key_takeaways" // Short-form reading (2 min)
+  | "faq" // Frequently asked questions
+  | "quiz_multiple_choice" // Multiple choice quiz
+  | "quiz_true_false" // True/False quiz
+  | "word_quest" // Word-based interactive game
+  | "flashcards" // Flashcard practice
+  | "guided_activity" // Breathing, movement, relaxation
+  | "reflection"; // Personal reflection prompts
+
+export type ContentSection = "learn" | "act" | "earn";
+
+export interface ContentItem {
+  id: string;
+  type: ContentItemType;
+  title: string;
+  duration: number; // in minutes
+  section: ContentSection;
+  content: unknown; // Flexible content based on type
+  metadata?: {
+    icon?: string; // Lucide icon name
+    completed?: boolean;
+    [key: string]: unknown;
+  };
+}

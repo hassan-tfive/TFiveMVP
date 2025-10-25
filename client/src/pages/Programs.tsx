@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Search, Filter, Sparkles, Clock, ChevronDown, ChevronUp, Play } from "lucide-react";
+import { Search, Filter, Sparkles, Clock, ChevronDown, ChevronUp, Play, BookOpen } from "lucide-react";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
@@ -310,18 +310,29 @@ function ProgramCardWithLoops({ program, isExpanded, onToggleExpand, onStartSess
                             </div>
                           </div>
                         </div>
-                        <Button
-                          size="sm"
-                          onClick={() => onStartSession(loop.id)}
-                          className={cn(
-                            "text-white hover:text-white",
-                            workspace === "professional" ? "bg-workspace-professional" : "bg-workspace-personal"
-                          )}
-                          data-testid={`button-start-session-${loop.id}`}
-                        >
-                          <Play className="w-3 h-3 mr-1" />
-                          Start
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setLocation(`/program/${loop.id}`)}
+                            data-testid={`button-view-details-${loop.id}`}
+                          >
+                            <BookOpen className="w-3 h-3 mr-1" />
+                            Details
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => onStartSession(loop.id)}
+                            className={cn(
+                              "text-white hover:text-white",
+                              workspace === "professional" ? "bg-workspace-professional" : "bg-workspace-personal"
+                            )}
+                            data-testid={`button-start-session-${loop.id}`}
+                          >
+                            <Play className="w-3 h-3 mr-1" />
+                            Start
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
