@@ -167,7 +167,7 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation, onNewCha
                       <Button
                         key={conversation.id}
                         variant="ghost"
-                        className="w-full justify-start text-xs h-auto py-2 min-w-0"
+                        className="w-full justify-start text-xs h-auto py-2 overflow-hidden"
                         onClick={() => {
                           onSelectConversation?.(conversation.id);
                           onOpenChange(false);
@@ -175,7 +175,7 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation, onNewCha
                         data-testid={`chat-history-${idx}`}
                       >
                         <MessageSquare className="w-3 h-3 mr-2 flex-shrink-0" />
-                        <span className="truncate flex-1 text-left min-w-0">
+                        <span className="truncate block">
                           {conversation.title || "New Chat"}
                         </span>
                       </Button>
@@ -195,11 +195,11 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation, onNewCha
                       <Link key={program.id} href="/programs">
                         <Button
                           variant="ghost"
-                          className="w-full justify-start text-xs h-auto py-2 min-w-0"
+                          className="w-full justify-start text-xs h-auto py-2 overflow-hidden"
                           data-testid={`recent-program-${program.id}`}
                         >
                           <Clock className="w-3 h-3 mr-2 flex-shrink-0" />
-                          <span className="truncate flex-1 text-left min-w-0">
+                          <span className="truncate block">
                             {program.title}
                           </span>
                         </Button>
