@@ -8,12 +8,13 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { ChatLayout } from "@/components/AppLayout";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import type { ChatMessage, Program } from "@shared/schema";
 
 export default function ChatHome() {
   const { workspace } = useWorkspace();
   const { toast } = useToast();
+  const [location] = useLocation();
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -50,10 +51,10 @@ export default function ChatHome() {
     },
   });
 
-  // Reset messages when workspace changes (start fresh chat)
+  // Reset messages on mount and when returning to this page (fresh chat on every visit)
   useEffect(() => {
     setMessages([]);
-  }, [workspace]);
+  }, [location, workspace]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
