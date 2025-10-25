@@ -34,7 +34,8 @@ export default function ChatHome() {
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
-      return apiRequest("POST", "/api/chat", { content, workspace });
+      const res = await apiRequest("POST", "/api/chat", { content, workspace });
+      return await res.json();
     },
     onSuccess: (data: any) => {
       // Replace optimistic messages with real ones from server
