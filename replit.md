@@ -11,6 +11,8 @@ Tfive features a dual workspace architecture (Professional and Personal) disting
 
 The platform includes a curated Program Library with diverse categories, and a simplified AI-powered Program Creation Wizard. The wizard offers two modes: Quick Prompt (natural language) and Step-by-Step (guided 3-step flow: Topic → Goal → Difficulty → Workspace). Tairo automatically infers both the domain (for timing allocation) and category (for display) from user input, eliminating the need for manual categorization. All programs include automatically generated images using DALL-E 2, with curated Unsplash fallbacks by domain to ensure every program has visually appealing artwork. Dynamic duration allocation is based on domain: Focus (6/15/4), Leadership (12/9/4), Recovery (14/7/4), Wellbeing (10/11/4), Inclusion (9/12/4), and Stress Management (8/13/4).
 
+**Program Content Structure**: Programs now feature detailed content breakdowns inspired by the Oboe app. Each loop contains structured learning materials stored as `contentItems` in a jsonb field, with content types including podcasts, lectures, deep dives, key takeaways, FAQs, multiple choice quizzes, true/false quizzes, flashcards, and word quests. Content is organized into three learning methods: Learn by Listening (audio content like podcasts and lectures), Learn by Reading (text-based content like deep dives and FAQs), and Learn by Interacting (interactive content like quizzes and flashcards). A dedicated Program Detail View at `/program/:loopId` provides an Oboe-style sidebar navigation showing all content grouped by learning method, with a main content area for displaying selected content. The view renders outside ChatLayout for a full-screen, immersive learning experience.
+
 **Started Programs**: The platform tracks user progress through a "Started Programs" section displayed on both the Dashboard and Programs pages. This feature shows programs that users have initiated sessions for, with workspace-aware filtering. The section always renders to display loading skeletons during data fetch, actual program cards when data is available, and helpful empty state messages when no programs have been started yet. Started programs are determined by querying the sessions table for user activity.
 
 Gamification elements like points, leveling, reward systems, and achievement badges are integrated to track and motivate progress. User profiles support avatar customization and display personal stats, with the profile avatar menu now consistently positioned in the sidebar footer across all pages for easy access. An Enterprise Admin Dashboard provides organization and team management, user rosters, and engagement analytics with role-based access control.
@@ -22,6 +24,13 @@ The frontend is built with React, TypeScript, Tailwind CSS, Shadcn UI, Wouter fo
 2. **Chat Message Styling**: Removed grey background from TAIRO assistant messages; only user messages now have colored background boxes for clearer visual distinction
 3. **Dashboard Loading States**: Added skeleton loading states to Dashboard page to provide better UX during slow program fetches
 4. **Started Programs Feature**: Implemented comprehensive "Started Programs" tracking on Dashboard and Programs pages with proper loading, empty, and populated states
+5. **Program Content Structure**: Implemented detailed program content breakdown inspired by Oboe app design with categorized learning materials:
+   - Added `contentItems` jsonb field to loops table for structured content storage
+   - Created Program Detail View (/program/:loopId) with Oboe-style sidebar navigation showing content grouped by learning method
+   - Content organized into three categories: Learn by Listening (podcasts, lectures), Learn by Reading (deep dives, key takeaways, FAQs), and Learn by Interacting (quizzes, flashcards)
+   - Full-screen detail view renders outside ChatLayout for immersive learning experience
+   - Added "Details" button on Programs page for each loop to access structured content
+   - API endpoint GET /api/loops/:id fetches loop details with all content items
 
 ## Authentication & User Management
 Tfive uses **custom authentication** with Passport.js supporting both **Google OAuth 2.0** and **email/password** authentication, with PostgreSQL session management and role-based access control.
