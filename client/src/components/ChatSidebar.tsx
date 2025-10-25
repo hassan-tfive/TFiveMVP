@@ -4,23 +4,24 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import type { ChatMessage, Program } from "@shared/schema";
+import type { Conversation, Program } from "@shared/schema";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 interface ChatSidebarProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSelectConversation?: (conversationId: string) => void;
 }
 
-export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
+export function ChatSidebar({ open, onOpenChange, onSelectConversation }: ChatSidebarProps) {
   const [location] = useLocation();
   const { workspace } = useWorkspace();
 
-  const { data: messages = [] } = useQuery<ChatMessage[]>({
-    queryKey: ["/api/chat", workspace],
+  const { data: conversations = [] } = useQuery<Conversation[]>({
+    queryKey: ["/api/conversations", workspace],
     queryFn: async () => {
-      const res = await fetch(`/api/chat?workspace=${workspace}`);
-      if (!res.ok) throw new Error("Failed to fetch messages");
+      const res = await fetch(`/api/conversations?workspace=${workspace}`);
+      if (!res.ok) throw new Error("Failed to fetch conversations");
       return res.json();
     },
   });
@@ -29,8 +30,7 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
     queryKey: ["/api/programs", workspace],
   });
 
-  // Group messages by conversation (simplified - you could enhance this)
-  const recentChats = messages.slice(-5).reverse();
+  const recentChats = conversations.slice(0, 5);
   const recentPrograms = programs?.slice(0, 3) || [];
 
   return (
@@ -132,19 +132,20 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
                     Recent Chats
                   </h3>
                   <div className="space-y-1">
-                    {recentChats.map((message, idx) => (
+                    {recentChats.map((conversation, idx) => (
                       <Button
-                        key={message.id}
+                        key={conversation.id}
                         variant="ghost"
                         className="w-full justify-start text-xs h-auto py-2"
-                        onClick={() => onOpenChange(false)}
+                        onClick={() => {
+                          onSelectConversation?.(conversation.id);
+                          onOpenChange(false);
+                        }}
                         data-testid={`chat-history-${idx}`}
                       >
+                        <MessageSquare className="w-3 h-3 mr-2 flex-shrink-0" />
                         <div className="truncate text-left">
-                          {message.role === "user" 
-                            ? message.content.slice(0, 40) + "..."
-                            : "TAIRO: " + message.content.slice(0, 35) + "..."
-                          }
+                          {conversation.title || "New Chat"}
                         </div>
                       </Button>
                     ))}

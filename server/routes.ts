@@ -409,20 +409,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Conversation routes
+  app.get("/api/conversations", async (req, res) => {
+    const workspace = req.query.workspace as string;
+    const conversations = await storage.getConversations(DEFAULT_USER_ID, workspace);
+    res.json(conversations);
+  });
+
+  app.post("/api/conversations", async (req, res) => {
+    try {
+      const conversation = await storage.createConversation({
+        userId: DEFAULT_USER_ID,
+        workspace: req.body.workspace,
+        title: req.body.title,
+      });
+      res.status(201).json(conversation);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create conversation" });
+    }
+  });
+
   // Chat routes with OpenAI integration
   app.get("/api/chat", async (req, res) => {
+    const conversationId = req.query.conversationId as string;
     const workspace = req.query.workspace as string;
-    const messages = await storage.getChatMessages(DEFAULT_USER_ID, workspace);
-    res.json(messages);
+    
+    if (conversationId) {
+      // Get messages for a specific conversation
+      const messages = await storage.getConversationMessages(conversationId);
+      res.json(messages);
+    } else if (workspace) {
+      // Get all messages for a workspace (legacy)
+      const messages = await storage.getChatMessages(DEFAULT_USER_ID, workspace);
+      res.json(messages);
+    } else {
+      res.status(400).json({ error: "Either conversationId or workspace is required" });
+    }
   });
 
   app.post("/api/chat", async (req, res) => {
     try {
-      const { content, workspace, phase, sessionId } = insertChatMessageSchema.parse({
+      const { content, workspace, phase, sessionId, conversationId } = insertChatMessageSchema.parse({
         ...req.body,
         userId: DEFAULT_USER_ID,
         role: "user",
       });
+
+      // Validate workspace is provided
+      if (!workspace) {
+        return res.status(400).json({ error: "workspace is required" });
+      }
+
+      // If no conversationId, create a new conversation
+      let activeConversationId = conversationId;
+      if (!activeConversationId) {
+        try {
+          const conversation = await storage.createConversation({
+            userId: DEFAULT_USER_ID,
+            workspace,
+            title: content.slice(0, 50), // Use first message as title
+          });
+          activeConversationId = conversation.id;
+        } catch (convError) {
+          console.error("Failed to create conversation:", convError);
+          return res.status(500).json({ error: "Failed to create conversation" });
+        }
+      }
+
+      // Ensure we have a conversationId before proceeding
+      if (!activeConversationId) {
+        return res.status(500).json({ error: "Failed to establish conversation" });
+      }
 
       // Save user message
       const userMessage = await storage.createChatMessage({
@@ -430,10 +487,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: "user",
         content,
         workspace,
+        conversationId: activeConversationId,
       });
 
-      // Get conversation history for context
-      const history = await storage.getChatMessages(DEFAULT_USER_ID, workspace);
+      // Get conversation history for context (only from this conversation)
+      const history = await storage.getConversationMessages(activeConversationId);
       
       // Prepare base system message based on workspace
       let systemMessage = workspace === "professional"
@@ -470,11 +528,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: "assistant",
         content: assistantContent,
         workspace,
+        conversationId: activeConversationId,
       });
+
+      // Update conversation timestamp
+      await storage.updateConversation(activeConversationId, { updatedAt: new Date() });
 
       res.json({
         userMessage,
         assistantMessage,
+        conversationId: activeConversationId,
       });
     } catch (error) {
       console.error("Chat error:", error);

@@ -17,6 +17,8 @@ import {
   type InsertAchievement,
   type UserAchievement,
   type InsertUserAchievement,
+  type Conversation,
+  type InsertConversation,
   type ChatMessage,
   type InsertChatMessage,
   type SessionEvent,
@@ -86,8 +88,15 @@ export interface IStorage {
   getUserAchievements(userId: string): Promise<UserAchievement[]>;
   createUserAchievement(userAchievement: InsertUserAchievement): Promise<UserAchievement>;
 
+  // Conversation operations
+  getConversations(userId: string, workspace: string): Promise<Conversation[]>;
+  getConversation(id: string): Promise<Conversation | undefined>;
+  createConversation(conversation: InsertConversation): Promise<Conversation>;
+  updateConversation(id: string, updates: Partial<Conversation>): Promise<Conversation | undefined>;
+
   // Chat operations
   getChatMessages(userId: string, workspace: string): Promise<ChatMessage[]>;
+  getConversationMessages(conversationId: string): Promise<ChatMessage[]>;
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
 
   // Session event operations
@@ -135,6 +144,7 @@ export class MemStorage implements IStorage {
   private progress: Map<string, Progress>;
   private achievements: Map<string, Achievement>;
   private userAchievements: Map<string, UserAchievement>;
+  private conversations: Map<string, Conversation>;
   private chatMessages: Map<string, ChatMessage>;
   private sessionEvents: Map<string, SessionEvent>;
   private reflections: Map<string, Reflection>;
@@ -154,6 +164,7 @@ export class MemStorage implements IStorage {
     this.progress = new Map();
     this.achievements = new Map();
     this.userAchievements = new Map();
+    this.conversations = new Map();
     this.chatMessages = new Map();
     this.sessionEvents = new Map();
     this.reflections = new Map();
@@ -456,6 +467,39 @@ export class MemStorage implements IStorage {
     return userAchievement;
   }
 
+  // Conversation operations
+  async getConversations(userId: string, workspace: string): Promise<Conversation[]> {
+    return Array.from(this.conversations.values())
+      .filter((c) => c.userId === userId && c.workspace === workspace)
+      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+  }
+
+  async getConversation(id: string): Promise<Conversation | undefined> {
+    return this.conversations.get(id);
+  }
+
+  async createConversation(insertConversation: InsertConversation): Promise<Conversation> {
+    const id = randomUUID();
+    const now = new Date();
+    const conversation: Conversation = {
+      ...insertConversation,
+      id,
+      title: insertConversation.title ?? null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.conversations.set(id, conversation);
+    return conversation;
+  }
+
+  async updateConversation(id: string, updates: Partial<Conversation>): Promise<Conversation | undefined> {
+    const conversation = this.conversations.get(id);
+    if (!conversation) return undefined;
+    const updated = { ...conversation, ...updates, updatedAt: new Date() };
+    this.conversations.set(id, updated);
+    return updated;
+  }
+
   // Chat operations
   async getChatMessages(userId: string, workspace: string): Promise<ChatMessage[]> {
     return Array.from(this.chatMessages.values())
@@ -463,10 +507,18 @@ export class MemStorage implements IStorage {
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
   }
 
+  async getConversationMessages(conversationId: string): Promise<ChatMessage[]> {
+    return Array.from(this.chatMessages.values())
+      .filter((m) => m.conversationId === conversationId)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+  }
+
   async createChatMessage(insertMessage: InsertChatMessage): Promise<ChatMessage> {
     const id = randomUUID();
     const message: ChatMessage = {
       ...insertMessage,
+      conversationId: insertMessage.conversationId ?? null,
+      metadata: insertMessage.metadata ?? null,
       id,
       createdAt: new Date(),
     };
@@ -948,6 +1000,46 @@ export class DbStorage implements IStorage {
     return userAchievement;
   }
 
+  // Conversation operations
+  async getConversations(userId: string, workspace: string): Promise<Conversation[]> {
+    const { desc } = await import("drizzle-orm");
+    return await this.db
+      .select()
+      .from(schema.conversations)
+      .where(
+        and(
+          eq(schema.conversations.userId, userId),
+          eq(schema.conversations.workspace, workspace)
+        )
+      )
+      .orderBy(desc(schema.conversations.updatedAt));
+  }
+
+  async getConversation(id: string): Promise<Conversation | undefined> {
+    const [conversation] = await this.db
+      .select()
+      .from(schema.conversations)
+      .where(eq(schema.conversations.id, id));
+    return conversation;
+  }
+
+  async createConversation(insertConversation: InsertConversation): Promise<Conversation> {
+    const [conversation] = await this.db
+      .insert(schema.conversations)
+      .values(insertConversation)
+      .returning();
+    return conversation;
+  }
+
+  async updateConversation(id: string, updates: Partial<Conversation>): Promise<Conversation | undefined> {
+    const [conversation] = await this.db
+      .update(schema.conversations)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(schema.conversations.id, id))
+      .returning();
+    return conversation;
+  }
+
   // Chat operations
   async getChatMessages(userId: string, workspace: string): Promise<ChatMessage[]> {
     return await this.db
@@ -959,6 +1051,14 @@ export class DbStorage implements IStorage {
           eq(schema.chatMessages.workspace, workspace)
         )
       )
+      .orderBy(schema.chatMessages.createdAt);
+  }
+
+  async getConversationMessages(conversationId: string): Promise<ChatMessage[]> {
+    return await this.db
+      .select()
+      .from(schema.chatMessages)
+      .where(eq(schema.chatMessages.conversationId, conversationId))
       .orderBy(schema.chatMessages.createdAt);
   }
 

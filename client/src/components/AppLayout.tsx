@@ -8,15 +8,20 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 interface ChatLayoutProps {
   children: React.ReactNode;
   showTairoTitle?: boolean;
+  onSelectConversation?: (conversationId: string) => void;
 }
 
-export function ChatLayout({ children, showTairoTitle = false }: ChatLayoutProps) {
+export function ChatLayout({ children, showTairoTitle = false, onSelectConversation }: ChatLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}
-      <ChatSidebar open={sidebarOpen} onOpenChange={setSidebarOpen} />
+      <ChatSidebar 
+        open={sidebarOpen} 
+        onOpenChange={setSidebarOpen}
+        onSelectConversation={onSelectConversation}
+      />
 
       {/* Main Area */}
       <div className="flex-1 flex flex-col">

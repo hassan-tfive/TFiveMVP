@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Send, Loader2, LayoutDashboard, BookOpen, Award } from "lucide-react";
+import { Send, Loader2, LayoutDashboard, BookOpen, Award, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
@@ -20,8 +20,9 @@ export default function ChatHome() {
   const previousLocationRef = useRef<string>("");
   const previousWorkspaceRef = useRef<string>(workspace);
 
-  // Track current conversation messages (start with empty for new chat)
+  // Track current conversation messages and ID
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
 
   const { data: programs = [] } = useQuery<Program[]>({
     queryKey: ["/api/programs", workspace],
@@ -34,10 +35,19 @@ export default function ChatHome() {
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
-      const res = await apiRequest("POST", "/api/chat", { content, workspace });
+      const res = await apiRequest("POST", "/api/chat", { 
+        content, 
+        workspace,
+        conversationId // Send current conversation ID
+      });
       return await res.json();
     },
     onSuccess: (data: any) => {
+      // Update conversation ID if this was a new conversation
+      if (data.conversationId && !conversationId) {
+        setConversationId(data.conversationId);
+      }
+      
       // Replace optimistic messages with real ones from server
       if (data.userMessage && data.assistantMessage) {
         setMessages(prev => {
@@ -47,8 +57,8 @@ export default function ChatHome() {
           return [...withoutOptimistic, data.userMessage, data.assistantMessage];
         });
       }
-      // Also invalidate chat history in sidebar
-      queryClient.invalidateQueries({ queryKey: ["/api/chat", workspace] });
+      // Invalidate conversations list in sidebar
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", workspace] });
     },
     onError: () => {
       // Remove optimistic message on error
@@ -61,6 +71,29 @@ export default function ChatHome() {
     },
   });
 
+  // New Chat handler
+  const startNewChat = () => {
+    setMessages([]);
+    setConversationId(null);
+  };
+
+  // Load a specific conversation
+  const loadConversation = async (convId: string) => {
+    try {
+      const res = await fetch(`/api/chat?conversationId=${convId}`);
+      if (!res.ok) throw new Error("Failed to load conversation");
+      const conversationMessages = await res.json();
+      setMessages(conversationMessages);
+      setConversationId(convId);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load conversation",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Reset messages when entering ChatHome from another page or workspace changes
   useEffect(() => {
     const isEnteringChat = previousLocationRef.current !== "" && previousLocationRef.current !== "/" && location === "/";
@@ -69,6 +102,7 @@ export default function ChatHome() {
     
     if (isFirstMount || isEnteringChat || isWorkspaceChange) {
       setMessages([]);
+      setConversationId(null);
     }
     
     previousLocationRef.current = location;
@@ -112,7 +146,7 @@ export default function ChatHome() {
   const hasMessages = messages.length > 0;
 
   return (
-    <ChatLayout showTairoTitle>
+    <ChatLayout showTairoTitle onSelectConversation={loadConversation}>
       <div className="flex flex-col h-full">
         {/* Messages Area */}
         <ScrollArea className="flex-1">
@@ -201,6 +235,19 @@ export default function ChatHome() {
               </div>
             ) : (
               <div className="space-y-4" data-testid="chat-messages">
+                {/* New Chat Button */}
+                <div className="flex justify-end mb-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={startNewChat}
+                    data-testid="button-new-chat"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    New Chat
+                  </Button>
+                </div>
+                
                 {messages.map((message) => (
                   <div
                     key={message.id}
