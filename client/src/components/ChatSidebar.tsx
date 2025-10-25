@@ -58,12 +58,12 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation, onNewCha
           <div className="flex items-center justify-between p-4 border-b">
             <div className="flex items-center">
               <img 
-                src={logoLight} 
+                src={logoDark} 
                 alt="Tfive" 
                 className="h-8 w-auto dark:hidden"
               />
               <img 
-                src={logoDark} 
+                src={logoLight} 
                 alt="Tfive" 
                 className="h-8 w-auto hidden dark:block"
               />
