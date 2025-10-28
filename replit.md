@@ -1,120 +1,32 @@
 # Tfive - 25 Minutes to Personal Growth
 
 ## Overview
-Tfive is an AI-powered personal development platform centered on the Pomodoro technique. It aims to drive personal growth through 25-minute focus sessions, combining AI coaching with structured learning via a Check-In → Learn → Act → Earn framework. The platform supports both professional and personal growth with distinct workspaces and integrates gamification to encourage consistent engagement. It is designed to be a comprehensive solution for individual and enterprise-level personal development, fostering focus, learning, and well-being.
+Tfive is an AI-powered personal development platform leveraging the Pomodoro technique for focused personal and professional growth. It integrates AI coaching, structured learning via a Check-In → Learn → Act → Earn framework, and gamification. The platform offers distinct workspaces, a curated Program Library, and an AI-powered Program Creation Wizard. Tfive aims to be a comprehensive solution for individual and enterprise-level personal development, enhancing focus, learning, and well-being.
 
 ## User Preferences
 I prefer clear, concise explanations and iterative development. Ask before making major architectural changes. Do not make changes to files or folders unless explicitly instructed or if it's a direct result of an approved feature implementation. I value a conversational interaction style, and I prefer that the agent focuses on completing tasks efficiently while keeping me informed of progress and potential roadblocks.
 
 ## System Architecture
-Tfive features a dual workspace architecture (Professional and Personal) distinguished by color themes and data contexts. The core interaction is through "Tairo," an AI companion powered by OpenAI, offering contextual guidance through phase-specific prompts during 25-minute Pomodoro sessions. These sessions consist of Check-In, Learn, Act, and Earn phases, each with specific durations and visual timer cues.
+Tfive features dual Professional and Personal workspaces with distinct color themes. The core interaction involves "Tairo," an OpenAI-powered AI companion providing contextual guidance during 25-minute Pomodoro sessions, structured into Check-In, Learn, Act, and Earn phases.
 
-The platform includes a curated Program Library with diverse categories, and a simplified AI-powered Program Creation Wizard. The wizard offers two modes: Quick Prompt (natural language) and Step-by-Step (guided 3-step flow: Topic → Goal → Difficulty → Workspace). Tairo automatically infers both the domain (for timing allocation) and category (for display) from user input, eliminating the need for manual categorization. All programs include automatically generated images using DALL-E 2, with curated Unsplash fallbacks by domain to ensure every program has visually appealing artwork. Dynamic duration allocation is based on domain: Focus (6/15/4), Leadership (12/9/4), Recovery (14/7/4), Wellbeing (10/11/4), Inclusion (9/12/4), and Stress Management (8/13/4).
+The platform includes a Program Library and an AI-powered Program Creation Wizard with Quick Prompt and Step-by-Step modes. Tairo automatically infers program domain and category. Programs feature automatically generated DALL-E 2 images with Unsplash fallbacks. Dynamic duration allocation for phases is based on program domain (e.g., Focus, Leadership, Recovery).
 
-**Program Content Structure**: Programs now feature detailed content breakdowns inspired by the Oboe app. Each loop contains structured learning materials stored as `contentItems` in a jsonb field, with content types including podcasts, lectures, deep dives, key takeaways, FAQs, multiple choice quizzes, true/false quizzes, flashcards, and word quests. Content is organized into three learning methods: Learn by Listening (audio content like podcasts and lectures), Learn by Reading (text-based content like deep dives and FAQs), and Learn by Interacting (interactive content like quizzes and flashcards). A dedicated Program Detail View at `/program/:loopId` provides an Oboe-style sidebar navigation showing all content grouped by learning method, with a main content area for displaying selected content. The view renders outside ChatLayout for a full-screen, immersive learning experience.
+Program content is structured into `contentItems` (jsonb field) within loops, supporting content types like podcasts, lectures, deep dives, quizzes, and flashcards. Content is categorized into "Learn by Listening," "Learn by Reading," and "Learn by Interacting." A dedicated Program Detail View at `/program/:loopId` offers Oboe-style sidebar navigation and an immersive full-screen learning experience.
 
-**Started Programs**: The platform tracks user progress through a "Started Programs" section displayed on both the Dashboard and Programs pages. This feature shows programs that users have initiated sessions for, with workspace-aware filtering. The section always renders to display loading skeletons during data fetch, actual program cards when data is available, and helpful empty state messages when no programs have been started yet. Started programs are determined by querying the sessions table for user activity.
+The platform tracks user progress via a "Started Programs" section on the Dashboard and Programs pages, filtered by workspace. Gamification includes points, leveling, rewards, and achievement badges. User profiles allow avatar customization and display stats. An Enterprise Admin Dashboard provides organization/team management, user rosters, and analytics with role-based access control.
 
-Gamification elements like points, leveling, reward systems, and achievement badges are integrated to track and motivate progress. User profiles support avatar customization and display personal stats, with the profile avatar menu now consistently positioned in the sidebar footer across all pages for easy access. An Enterprise Admin Dashboard provides organization and team management, user rosters, and engagement analytics with role-based access control.
+The frontend uses React, TypeScript, Tailwind CSS, Shadcn UI, Wouter, TanStack Query, and Framer Motion. The backend uses Express.js, integrates OpenAI, and a PostgreSQL database with Drizzle ORM (Neon). Zod handles validation, and role-based authorization secures admin features. The design system uses Inter, Sora, and JetBrains Mono fonts, a distinct brand color palette, workspace-specific colors, and custom SVG icons for key features.
 
-The frontend is built with React, TypeScript, Tailwind CSS, Shadcn UI, Wouter for routing, TanStack Query for data fetching, and Framer Motion for animations. The backend uses Express.js, integrates OpenAI, and utilizes a PostgreSQL database with Drizzle ORM (Neon). Zod is used for validation, and a role-based authorization middleware secures admin features. The design system employs Inter, Sora, and JetBrains Mono fonts, with a distinct color palette for brand elements (Navy Blue #003C51, Soft Gold #E3B34A, Teal #2D9DA8), workspaces, and timer phases, supporting dark mode. Custom SVG icons enhance the UI: "Rising Spiral" for Achievements (growth), "Fingerprint Lines" for Profile (uniqueness), and "Eye with Frame" for Admin (oversight).
-
-### Recent Changes (2025-10-28)
-1. **Programs Page Redesign**: Simplified card-based interface with responsive grid layout (1/2/3 columns)
-   - Removed collapsible/expandable logic from program cards
-   - Each card now shows: image, title, topic badge, type badge, description
-   - Single "View Program" button navigates to program detail page
-   - Removed "Start" button from program cards
-2. **In-Page Session Timer**: Implemented session timer directly on ProgramDetail page
-   - Prominent "Start Session" button in sidebar (replaced separate session page)
-   - Timer displays current phase (Learn/Act/Earn) with countdown
-   - Automatic phase transitions using loop duration values
-   - Pause/Resume functionality with proper state management
-   - Session completion feedback with celebration icon and restart option
-   - Timer runs on same page (no redirect to /session/:loopId)
-3. **Bug Fixes**:
-   - Fixed timer pause/resume race condition by removing `timeRemaining` from useEffect dependency array
-   - Timer now properly restarts when resuming after pause
-
-### Previous Changes (2025-10-25)
-1. **Profile Avatar Location**: Moved profile avatar menu to sidebar footer for all pages, ensuring consistent access across the application
-2. **Chat Message Styling**: Removed grey background from TAIRO assistant messages; only user messages now have colored background boxes for clearer visual distinction
-3. **Dashboard Loading States**: Added skeleton loading states to Dashboard page to provide better UX during slow program fetches
-4. **Started Programs Feature**: Implemented comprehensive "Started Programs" tracking on Dashboard and Programs pages with proper loading, empty, and populated states
-5. **Program Content Structure**: Implemented detailed program content breakdown inspired by Oboe app design with categorized learning materials:
-   - Added `contentItems` jsonb field to loops table for structured content storage
-   - Created Program Detail View (/program/:loopId) with Oboe-style sidebar navigation showing content grouped by learning method
-   - Content organized into three categories: Learn by Listening (podcasts, lectures), Learn by Reading (deep dives, key takeaways, FAQs), and Learn by Interacting (quizzes, flashcards)
-   - Full-screen detail view renders outside ChatLayout for immersive learning experience
-   - Added "Details" button on Programs page for each loop to access structured content
-   - API endpoint GET /api/loops/:id fetches loop details with all content items
-
-## Authentication & User Management
-Tfive uses **custom authentication** with Passport.js supporting both **Google OAuth 2.0** and **email/password** authentication, with PostgreSQL session management and role-based access control.
-
-### Authentication Methods
-1. **Google OAuth**: Single-click authentication using Google account
-2. **Email/Password**: Traditional credentials with bcrypt password hashing (10 rounds, 8-char minimum)
-
-### Technical Implementation
-- **Backend**: `server/auth.ts` with Passport.js strategies (Google OAuth, Local)
-- **Session Storage**: PostgreSQL session store with 7-day TTL
-- **Security**: httpOnly, secure cookies with sameSite: lax, OAuth state CSRF protection
-- **Validation**: Zod schema validation for registration endpoints
-- **Password Hashing**: bcrypt with 10 salt rounds
-- **Critical Fix (2025-10-21)**: Passport `deserializeUser` and local strategy callback now return the **full user object** instead of just `{ id, email }`, ensuring `req.user` contains all fields including `role`, `organizationId`, `teamId`, etc. This was the root cause of "Access denied" issues after admin onboarding.
-
-### Authentication Flow
-**Enterprise Admin Signup:**
-1. Visit `/admin/signup` → Beautiful standalone signup page (no sidebar/header)
-2. Frontend sets `signupIntent: "admin"` in session via `POST /api/signup-intent`
-3. User chooses Google OAuth (`GET /api/auth/google`) OR email/password form
-4. For email/password: `POST /api/auth/register` with name, email, password (Zod validated)
-5. Backend creates user with `role: "admin"` based on session signup intent
-6. Session `signupIntent` cleared, user logged in
-7. Redirected to `/admin/onboarding` wizard
-8. Complete 2-step onboarding → Creates organization
-9. Access admin dashboard with full team management capabilities
-
-**Team Member Invitation:**
-1. Admin navigates to `/admin/team` (Team Management page) via "Manage Teams" button on Admin Dashboard
-2. Admin invites user via **two methods**:
-   - **Email Invitation**: Enter email → click "Send Invitation" → System sends branded HTML email via Resend
-   - **Shareable Link**: Click "Copy invite link" button → Link copied to clipboard for sharing
-3. System creates invitation token (7-day expiration) with `organizationId` and optional `teamId`
-4. User receives email with one-click accept link OR uses shared link
-5. User clicks link → Redirected to `/signup/:token` with beautiful standalone page
-6. Frontend stores `invitationToken` in session via `POST /api/store-invitation-token`
-7. User authenticates via Google OAuth OR email/password registration
-8. Backend creates user with `role: "member"`, logs them in
-9. Redirected back to `/signup/:token`, invitation auto-accepted via `POST /api/invitations/:token/accept`
-10. User assigned to organization and team, redirected to dashboard
-
-### Security Features
-- **Session-based signup intent tracking** prevents privilege escalation
-- **Email verification** ensures invitation matches authenticated user's email
-- **Token expiration** (7 days) limits invitation validity
-- **Role-based middleware** (`requireAdmin`) protects admin endpoints
-- **Password security**: bcrypt hashing, 8-char minimum, client-side validation
-- **OAuth CSRF protection**: State parameter enabled for Google OAuth
-- **Zod validation**: All registration inputs validated with Zod schemas
-- **Provider isolation**: Users created with email/password can't login with Google (and vice versa)
-- **Standalone auth layout** for login/signup pages (no app shell, gradient background)
-
-### Email Integration
-- **Resend connector** for reliable email delivery with Replit-managed API keys
-- **Branded HTML templates** with Tfive design system
-- **Automatic email sending** when admins invite team members
-- Fallback logging if email fails (invitation still created)
+Authentication is custom, using Passport.js for Google OAuth 2.0 and email/password login. Sessions are managed in PostgreSQL. Enterprise admin signup and team member invitations (via email or shareable link) are supported, with role-based access control. Security features include bcrypt password hashing, Zod validation, httpOnly/secure cookies, OAuth CSRF protection, and email verification.
 
 ## External Dependencies
-- **Passport.js**: Custom authentication with Google OAuth 2.0 and email/password strategies
-- **Google OAuth**: OAuth 2.0 authentication provider for single-click login
-- **Resend**: Email delivery service for invitation emails, integrated via Replit connectors
-- **OpenAI**: Integrated via Replit AI Integrations for the AI companion "Tairo" and AI-powered content generation in the Program Creation Wizard.
-- **PostgreSQL**: Used as the primary database, managed with Drizzle ORM and hosted on Neon. Also stores sessions via connect-pg-simple.
-- **bcryptjs**: Password hashing for secure credential storage
-- **Tailwind CSS**: Utility-first CSS framework for styling.
+- **Passport.js**: For custom authentication with Google OAuth 2.0 and email/password strategies.
+- **Google OAuth**: Authentication provider for single-click login.
+- **Resend**: Email delivery service for invitation emails via Replit connectors.
+- **OpenAI**: Powers the "Tairo" AI companion and AI-driven content generation.
+- **PostgreSQL**: Primary database, managed with Drizzle ORM and hosted on Neon. Used for session storage via `connect-pg-simple`.
+- **bcryptjs**: For secure password hashing.
+- **Tailwind CSS**: Utility-first CSS framework.
 - **Shadcn UI**: Component library for UI elements.
 - **Wouter**: React hook-based router.
 - **TanStack Query**: For data fetching, caching, and state management.
