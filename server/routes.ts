@@ -1377,10 +1377,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // GET /api/programs/:id/loops - Get all loops for a program
-  app.get("/api/programs/:id/loops", async (req, res) => {
+  app.get("/api/programs/:id/loops", isAuthenticated, async (req, res) => {
     try {
       const { id } = req.params;
+      console.log(`[API] GET /api/programs/${id}/loops - User: ${req.user?.id || 'anonymous'}`);
+      
       const loops = await storage.getProgramLoops(id);
+      console.log(`[API] Found ${loops.length} loops for program ${id}`);
       
       // Derive durations from program type for each loop (only if programType is set)
       const { getProgramTypeConfig } = await import("@shared/programTypes");
@@ -1401,7 +1404,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(loopsWithCorrectDurations);
     } catch (error) {
-      console.error("Get loops error:", error);
+      console.error(`[API] Error getting loops for program ${req.params.id}:`, error);
       res.status(500).json({ error: "Failed to fetch loops" });
     }
   });
