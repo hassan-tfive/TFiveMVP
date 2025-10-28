@@ -1460,118 +1460,498 @@ async function initializeSeedData() {
     return; // Already seeded
   }
 
-  // Seed programs
+  // Seed programs - 5 showcase programs featuring all new content types
   const programs = [
     {
-      title: "Mindful Breathing for Focus",
-      description: "Learn breathing techniques to enhance concentration and reduce stress during work sessions.",
-      category: "wellbeing",
+      title: "Mindful Focus Mastery",
+      description: "Discover the power of mindfulness to enhance concentration and mental clarity through breathing exercises and expert guidance.",
+      category: "focus",
       difficulty: "beginner",
       duration: 25,
       workspace: "both",
-      imageUrl: "/src/assets/generated_images/Wellbeing_program_abstract_background_8b262da7.png",
+      imageUrl: "/src/assets/generated_images/Focus_program_abstract_background_cffc6aef.png",
       content: {
-        learn: "Deep breathing activates your parasympathetic nervous system, reducing stress and improving focus. The 4-7-8 technique involves inhaling for 4 counts, holding for 7, and exhaling for 8. This pattern helps regulate your nervous system and brings immediate calm.",
-        act: "Practice the 4-7-8 breathing technique right now. Find a comfortable position, close your eyes if you wish, and complete 5 full cycles. Breathe in through your nose for 4 counts, hold for 7, and exhale slowly through your mouth for 8 counts. Notice how your body feels after each cycle.",
+        learn: "Introduction to mindfulness and focused breathing techniques.",
+        act: "Practice the 4-7-8 breathing technique.",
         earn: {
           points: 100,
-          message: "Excellent work! You've completed your first mindfulness session. Regular breathing practice can reduce stress by up to 40% and improve focus within just a few days.",
+          message: "Great start on your mindfulness journey!",
         },
       },
     },
     {
-      title: "Building Resilience Through Reflection",
-      description: "Develop emotional strength by reflecting on challenges and growth opportunities.",
-      category: "recovery",
-      difficulty: "intermediate",
-      duration: 25,
-      workspace: "personal",
-      imageUrl: "/src/assets/generated_images/Recovery_program_abstract_background_ac13e09c.png",
-      content: {
-        learn: "Resilience isn't about avoiding difficult emotions—it's about processing them constructively. Reflection helps you identify patterns, recognize growth, and build emotional intelligence. Studies show that regular reflection increases resilience by 35%.",
-        act: "Think of a recent challenge you faced. Write down: 1) What happened, 2) How you felt, 3) What you learned, 4) How you can use this wisdom going forward. Be honest and compassionate with yourself.",
-        earn: {
-          points: 150,
-          message: "You've taken a powerful step in building resilience. Self-reflection is the foundation of personal growth and emotional strength.",
-        },
-      },
-    },
-    {
-      title: "Active Listening for Inclusion",
-      description: "Master the art of truly hearing others to build stronger, more inclusive relationships.",
+      title: "Leadership Communication Excellence",
+      description: "Master the art of effective communication to inspire teams, build trust, and drive organizational success.",
       category: "inclusion",
       difficulty: "intermediate",
       duration: 25,
       workspace: "professional",
       imageUrl: "/src/assets/generated_images/Inclusion_program_abstract_background_17e057a0.png",
       content: {
-        learn: "Active listening goes beyond hearing words—it's about understanding meaning, emotions, and context. It involves full presence, curiosity, and suspended judgment. Research shows active listening increases team collaboration by 50% and reduces conflicts significantly.",
-        act: "In your next conversation today, practice these three techniques: 1) Maintain eye contact and nod to show engagement, 2) Paraphrase what you hear ('So what you're saying is...'), 3) Ask open-ended questions to deepen understanding. Notice the difference it makes.",
+        learn: "Essential communication strategies for modern leaders.",
+        act: "Practice active listening techniques.",
         earn: {
           points: 150,
-          message: "Excellent! Active listening is one of the most powerful skills for building inclusive environments and meaningful connections.",
+          message: "Excellent progress in leadership skills!",
         },
       },
     },
     {
-      title: "Deep Work: Eliminating Distractions",
-      description: "Create an environment optimized for deep, focused work and maximum productivity.",
+      title: "Creative Problem Solving Workshop",
+      description: "Unlock your creative potential with hands-on exercises that transform challenges into innovative solutions.",
       category: "focus",
-      difficulty: "advanced",
+      difficulty: "intermediate",
       duration: 25,
       workspace: "both",
       imageUrl: "/src/assets/generated_images/Focus_program_abstract_background_cffc6aef.png",
       content: {
-        learn: "Deep work requires eliminating all distractions for sustained periods. Studies by Cal Newport show that it takes an average of 23 minutes to regain focus after an interruption. Creating a distraction-free environment can increase productivity by 300%.",
-        act: "Prepare your deep work environment now: 1) Close all unnecessary browser tabs and apps, 2) Put your phone in another room or drawer, 3) Set specific work boundaries (no email, no chat), 4) Choose one important task and work on it for the next 25 minutes with complete focus.",
+        learn: "Creative thinking frameworks and methodologies.",
+        act: "Engage in movement-based creative exercises.",
         earn: {
-          points: 200,
-          message: "Outstanding! You've mastered the art of deep work. This skill will transform your productivity and the quality of your output.",
+          points: 150,
+          message: "Your creative problem-solving skills are growing!",
         },
       },
     },
     {
-      title: "Gratitude Practice for Wellbeing",
-      description: "Cultivate positivity and mental health through structured gratitude exercises.",
-      category: "wellbeing",
+      title: "Stress Relief & Recovery",
+      description: "Restore balance and renew energy through scientifically-proven relaxation techniques and guided practices.",
+      category: "recovery",
       difficulty: "beginner",
       duration: 25,
       workspace: "both",
-      imageUrl: "/src/assets/generated_images/Wellbeing_program_abstract_background_8b262da7.png",
+      imageUrl: "/src/assets/generated_images/Recovery_program_abstract_background_ac13e09c.png",
       content: {
-        learn: "Gratitude rewires your brain for positivity. Research shows that daily gratitude practice can increase happiness by 25%, improve sleep quality, and strengthen relationships. The key is specificity—being precise about what you're grateful for and why.",
-        act: "Write down three specific things you're grateful for today. For each one, explain why it matters and how it impacted your life. Go beyond surface-level ('I'm grateful for coffee') to deeper meaning ('I'm grateful for my morning coffee because it's a peaceful moment before the day begins').",
+        learn: "Understanding stress and recovery mechanisms.",
+        act: "Progressive relaxation exercises.",
         earn: {
           points: 100,
-          message: "Beautiful work! Regular gratitude practice is scientifically proven to improve mental health and overall life satisfaction.",
+          message: "You've taken an important step toward stress relief!",
+        },
+      },
+    },
+    {
+      title: "Innovation Thinking Lab",
+      description: "Explore cutting-edge innovation strategies and develop the mindset to generate breakthrough ideas consistently.",
+      category: "focus",
+      difficulty: "advanced",
+      duration: 25,
+      workspace: "professional",
+      imageUrl: "/src/assets/generated_images/Focus_program_abstract_background_cffc6aef.png",
+      content: {
+        learn: "Innovation frameworks from leading thinkers.",
+        act: "Guided innovation ideation exercises.",
+        earn: {
+          points: 200,
+          message: "Outstanding innovation thinking!",
         },
       },
     },
   ];
 
-  // Domain-based phase durations (for seed data)
-  const phaseDurations: Record<string, { learn: number; act: number; earn: number }> = {
-    wellbeing: { learn: 10, act: 11, earn: 4 },
-    focus: { learn: 6, act: 15, earn: 4 },
-    recovery: { learn: 14, act: 7, earn: 4 },
-    inclusion: { learn: 9, act: 12, earn: 4 },
-  };
-
-  for (const programData of programs) {
+  // Create loops with rich content for each program
+  for (let i = 0; i < programs.length; i++) {
+    const programData = programs[i];
     const createdProgram = await storage.createProgram(programData);
     
-    // Create a first loop for each seed program so they're playable immediately
-    const durations = phaseDurations[programData.category] || phaseDurations.wellbeing;
+    let programType: "getting_started" | "deep_learning" | "hands_on_practice" | "personal_wellbeing" | "creative_exploration";
+    let contentItems: any[];
+    
+    // Program 1: Mindful Focus Mastery (getting_started: 15/5/5)
+    if (i === 0) {
+      programType = "getting_started";
+      contentItems = [
+        {
+          id: "podcast-mindfulness-intro",
+          type: "podcast",
+          title: "Introduction to Mindful Focus",
+          duration: 8,
+          section: "learn",
+          content: "https://example.com/mindfulness-intro.mp3" // Audio URL would go here
+        },
+        {
+          id: "deep-dive-breathing",
+          type: "deep_dive",
+          title: "The Science of Breathing",
+          duration: 7,
+          section: "learn",
+          content: {
+            quick: "Mindful breathing activates your parasympathetic nervous system, reducing stress and improving focus. The 4-7-8 technique is scientifically proven to calm your mind.",
+            deep: "Mindful breathing activates your parasympathetic nervous system, reducing stress and improving focus. The 4-7-8 technique—inhaling for 4 counts, holding for 7, and exhaling for 8—is scientifically proven to calm your mind and body.\n\nResearch from Harvard Medical School shows that controlled breathing can reduce cortisol levels by up to 40%. When you practice deep breathing, you stimulate the vagus nerve, which signals your body to relax. This physiological response decreases heart rate, lowers blood pressure, and promotes a state of calm alertness.\n\nThe 4-7-8 pattern is particularly effective because the extended exhale activates the parasympathetic nervous system more strongly than normal breathing. The hold phase allows for better oxygen exchange in your lungs, while the counting provides a focal point that quiets racing thoughts.\n\nRegular practice—even just 5 minutes daily—can rewire your brain's stress response, making you more resilient to daily pressures and improving your ability to focus on demanding tasks."
+          }
+        },
+        {
+          id: "guided-breathing",
+          type: "guided_activity",
+          title: "4-7-8 Breathing Practice",
+          duration: 5,
+          section: "act",
+          content: {
+            activityType: "breathing",
+            description: "Follow the guided breathing exercise to experience immediate calm and clarity.",
+            steps: [
+              { id: "step-1", instruction: "Breathe in deeply through your nose", duration: 4, visualCue: "inhale" },
+              { id: "step-2", instruction: "Hold your breath gently", duration: 7, visualCue: "hold" },
+              { id: "step-3", instruction: "Exhale slowly through your mouth", duration: 8, visualCue: "exhale" },
+              { id: "step-4", instruction: "Breathe in deeply through your nose", duration: 4, visualCue: "inhale" },
+              { id: "step-5", instruction: "Hold your breath gently", duration: 7, visualCue: "hold" },
+              { id: "step-6", instruction: "Exhale slowly through your mouth", duration: 8, visualCue: "exhale" },
+              { id: "step-7", instruction: "Breathe in deeply through your nose", duration: 4, visualCue: "inhale" },
+              { id: "step-8", instruction: "Hold your breath gently", duration: 7, visualCue: "hold" },
+              { id: "step-9", instruction: "Exhale slowly through your mouth", duration: 8, visualCue: "exhale" }
+            ]
+          }
+        },
+        {
+          id: "quiz-breathing",
+          type: "quiz_multiple_choice",
+          title: "Test Your Knowledge",
+          duration: 5,
+          section: "earn",
+          content: [
+            {
+              id: "q1",
+              question: "What does the 4-7-8 breathing technique involve?",
+              options: [
+                "Inhale 4, hold 7, exhale 8",
+                "Inhale 8, hold 7, exhale 4",
+                "Inhale 4, hold 4, exhale 8",
+                "Inhale 7, hold 8, exhale 4"
+              ],
+              correctAnswer: 0,
+              explanation: "The 4-7-8 technique involves inhaling for 4 counts, holding for 7 counts, and exhaling for 8 counts."
+            },
+            {
+              id: "q2",
+              question: "Which part of the nervous system does deep breathing activate?",
+              options: [
+                "Sympathetic nervous system",
+                "Parasympathetic nervous system",
+                "Central nervous system",
+                "Peripheral nervous system"
+              ],
+              correctAnswer: 1,
+              explanation: "Deep breathing activates the parasympathetic nervous system, which promotes relaxation and reduces stress."
+            }
+          ]
+        }
+      ];
+    }
+    // Program 2: Leadership Communication Excellence (deep_learning: 18/2/5)
+    else if (i === 1) {
+      programType = "deep_learning";
+      contentItems = [
+        {
+          id: "lecture-communication",
+          type: "lecture",
+          title: "Leadership Communication Fundamentals",
+          duration: 10,
+          section: "learn",
+          content: "https://example.com/leadership-communication.mp3"
+        },
+        {
+          id: "key-takeaways-leadership",
+          type: "key_takeaways",
+          title: "Key Communication Principles",
+          duration: 8,
+          section: "learn",
+          content: {
+            quick: "Effective leaders master three core skills: active listening, clear messaging, and empathetic response. These create trust and alignment.",
+            deep: "Effective leaders master three core communication skills: active listening, clear messaging, and empathetic response. These create trust and alignment in teams.\n\n**Active Listening**: Go beyond hearing words to understand intent, emotions, and context. Leaders who practice active listening report 50% higher team engagement. Maintain eye contact, ask clarifying questions, and paraphrase to confirm understanding.\n\n**Clear Messaging**: Articulate vision and expectations with precision. Ambiguity breeds confusion and misalignment. Use the 'headline first' approach—state your main point upfront, then provide supporting details. This respects your team's time and ensures key messages land.\n\n**Empathetic Response**: Acknowledge emotions and perspectives before problem-solving. Research shows empathy increases psychological safety by 60%, enabling teams to take creative risks and innovate fearlessly.\n\nThese three skills compound: active listening builds trust, clear messaging provides direction, and empathetic response maintains morale through challenges."
+          }
+        },
+        {
+          id: "practice-listening",
+          type: "deep_dive",
+          title: "Active Listening in Practice",
+          duration: 2,
+          section: "act",
+          content: "In your next conversation, practice these three techniques: 1) Maintain eye contact and nod to show engagement, 2) Paraphrase what you hear, 3) Ask open-ended questions to deepen understanding."
+        },
+        {
+          id: "quiz-leadership",
+          type: "quiz_true_false",
+          title: "Leadership Communication Check",
+          duration: 5,
+          section: "earn",
+          content: [
+            {
+              id: "q1",
+              question: "Active listening increases team engagement by approximately 50%.",
+              correctAnswer: true,
+              explanation: "Research confirms that active listening significantly boosts team engagement, with studies showing increases around 50%."
+            },
+            {
+              id: "q2",
+              question: "The 'headline first' approach means providing details before stating your main point.",
+              correctAnswer: false,
+              explanation: "The 'headline first' approach means stating your main point upfront, then providing supporting details."
+            },
+            {
+              id: "q3",
+              question: "Empathy increases psychological safety in teams by about 60%.",
+              correctAnswer: true,
+              explanation: "Studies show that empathetic leadership increases psychological safety by approximately 60%, enabling teams to innovate and take creative risks."
+            }
+          ]
+        }
+      ];
+    }
+    // Program 3: Creative Problem Solving Workshop (hands_on_practice: 8/12/5)
+    else if (i === 2) {
+      programType = "hands_on_practice";
+      contentItems = [
+        {
+          id: "key-creativity",
+          type: "key_takeaways",
+          title: "Creative Thinking Frameworks",
+          duration: 5,
+          section: "learn",
+          content: {
+            quick: "Creativity isn't magic—it's a skill. Use divergent thinking to generate many ideas, then convergent thinking to refine the best ones.",
+            deep: "Creativity isn't magic—it's a skill you can develop through practice. Two complementary thinking modes drive creative problem-solving:\n\n**Divergent Thinking**: Generate many ideas without judgment. Quantity breeds quality. Set a timer for 10 minutes and brainstorm at least 20 solutions to your challenge. Wild ideas welcome—they often spark practical innovations.\n\n**Convergent Thinking**: Evaluate and refine your ideas. Group similar concepts, identify patterns, and select the most promising solutions based on feasibility and impact.\n\nCreative problem-solving also benefits from constraint-based thinking. Paradoxically, limitations force innovative solutions. If budget or time is constrained, your brain finds creative workarounds it wouldn't discover with unlimited resources.\n\nFinally, movement unlocks creativity. Physical activity increases blood flow to the brain's creative centers. A 5-minute walk can boost creative output by 60%."
+          }
+        },
+        {
+          id: "podcast-innovation",
+          type: "podcast",
+          title: "Innovation in Action",
+          duration: 3,
+          section: "learn",
+          content: "https://example.com/innovation.mp3"
+        },
+        {
+          id: "movement-activity",
+          type: "guided_activity",
+          title: "Creative Movement Break",
+          duration: 10,
+          section: "act",
+          content: {
+            activityType: "movement",
+            description: "Physical movement to unlock creative thinking and generate fresh perspectives.",
+            steps: [
+              { id: "step-1", instruction: "Stand up and stretch your arms overhead", duration: 30, visualCue: "move" },
+              { id: "step-2", instruction: "Shake out your hands and wrists", duration: 20, visualCue: "move" },
+              { id: "step-3", instruction: "Roll your shoulders backwards 5 times", duration: 25, visualCue: "move" },
+              { id: "step-4", instruction: "Take 3 deep breaths while swaying gently", duration: 30, visualCue: "move" },
+              { id: "step-5", instruction: "Walk in place for 30 steps", duration: 40, visualCue: "move" },
+              { id: "step-6", instruction: "Stretch side to side, reaching overhead", duration: 35, visualCue: "move" },
+              { id: "step-7", instruction: "Return to center and breathe deeply", duration: 20, visualCue: "rest" }
+            ]
+          }
+        },
+        {
+          id: "brainstorm-practice",
+          type: "deep_dive",
+          title: "Rapid Ideation Exercise",
+          duration: 2,
+          section: "act",
+          content: "Think of a current challenge. Set a 60-second timer and write down at least 10 possible solutions—no judgment, just quantity. Wild ideas encouraged!"
+        },
+        {
+          id: "quiz-creativity",
+          type: "quiz_multiple_choice",
+          title: "Creative Thinking Assessment",
+          duration: 5,
+          section: "earn",
+          content: [
+            {
+              id: "q1",
+              question: "What is the primary goal of divergent thinking?",
+              options: [
+                "To evaluate and refine ideas",
+                "To generate many ideas without judgment",
+                "To eliminate bad solutions quickly",
+                "To focus on one perfect solution"
+              ],
+              correctAnswer: 1,
+              explanation: "Divergent thinking aims to generate many ideas without judgment. Quantity leads to quality in creative brainstorming."
+            },
+            {
+              id: "q2",
+              question: "How much can a 5-minute walk boost creative output?",
+              options: [
+                "20%",
+                "40%",
+                "60%",
+                "80%"
+              ],
+              correctAnswer: 2,
+              explanation: "Research shows a 5-minute walk can boost creative output by approximately 60%."
+            }
+          ]
+        }
+      ];
+    }
+    // Program 4: Stress Relief & Recovery (personal_wellbeing: 10/10/5)
+    else if (i === 3) {
+      programType = "personal_wellbeing";
+      contentItems = [
+        {
+          id: "podcast-stress",
+          type: "podcast",
+          title: "Understanding Stress and Recovery",
+          duration: 7,
+          section: "learn",
+          content: "https://example.com/stress-recovery.mp3"
+        },
+        {
+          id: "deep-dive-recovery",
+          type: "deep_dive",
+          title: "The Science of Relaxation",
+          duration: 3,
+          section: "learn",
+          content: {
+            quick: "Progressive muscle relaxation reduces stress by systematically tensing and releasing muscle groups. This technique lowers cortisol and promotes deep calm.",
+            deep: "Progressive muscle relaxation (PMR) reduces stress by systematically tensing and releasing muscle groups. This technique lowers cortisol and promotes deep calm.\n\nDeveloped by Dr. Edmund Jacobson in the 1920s, PMR works by teaching your body to recognize the difference between tension and relaxation. When you deliberately tense muscles and then release them, you create a deeper state of relaxation than you could achieve through rest alone.\n\nThe physiological benefits are profound: PMR reduces cortisol levels by up to 30%, decreases muscle tension headaches, improves sleep quality, and lowers blood pressure. Many therapists recommend PMR for anxiety management because it gives you a tangible technique to counter stress in the moment.\n\nThe practice is simple: starting with your toes and moving upward, tense each muscle group for 5 seconds, then release for 30 seconds. Focus on the sensation of tension leaving your body. This systematic approach ensures you address tension you may not even realize you're carrying.\n\nRegular practice—just 10 minutes daily—rewires your stress response, making you more resilient and better able to recover from challenging situations."
+          }
+        },
+        {
+          id: "relaxation-practice",
+          type: "guided_activity",
+          title: "Progressive Relaxation",
+          duration: 10,
+          section: "act",
+          content: {
+            activityType: "relaxation",
+            description: "Systematically release tension from every part of your body for deep stress relief.",
+            steps: [
+              { id: "step-1", instruction: "Tense your feet, then release", duration: 35, visualCue: "rest" },
+              { id: "step-2", instruction: "Tense your calves, then release", duration: 35, visualCue: "rest" },
+              { id: "step-3", instruction: "Tense your thighs, then release", duration: 35, visualCue: "rest" },
+              { id: "step-4", instruction: "Tense your abdomen, then release", duration: 35, visualCue: "rest" },
+              { id: "step-5", instruction: "Tense your hands and arms, then release", duration: 35, visualCue: "rest" },
+              { id: "step-6", instruction: "Tense your shoulders, then release", duration: 35, visualCue: "rest" },
+              { id: "step-7", instruction: "Tense your face and jaw, then release", duration: 35, visualCue: "rest" },
+              { id: "step-8", instruction: "Breathe deeply and scan your whole body", duration: 55, visualCue: "rest" }
+            ]
+          }
+        },
+        {
+          id: "quiz-recovery",
+          type: "quiz_true_false",
+          title: "Recovery Knowledge Check",
+          duration: 5,
+          section: "earn",
+          content: [
+            {
+              id: "q1",
+              question: "Progressive muscle relaxation can reduce cortisol levels by up to 30%.",
+              correctAnswer: true,
+              explanation: "Research shows that PMR can reduce cortisol levels by approximately 30%, significantly lowering stress."
+            },
+            {
+              id: "q2",
+              question: "In progressive muscle relaxation, you should hold tension for 30 seconds.",
+              correctAnswer: false,
+              explanation: "You should tense muscles for about 5 seconds, then release and relax for 30 seconds."
+            }
+          ]
+        }
+      ];
+    }
+    // Program 5: Innovation Thinking Lab (creative_exploration: 7/13/5)
+    else {
+      programType = "creative_exploration";
+      contentItems = [
+        {
+          id: "lecture-innovation",
+          type: "lecture",
+          title: "Innovation Frameworks Masterclass",
+          duration: 7,
+          section: "learn",
+          content: "https://example.com/innovation-frameworks.mp3"
+        },
+        {
+          id: "guided-ideation",
+          type: "guided_activity",
+          title: "Innovation Sprint Exercise",
+          duration: 8,
+          section: "act",
+          content: {
+            activityType: "movement",
+            description: "A dynamic innovation exercise combining movement and rapid ideation.",
+            steps: [
+              { id: "step-1", instruction: "Stand and think of a problem to solve", duration: 30, visualCue: "move" },
+              { id: "step-2", instruction: "Walk around while brainstorming—motion sparks ideas", duration: 90, visualCue: "move" },
+              { id: "step-3", instruction: "Pause and write down your best 3 ideas", duration: 60, visualCue: "rest" },
+              { id: "step-4", instruction: "Move again, building on those ideas", duration: 90, visualCue: "move" },
+              { id: "step-5", instruction: "Return and refine your top solution", duration: 60, visualCue: "rest" }
+            ]
+          }
+        },
+        {
+          id: "deep-dive-innovation",
+          type: "deep_dive",
+          title: "Innovation Mindset Principles",
+          duration: 5,
+          section: "act",
+          content: {
+            quick: "Innovation requires embracing failure as learning. Rapid prototyping and user feedback beat perfectionism. Test early, iterate often.",
+            deep: "Innovation requires embracing failure as learning. Rapid prototyping and user feedback beat perfectionism. Test early, iterate often.\n\n**Embrace Productive Failure**: Every failed experiment teaches you what doesn't work, narrowing the path to what will. Companies like Google and Amazon celebrate 'intelligent failures' because they accelerate learning. When you shift from fearing failure to mining it for insights, innovation accelerates.\n\n**Rapid Prototyping**: Build the simplest version of your idea that you can test. Don't wait for perfection. A rough prototype tested with real users beats a polished concept that never leaves the drawing board. Speed of learning trumps polish in early stages.\n\n**User-Centered Feedback**: Your assumptions about what users need are often wrong. Talk to real users early and often. Their feedback will surprise you and redirect your innovation in valuable ways you couldn't have predicted.\n\n**Iterate Relentlessly**: Each iteration should be a meaningful experiment. Ask: What's the riskiest assumption I'm making? How can I test it quickly and cheaply? This experimental mindset transforms innovation from guesswork into a systematic process.\n\nThe most successful innovators aren't the smartest—they're the ones who test ideas fastest and learn from each experiment."
+          }
+        },
+        {
+          id: "quiz-innovation",
+          type: "quiz_multiple_choice",
+          title: "Innovation Mastery Quiz",
+          duration: 5,
+          section: "earn",
+          content: [
+            {
+              id: "q1",
+              question: "What is the primary benefit of rapid prototyping?",
+              options: [
+                "Creating perfect products",
+                "Avoiding all mistakes",
+                "Learning quickly through testing",
+                "Impressing stakeholders"
+              ],
+              correctAnswer: 2,
+              explanation: "Rapid prototyping enables fast learning through testing real ideas with users, which beats waiting for perfection."
+            },
+            {
+              id: "q2",
+              question: "According to innovation best practices, when should you seek user feedback?",
+              options: [
+                "Only after the product is complete",
+                "Early and often",
+                "Never, trust your expertise",
+                "Only when problems arise"
+              ],
+              correctAnswer: 1,
+              explanation: "User feedback should be sought early and often to ensure your innovation meets real needs and to catch wrong assumptions quickly."
+            },
+            {
+              id: "q3",
+              question: "What should each iteration in innovation focus on?",
+              options: [
+                "Adding more features",
+                "Making it look better",
+                "Testing the riskiest assumption",
+                "Getting stakeholder approval"
+              ],
+              correctAnswer: 2,
+              explanation: "Each iteration should test your riskiest assumption to learn quickly and systematically reduce uncertainty."
+            }
+          ]
+        }
+      ];
+    }
+    
+    // Create the loop with contentItems
     await storage.createLoop({
       programId: createdProgram.id,
       index: 1,
       title: `${createdProgram.title} - Session 1`,
+      programType: programType,
       phaseLearnText: programData.content.learn,
       phaseActText: programData.content.act,
       phaseEarnText: programData.content.earn.message,
-      durLearn: durations.learn,
-      durAct: durations.act,
-      durEarn: durations.earn,
+      durLearn: 15,  // Will be overridden by programType
+      durAct: 5,     // Will be overridden by programType
+      durEarn: 5,    // Will be overridden by programType
+      contentItems: contentItems as any,
     });
   }
 
