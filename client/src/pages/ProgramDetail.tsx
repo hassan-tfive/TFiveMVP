@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useLocation, Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,28 @@ export default function ProgramDetail() {
     enabled: !!loopId,
   });
 
+  // Check if there's an active session for this loop
+  const { data: activeSession } = useQuery({
+    queryKey: ["/api/loops", loopId, "session"],
+    queryFn: async () => {
+      const res = await fetch(`/api/loops/${loopId}/session`);
+      if (!res.ok) {
+        if (res.status === 404) return null; // No active session
+        throw new Error("Failed to fetch session");
+      }
+      return res.json();
+    },
+    enabled: !!loopId,
+    retry: false,
+  });
+
+  // Update sessionStarted state when we detect an active session
+  useEffect(() => {
+    if (activeSession) {
+      setSessionStarted(true);
+    }
+  }, [activeSession]);
+
   // Mutation to start a session (mark program as in progress)
   const startSessionMutation = useMutation({
     mutationFn: async () => {
@@ -44,6 +66,7 @@ export default function ProgramDetail() {
       queryClient.invalidateQueries({ queryKey: ["/api/programs/started"] });
       queryClient.invalidateQueries({ queryKey: ["/api/sessions"] });
       queryClient.invalidateQueries({ queryKey: ["/api/loops", loopId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/loops", loopId, "session"] });
       toast({
         title: "Session Started",
         description: "This program is now in your active sessions",

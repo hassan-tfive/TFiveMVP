@@ -1149,7 +1149,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // POST /api/sessions/start - Start a loop session
+  // GET /api/loops/:loopId/session - Get active session for a loop
+  app.get("/api/loops/:loopId/session", async (req, res) => {
+    try {
+      const { loopId } = req.params;
+      const user = await storage.getUser(DEFAULT_USER_ID);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Get all user sessions and find active one for this loop
+      const sessions = await storage.getUserSessions(user.id);
+      const activeSession = sessions.find(
+        (s) => s.loopId === loopId && s.status === "in_progress"
+      );
+
+      if (!activeSession) {
+        return res.status(404).json({ error: "No active session found" });
+      }
+
+      res.json(activeSession);
+    } catch (error) {
+      console.error("Get loop session error:", error);
+      res.status(500).json({ error: "Failed to fetch session" });
+    }
+  });
+
+  // POST /api/sessions/start - Start a loop session (idempotent)
   app.post("/api/sessions/start", async (req, res) => {
     try {
       const schema = z.object({
@@ -1168,7 +1195,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Loop not found" });
       }
 
-      // Create session for this loop
+      // Check if there's already an active session for this loop
+      const existingSessions = await storage.getUserSessions(user.id);
+      const existingSession = existingSessions.find(
+        (s) => s.loopId === loop_id && s.status === "in_progress"
+      );
+
+      if (existingSession) {
+        // Return existing session instead of creating a new one
+        return res.json({ session_id: existingSession.id, session: existingSession });
+      }
+
+      // Create new session for this loop
       const session = await storage.createSession({
         userId: user.id,
         loopId: loop.id,
