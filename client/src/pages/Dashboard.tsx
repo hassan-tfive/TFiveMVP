@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
 import { ProgramCard } from "@/components/ProgramCard";
-import { Clock } from "lucide-react";
+import { Clock, Sparkles } from "lucide-react";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { cn } from "@/lib/utils";
 import type { Program, User } from "@shared/schema";
@@ -19,6 +19,15 @@ export default function Dashboard() {
     queryFn: async () => {
       const res = await fetch(`/api/programs/started?workspace=${workspace}`);
       if (!res.ok) throw new Error("Failed to fetch started programs");
+      return res.json();
+    },
+  });
+
+  const { data: allPrograms = [], isLoading: allProgramsLoading } = useQuery<Program[]>({
+    queryKey: ["/api/programs", workspace],
+    queryFn: async () => {
+      const res = await fetch(`/api/programs?workspace=${workspace}`);
+      if (!res.ok) throw new Error("Failed to fetch programs");
       return res.json();
     },
   });
@@ -97,6 +106,45 @@ export default function Dashboard() {
           )}
         </div>
       )}
+
+      {/* Recommended Programs Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className={cn(
+              "w-5 h-5",
+              workspace === "professional" ? "text-workspace-professional" : "text-workspace-personal"
+            )} />
+            <h2 className="text-2xl font-display font-semibold">Recommended for You</h2>
+          </div>
+        </div>
+
+        {allProgramsLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
+            ))}
+          </div>
+        ) : allPrograms.length === 0 ? (
+          <div className="text-center py-12 bg-muted/30 rounded-lg">
+            <Sparkles className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+            <p className="text-lg font-medium">No programs available yet</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Check back soon for new programs
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+            {allPrograms.slice(0, 10).map((program) => (
+              <ProgramCard
+                key={program.id}
+                program={program}
+                onClick={() => window.location.href = `/session/${program.id}`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
