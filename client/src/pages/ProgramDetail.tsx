@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { useParams, useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Headphones, BookOpen, Brain, CheckCircle, Clock, Play, Pause, PartyPopper } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AudioPlayer } from "@/components/AudioPlayer";
+import { getProgramTypeConfig } from "@shared/programTypes";
 import type { Loop, ContentItem } from "@shared/schema";
 
 export default function ProgramDetail() {
@@ -177,6 +179,11 @@ export default function ProgramDetail() {
           </Link>
           <div>
             <h1 className="text-xl font-semibold font-display">{loop.title}</h1>
+            <div className="flex items-center gap-2 mt-2">
+              <Badge variant="outline" className="text-xs">
+                {getProgramTypeConfig(loop.programType).label}
+              </Badge>
+            </div>
             {!sessionActive && (
               <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
                 <Clock className="w-4 h-4" />

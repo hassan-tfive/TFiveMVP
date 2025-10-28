@@ -106,6 +106,8 @@ export const loops = pgTable("loops", {
   programId: varchar("program_id").notNull().references(() => programs.id),
   index: integer("index").notNull(), // 1, 2, 3... in the series
   title: text("title").notNull(),
+  // Program type determines Learn/Act/Earn time allocation
+  programType: text("program_type").default("getting_started"), // getting_started | deep_learning | hands_on_practice | personal_wellbeing | creative_exploration
   phaseLearnText: text("phase_learn_text").notNull(),
   phaseActText: text("phase_act_text").notNull(),
   phaseEarnText: text("phase_earn_text").notNull(),

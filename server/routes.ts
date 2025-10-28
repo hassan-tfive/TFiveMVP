@@ -1257,7 +1257,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const loops = await storage.getProgramLoops(id);
-      res.json(loops);
+      
+      // Derive durations from program type for each loop (only if programType is set)
+      const { getProgramTypeConfig } = await import("@shared/programTypes");
+      const loopsWithCorrectDurations = loops.map(loop => {
+        // Only override durations if programType is explicitly set
+        if (loop.programType && loop.programType !== null) {
+          const typeConfig = getProgramTypeConfig(loop.programType);
+          return {
+            ...loop,
+            durLearn: typeConfig.durLearn,
+            durAct: typeConfig.durAct,
+            durEarn: typeConfig.durEarn,
+          };
+        }
+        // Preserve stored durations for legacy loops without programType
+        return loop;
+      });
+      
+      res.json(loopsWithCorrectDurations);
     } catch (error) {
       console.error("Get loops error:", error);
       res.status(500).json({ error: "Failed to fetch loops" });
@@ -1272,7 +1290,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!loop) {
         return res.status(404).json({ error: "Loop not found" });
       }
-      res.json(loop);
+      
+      // Only override durations if programType is explicitly set
+      if (loop.programType && loop.programType !== null) {
+        const { getProgramTypeConfig } = await import("@shared/programTypes");
+        const typeConfig = getProgramTypeConfig(loop.programType);
+        
+        // Override stored durations with values from program type config
+        const loopWithCorrectDurations = {
+          ...loop,
+          durLearn: typeConfig.durLearn,
+          durAct: typeConfig.durAct,
+          durEarn: typeConfig.durEarn,
+        };
+        
+        res.json(loopWithCorrectDurations);
+      } else {
+        // Preserve stored durations for legacy loops without programType
+        res.json(loop);
+      }
     } catch (error) {
       console.error("Get loop error:", error);
       res.status(500).json({ error: "Failed to fetch loop" });
