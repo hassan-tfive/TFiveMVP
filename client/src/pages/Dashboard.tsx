@@ -45,19 +45,19 @@ export default function Dashboard() {
   const recommendedPrograms = programs?.slice(0, 3) || [];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className={cn(
-        "rounded-lg px-8 transition-colors relative overflow-hidden",
+        "rounded-lg px-6 transition-colors relative overflow-hidden",
         workspace === "professional" 
           ? "bg-[hsl(235,100%,9%)]" 
           : "bg-gradient-to-r from-[hsl(318,100%,50%)] to-[hsl(266,73%,40%)]"
       )}>
-        <div className="flex items-center justify-between gap-6 py-6">
+        <div className="flex items-center justify-between gap-4 py-4">
           <div className="flex-1">
-            <h1 className="text-4xl font-display font-bold mb-2 text-white relative z-10">
+            <h1 className="text-2xl font-display font-bold mb-1 text-white relative z-10">
               Welcome back to Tfive!
             </h1>
-            <p className="text-lg text-white/90 relative z-10">
+            <p className="text-sm text-white/90 relative z-10">
               {workspace === "professional"
                 ? "Your professional development space - focused on career growth"
                 : "Your personal sanctuary - private space for self-discovery"}
@@ -66,7 +66,7 @@ export default function Dashboard() {
           <img 
             src={tfiveLogoWhiteUrl} 
             alt="Tfive" 
-            className="h-40 w-auto relative z-10 flex-shrink-0 -my-6 -mr-8"
+            className="h-20 w-auto relative z-10 flex-shrink-0 -my-4 -mr-6"
             data-testid="img-banner-logo" 
           />
         </div>

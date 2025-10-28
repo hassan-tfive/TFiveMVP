@@ -22,59 +22,58 @@ export function ProgressDashboard({ points, level, completedSessions, streak }: 
         "hover-elevate",
         workspace === "professional" ? "border-workspace-professional" : "border-workspace-personal"
       )}>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-1">
           <CardTitle className="text-sm font-medium">Level</CardTitle>
           <Crown className={cn(
-            "w-5 h-5",
+            "w-4 h-4",
             workspace === "professional" ? "text-workspace-professional" : "text-workspace-personal"
           )} />
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold font-display" data-testid="text-level">{level}</div>
-          <div className="mt-2 space-y-1">
+          <div className="text-2xl font-bold font-display" data-testid="text-level">{level}</div>
+          <div className="mt-1 space-y-1">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Progress to Level {level + 1}</span>
               <span>{currentLevelProgress.toFixed(0)}%</span>
             </div>
-            <Progress value={currentLevelProgress} className="h-1" />
           </div>
         </CardContent>
       </Card>
 
       <Card className="hover-elevate">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-1">
           <CardTitle className="text-sm font-medium">Total Points</CardTitle>
-          <Sparkles className="w-5 h-5 text-chart-3" />
+          <Sparkles className="w-4 h-4 text-chart-3" />
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold font-display" data-testid="text-points">{points.toLocaleString()}</div>
-          <p className="text-xs text-muted-foreground mt-2">
+          <div className="text-2xl font-bold font-display" data-testid="text-points">{points.toLocaleString()}</div>
+          <p className="text-xs text-muted-foreground mt-1">
             {pointsToNextLevel - (points % 1000)} points to next level
           </p>
         </CardContent>
       </Card>
 
       <Card className="hover-elevate">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-1">
           <CardTitle className="text-sm font-medium">Sessions</CardTitle>
-          <Brain className="w-5 h-5 text-chart-2" />
+          <Brain className="w-4 h-4 text-chart-2" />
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold font-display" data-testid="text-sessions">{completedSessions}</div>
-          <p className="text-xs text-muted-foreground mt-2">
+          <div className="text-2xl font-bold font-display" data-testid="text-sessions">{completedSessions}</div>
+          <p className="text-xs text-muted-foreground mt-1">
             Completed Pomodoro sessions
           </p>
         </CardContent>
       </Card>
 
       <Card className="hover-elevate">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-1">
           <CardTitle className="text-sm font-medium">Streak</CardTitle>
-          <Zap className="w-5 h-5 text-chart-4" />
+          <Zap className="w-4 h-4 text-chart-4" />
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold font-display" data-testid="text-streak">{streak}</div>
-          <p className="text-xs text-muted-foreground mt-2">
+          <div className="text-2xl font-bold font-display" data-testid="text-streak">{streak}</div>
+          <p className="text-xs text-muted-foreground mt-1">
             Days in a row
           </p>
         </CardContent>

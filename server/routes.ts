@@ -1508,7 +1508,7 @@ async function initializeSeedData() {
       difficulty: "beginner",
       duration: 25,
       workspace: "both",
-      imageUrl: "/src/assets/generated_images/Focus_program_abstract_background_cffc6aef.png",
+      imageUrl: "/attached_assets/stock_images/mindfulness_meditati_c97195b0.jpg",
       content: {
         learn: "Introduction to mindfulness and focused breathing techniques.",
         act: "Practice the 4-7-8 breathing technique.",
@@ -1525,7 +1525,7 @@ async function initializeSeedData() {
       difficulty: "intermediate",
       duration: 25,
       workspace: "professional",
-      imageUrl: "/src/assets/generated_images/Inclusion_program_abstract_background_17e057a0.png",
+      imageUrl: "/attached_assets/stock_images/business_leadership__3b97950f.jpg",
       content: {
         learn: "Essential communication strategies for modern leaders.",
         act: "Practice active listening techniques.",
@@ -1542,7 +1542,7 @@ async function initializeSeedData() {
       difficulty: "intermediate",
       duration: 25,
       workspace: "both",
-      imageUrl: "/src/assets/generated_images/Focus_program_abstract_background_cffc6aef.png",
+      imageUrl: "/attached_assets/stock_images/mindfulness_meditati_c97195b0.jpg",
       content: {
         learn: "Creative thinking frameworks and methodologies.",
         act: "Engage in movement-based creative exercises.",
@@ -1559,7 +1559,7 @@ async function initializeSeedData() {
       difficulty: "beginner",
       duration: 25,
       workspace: "both",
-      imageUrl: "/src/assets/generated_images/Recovery_program_abstract_background_ac13e09c.png",
+      imageUrl: "/attached_assets/stock_images/stress_relief_relaxa_7d16b29a.jpg",
       content: {
         learn: "Understanding stress and recovery mechanisms.",
         act: "Progressive relaxation exercises.",
@@ -1576,7 +1576,7 @@ async function initializeSeedData() {
       difficulty: "advanced",
       duration: 25,
       workspace: "professional",
-      imageUrl: "/src/assets/generated_images/Focus_program_abstract_background_cffc6aef.png",
+      imageUrl: "/attached_assets/stock_images/business_leadership__3b97950f.jpg",
       content: {
         learn: "Innovation frameworks from leading thinkers.",
         act: "Guided innovation ideation exercises.",
