@@ -199,15 +199,15 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation, onNewCha
                       <Button
                         key={conversation.id}
                         variant="ghost"
-                        className="w-full justify-start text-xs h-auto py-2"
+                        className="w-full justify-start text-xs h-auto py-2 whitespace-normal text-left"
                         onClick={() => {
                           onSelectConversation?.(conversation.id);
                           onOpenChange(false);
                         }}
                         data-testid={`chat-history-${idx}`}
                       >
-                        <MessageSquare className="w-3 h-3 mr-2 flex-shrink-0" />
-                        <span className="truncate min-w-0 flex-1">
+                        <MessageSquare className="w-3 h-3 mr-2 flex-shrink-0 mt-0.5" />
+                        <span className="min-w-0 flex-1 break-words">
                           {conversation.title || "New Chat"}
                         </span>
                       </Button>
@@ -227,11 +227,11 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation, onNewCha
                       <Link key={program.id} href="/programs" className="block max-w-full">
                         <Button
                           variant="ghost"
-                          className="w-full justify-start text-xs h-auto py-2"
+                          className="w-full justify-start text-xs h-auto py-2 whitespace-normal text-left"
                           data-testid={`recent-program-${program.id}`}
                         >
-                          <Clock className="w-3 h-3 mr-2 flex-shrink-0" />
-                          <span className="truncate min-w-0 flex-1">
+                          <Clock className="w-3 h-3 mr-2 flex-shrink-0 mt-0.5" />
+                          <span className="min-w-0 flex-1 break-words">
                             {program.title}
                           </span>
                         </Button>
