@@ -22,6 +22,7 @@ import {
   generateAudioNarration,
   getCuratedVideoUrl,
 } from "./ai-workflows";
+import { getProgramTypeConfig } from "@shared/programTypes";
 
 // Initialize OpenAI with Replit AI Integrations
 const openai = new OpenAI({
@@ -1939,7 +1940,10 @@ async function initializeSeedData() {
       ];
     }
     
-    // Create the loop with contentItems
+    // Get correct durations for this program type
+    const typeConfig = getProgramTypeConfig(programType);
+    
+    // Create the loop with contentItems and correct durations
     await storage.createLoop({
       programId: createdProgram.id,
       index: 1,
@@ -1948,9 +1952,9 @@ async function initializeSeedData() {
       phaseLearnText: programData.content.learn,
       phaseActText: programData.content.act,
       phaseEarnText: programData.content.earn.message,
-      durLearn: 15,  // Will be overridden by programType
-      durAct: 5,     // Will be overridden by programType
-      durEarn: 5,    // Will be overridden by programType
+      durLearn: typeConfig.durLearn,
+      durAct: typeConfig.durAct,
+      durEarn: typeConfig.durEarn,
       contentItems: contentItems as any,
     });
   }
