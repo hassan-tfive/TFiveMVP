@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { ChatSidebar } from "@/components/ChatSidebar";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import tfiveLogoUrl from "@assets/v3 - crimson text font-02_1760728277193.png";
+import tfiveLogoWhiteUrl from "@assets/v3 - crimson text font-06_1760868063174.png";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface ChatLayoutProps {
   children: React.ReactNode;
@@ -13,6 +16,7 @@ interface ChatLayoutProps {
 
 export function ChatLayout({ children, showTairoTitle = false, onSelectConversation, onNewChat }: ChatLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { theme } = useTheme();
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -41,8 +45,15 @@ export function ChatLayout({ children, showTairoTitle = false, onSelectConversat
                 <line x1="3" y1="18" x2="21" y2="18"></line>
               </svg>
             </Button>
-            {showTairoTitle && (
+            {showTairoTitle ? (
               <span className="text-lg font-semibold font-display">TAIRO</span>
+            ) : (
+              <img 
+                src={theme === "dark" ? tfiveLogoWhiteUrl : tfiveLogoUrl}
+                alt="Tfive" 
+                className="h-8 w-auto"
+                data-testid="img-header-logo"
+              />
             )}
           </div>
           
