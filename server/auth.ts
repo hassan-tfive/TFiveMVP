@@ -10,6 +10,14 @@ import { storage } from "./storage";
 import crypto from "crypto";
 import { z } from "zod";
 
+// Extend session type to include custom properties
+declare module "express-session" {
+  interface SessionData {
+    signupIntent?: string;
+    invitationToken?: string;
+  }
+}
+
 if (!process.env.REPLIT_DOMAINS) {
   throw new Error("Environment variable REPLIT_DOMAINS not provided");
 }
