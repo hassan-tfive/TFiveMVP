@@ -156,7 +156,7 @@ export default function ChatHome() {
                 <div className="text-center space-y-3">
                   <h1 className="text-4xl font-display font-bold">Hi! How are you?</h1>
                   <p className="text-muted-foreground text-lg">
-                    I'm TAIRO, your AI companion for personal growth. How can I help you today?
+                    I'm tairo, your AI companion for personal growth. How can I help you today?
                   </p>
                 </div>
 
@@ -208,30 +208,6 @@ export default function ChatHome() {
                   </Button>
                 </div>
 
-                {/* Recommended Programs */}
-                {recommendedPrograms.length > 0 && (
-                  <div className="w-full max-w-2xl space-y-4">
-                    <h3 className="text-lg font-semibold">Recommended Programs</h3>
-                    <div className="grid grid-cols-1 gap-3">
-                      {recommendedPrograms.map((program) => (
-                        <Link key={program.id} href={`/programs`}>
-                          <Button
-                            variant="outline"
-                            className="w-full h-auto p-4 text-left justify-start hover-elevate"
-                            data-testid={`button-program-${program.id}`}
-                          >
-                            <div className="flex-1">
-                              <div className="font-medium mb-1">{program.title}</div>
-                              <div className="text-xs text-muted-foreground line-clamp-1">
-                                {program.description}
-                              </div>
-                            </div>
-                          </Button>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             ) : (
               <div className="space-y-4" data-testid="chat-messages">
@@ -258,7 +234,7 @@ export default function ChatHome() {
                     ) : (
                       <div className="max-w-[75%] py-3">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="text-xs font-semibold text-muted-foreground">TAIRO</span>
+                          <span className="text-xs font-semibold text-muted-foreground">tairo</span>
                         </div>
                         <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground">{message.content}</p>
                       </div>
@@ -270,7 +246,7 @@ export default function ChatHome() {
                     <div className="py-3">
                       <div className="flex items-center gap-2">
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-sm text-muted-foreground">TAIRO is thinking...</span>
+                        <span className="text-sm text-muted-foreground">tairo is thinking...</span>
                       </div>
                     </div>
                   </div>
