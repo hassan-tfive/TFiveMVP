@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Headphones, BookOpen, Brain, CheckCircle, Clock, Play, Pause, PartyPopper } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AudioPlayer } from "@/components/AudioPlayer";
 import type { Loop, ContentItem } from "@shared/schema";
 
 export default function ProgramDetail() {
@@ -377,13 +378,21 @@ export default function ProgramDetail() {
 
             <div className="prose dark:prose-invert max-w-none">
               {selectedContent.type === "podcast" || selectedContent.type === "lecture" ? (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Beau</h3>
-                  <p className="text-muted-foreground">
-                    {typeof selectedContent.content === "string" 
-                      ? selectedContent.content 
-                      : JSON.stringify(selectedContent.content, null, 2)}
-                  </p>
+                <div className="space-y-6">
+                  <AudioPlayer 
+                    title={selectedContent.title}
+                    audioUrl={typeof selectedContent.content === "object" && selectedContent.content && "audioUrl" in selectedContent.content ? selectedContent.content.audioUrl as string : undefined}
+                  />
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">About this {selectedContent.type === "podcast" ? "Podcast" : "Lecture"}</h3>
+                    <p className="text-muted-foreground">
+                      {typeof selectedContent.content === "string" 
+                        ? selectedContent.content 
+                        : typeof selectedContent.content === "object" && selectedContent.content && "description" in selectedContent.content
+                        ? selectedContent.content.description as string
+                        : "Audio content for your learning journey"}
+                    </p>
+                  </div>
                 </div>
               ) : selectedContent.type === "deep_dive" || selectedContent.type === "key_takeaways" ? (
                 <div className="space-y-4">
