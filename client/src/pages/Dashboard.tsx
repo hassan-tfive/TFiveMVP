@@ -42,10 +42,10 @@ export default function Dashboard() {
     queryKey: ["/api/stats"],
   });
 
-  const recommendedPrograms = programs?.slice(0, 3) || [];
+  const recommendedPrograms = programs?.slice(0, 5) || [];
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
       <div className={cn(
         "rounded-lg px-6 transition-colors relative overflow-hidden",
         workspace === "professional" 
@@ -55,7 +55,7 @@ export default function Dashboard() {
         <div className="flex items-center justify-between gap-4 py-4">
           <div className="flex-1">
             <h1 className="text-2xl font-display font-bold mb-1 text-white relative z-10">
-              Welcome back to Tfive!
+              Chat with Tairo
             </h1>
             <p className="text-sm text-white/90 relative z-10">
               {workspace === "professional"
@@ -79,44 +79,38 @@ export default function Dashboard() {
         streak={stats?.streak || 0}
       />
 
-      {/* Started Programs Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Clock className={cn(
-              "w-5 h-5",
-              workspace === "professional" ? "text-workspace-professional" : "text-workspace-personal"
-            )} />
-            <h2 className="text-2xl font-display font-semibold">Started Programs</h2>
+      {/* Started Programs Section - Only show if loading or have started programs */}
+      {(startedProgramsLoading || (startedPrograms && startedPrograms.length > 0)) && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Clock className={cn(
+                "w-5 h-5",
+                workspace === "professional" ? "text-workspace-professional" : "text-workspace-personal"
+              )} />
+              <h2 className="text-2xl font-display font-semibold">Started Programs</h2>
+            </div>
           </div>
-        </div>
 
-        {startedProgramsLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
-            ))}
-          </div>
-        ) : startedPrograms && startedPrograms.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {startedPrograms.map((program) => (
-              <ProgramCard
-                key={program.id}
-                program={program}
-                onClick={() => window.location.href = `/session/${program.id}`}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12 bg-muted/30 rounded-lg">
-            <Clock className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-lg font-medium">No programs started yet</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Start a program to see it here and track your progress
-            </p>
-          </div>
-        )}
-      </div>
+          {startedProgramsLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+              {startedPrograms?.map((program) => (
+                <ProgramCard
+                  key={program.id}
+                  program={program}
+                  onClick={() => window.location.href = `/session/${program.id}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -136,8 +130,8 @@ export default function Dashboard() {
         </div>
 
         {programsLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+            {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
             ))}
           </div>
@@ -147,7 +141,7 @@ export default function Dashboard() {
             <p className="text-sm text-muted-foreground mt-2">Check back soon for new content!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
             {recommendedPrograms.map((program) => (
               <ProgramCard
                 key={program.id}
