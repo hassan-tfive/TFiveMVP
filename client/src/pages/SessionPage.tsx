@@ -45,17 +45,57 @@ interface Session {
 type Phase = "learn" | "act" | "earn";
 
 export default function SessionPage() {
-  const { id: loopId } = useParams<{ id: string }>();
+  const { id } = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const { workspace } = useWorkspace();
   const { toast } = useToast();
 
+  const [loopId, setLoopId] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [currentPhase, setCurrentPhase] = useState<Phase>("learn");
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [reflection, setReflection] = useState("");
   const [showReflection, setShowReflection] = useState(false);
+
+  // Fetch program loops to determine if ID is a program or loop
+  const { data: programLoops, isSuccess: programLoopsLoaded, isError: programLoopsError } = useQuery<Loop[] | null>({
+    queryKey: ["/api/programs", id, "loops"],
+    queryFn: async () => {
+      const res = await fetch(`/api/programs/${id}/loops`);
+      if (!res.ok) {
+        // Not a program ID, assume it's a loop ID
+        return null;
+      }
+      return res.json();
+    },
+    enabled: !!id,
+    retry: false, // Don't retry if it's not a program
+  });
+
+  // Set the loop ID once we know if it's a program or loop
+  useEffect(() => {
+    if (programLoopsLoaded) {
+      if (programLoops && programLoops.length > 0) {
+        // It's a program ID, use the first loop
+        setLoopId(programLoops[0].id);
+      } else if (programLoops && programLoops.length === 0) {
+        // Program exists but has no loops
+        toast({
+          title: "No Sessions Available",
+          description: "This program doesn't have any sessions yet.",
+          variant: "destructive",
+        });
+        setLocation("/programs");
+      } else if (id) {
+        // programLoops is null, so it's a loop ID
+        setLoopId(id);
+      }
+    } else if (programLoopsError && id) {
+      // Query failed, treat as loop ID
+      setLoopId(id);
+    }
+  }, [programLoops, programLoopsLoaded, programLoopsError, id, setLocation, toast]);
 
   // Helper function to get current phase's audio URL
   const getCurrentAudioUrl = (): string | null => {
