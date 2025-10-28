@@ -28,7 +28,8 @@ export default function ProgramDetail() {
 
   // Timer effect
   useEffect(() => {
-    if (!sessionActive || isPaused || timeRemaining <= 0) return;
+    if (!sessionActive || isPaused) return;
+    if (timeRemaining <= 0) return;
 
     const timer = setInterval(() => {
       setTimeRemaining((prev) => {
@@ -51,8 +52,10 @@ export default function ProgramDetail() {
       });
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, [sessionActive, isPaused, timeRemaining, currentPhase, loop]);
+    return () => {
+      clearInterval(timer);
+    };
+  }, [sessionActive, isPaused, currentPhase, loop]);
 
   const startSession = () => {
     if (!loop) return;

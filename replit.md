@@ -19,7 +19,24 @@ Gamification elements like points, leveling, reward systems, and achievement bad
 
 The frontend is built with React, TypeScript, Tailwind CSS, Shadcn UI, Wouter for routing, TanStack Query for data fetching, and Framer Motion for animations. The backend uses Express.js, integrates OpenAI, and utilizes a PostgreSQL database with Drizzle ORM (Neon). Zod is used for validation, and a role-based authorization middleware secures admin features. The design system employs Inter, Sora, and JetBrains Mono fonts, with a distinct color palette for brand elements (Navy Blue #003C51, Soft Gold #E3B34A, Teal #2D9DA8), workspaces, and timer phases, supporting dark mode. Custom SVG icons enhance the UI: "Rising Spiral" for Achievements (growth), "Fingerprint Lines" for Profile (uniqueness), and "Eye with Frame" for Admin (oversight).
 
-### Recent Changes (2025-10-25)
+### Recent Changes (2025-10-28)
+1. **Programs Page Redesign**: Simplified card-based interface with responsive grid layout (1/2/3 columns)
+   - Removed collapsible/expandable logic from program cards
+   - Each card now shows: image, title, topic badge, type badge, description
+   - Single "View Program" button navigates to program detail page
+   - Removed "Start" button from program cards
+2. **In-Page Session Timer**: Implemented session timer directly on ProgramDetail page
+   - Prominent "Start Session" button in sidebar (replaced separate session page)
+   - Timer displays current phase (Learn/Act/Earn) with countdown
+   - Automatic phase transitions using loop duration values
+   - Pause/Resume functionality with proper state management
+   - Session completion feedback with celebration icon and restart option
+   - Timer runs on same page (no redirect to /session/:loopId)
+3. **Bug Fixes**:
+   - Fixed timer pause/resume race condition by removing `timeRemaining` from useEffect dependency array
+   - Timer now properly restarts when resuming after pause
+
+### Previous Changes (2025-10-25)
 1. **Profile Avatar Location**: Moved profile avatar menu to sidebar footer for all pages, ensuring consistent access across the application
 2. **Chat Message Styling**: Removed grey background from TAIRO assistant messages; only user messages now have colored background boxes for clearer visual distinction
 3. **Dashboard Loading States**: Added skeleton loading states to Dashboard page to provide better UX during slow program fetches
