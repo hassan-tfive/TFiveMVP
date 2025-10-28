@@ -177,7 +177,7 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation, onNewCha
                   <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Recent Chats
                   </h3>
-                  {location === "/" && onNewChat && (
+                  {location.split('?')[0] === "/" && onNewChat && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -196,21 +196,19 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation, onNewCha
                 {recentChats.length > 0 && (
                   <div className="space-y-1 max-w-full overflow-hidden">
                     {recentChats.map((conversation, idx) => (
-                      <Button
-                        key={conversation.id}
-                        variant="ghost"
-                        className="w-full justify-start text-xs h-auto py-2 whitespace-normal text-left"
-                        onClick={() => {
-                          onSelectConversation?.(conversation.id);
-                          onOpenChange(false);
-                        }}
-                        data-testid={`chat-history-${idx}`}
-                      >
-                        <MessageSquare className="w-3 h-3 mr-2 flex-shrink-0 mt-0.5" />
-                        <span className="min-w-0 flex-1 break-words">
-                          {conversation.title || "New Chat"}
-                        </span>
-                      </Button>
+                      <Link key={conversation.id} href={`/?conversation=${conversation.id}`} className="block max-w-full">
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start text-xs h-auto py-2 whitespace-normal text-left"
+                          onClick={() => onOpenChange(false)}
+                          data-testid={`chat-history-${idx}`}
+                        >
+                          <MessageSquare className="w-3 h-3 mr-2 flex-shrink-0 mt-0.5" />
+                          <span className="min-w-0 flex-1 break-words">
+                            {conversation.title || "New Chat"}
+                          </span>
+                        </Button>
+                      </Link>
                     ))}
                   </div>
                 )}

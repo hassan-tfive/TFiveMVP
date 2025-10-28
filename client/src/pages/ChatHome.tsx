@@ -8,7 +8,7 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { ChatLayout } from "@/components/AppLayout";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useRoute } from "wouter";
 import type { ChatMessage } from "@shared/schema";
 
 export default function ChatHome() {
@@ -26,6 +26,10 @@ export default function ChatHome() {
   // Track current conversation messages and ID
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
+
+  // Get conversation ID from URL query parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  const conversationIdFromUrl = urlParams.get('conversation');
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
@@ -69,6 +73,8 @@ export default function ChatHome() {
   const startNewChat = () => {
     setMessages([]);
     setConversationId(null);
+    // Clear URL query parameter by navigating to clean "/"
+    window.history.pushState({}, '', '/');
   };
 
   // Load a specific conversation
@@ -88,20 +94,28 @@ export default function ChatHome() {
     }
   };
 
+  // Load conversation from URL parameter
+  useEffect(() => {
+    if (conversationIdFromUrl && conversationIdFromUrl !== conversationId) {
+      loadConversation(conversationIdFromUrl);
+    }
+  }, [conversationIdFromUrl]);
+
   // Reset messages when entering ChatHome from another page or workspace changes
   useEffect(() => {
     const isEnteringChat = previousLocationRef.current !== "" && previousLocationRef.current !== "/" && location === "/";
     const isWorkspaceChange = previousWorkspaceRef.current !== workspace;
     const isFirstMount = previousLocationRef.current === "";
     
-    if (isFirstMount || isEnteringChat || isWorkspaceChange) {
+    // Don't reset if we have a conversation ID in URL
+    if (!conversationIdFromUrl && (isFirstMount || isEnteringChat || isWorkspaceChange)) {
       setMessages([]);
       setConversationId(null);
     }
     
     previousLocationRef.current = location;
     previousWorkspaceRef.current = workspace;
-  }, [location, workspace]);
+  }, [location, workspace, conversationIdFromUrl]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
