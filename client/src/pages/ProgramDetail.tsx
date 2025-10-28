@@ -3,7 +3,7 @@ import { useParams, useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Headphones, BookOpen, Brain, CheckCircle, Clock, Play, Pause, PartyPopper, Zap, BookMarked } from "lucide-react";
+import { ArrowLeft, Headphones, BookOpen, Brain, CheckCircle, Clock, Play, Pause, PartyPopper, Zap, BookMarked, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { Quiz } from "@/components/Quiz";
@@ -115,16 +115,10 @@ export default function ProgramDetail() {
 
   const contentItems = loop.contentItems as ContentItem[] || [];
   
-  // Group content items by section
-  const learnListening = contentItems.filter(
-    item => item.section === "learn" && (item.type === "podcast" || item.type === "lecture")
-  );
-  const learnReading = contentItems.filter(
-    item => item.section === "learn" && (item.type === "deep_dive" || item.type === "key_takeaways" || item.type === "faq")
-  );
-  const learnInteracting = contentItems.filter(
-    item => item.section === "learn" && (item.type === "quiz_multiple_choice" || item.type === "quiz_true_false" || item.type === "word_quest" || item.type === "flashcards")
-  );
+  // Group content items by section (Learn, Act, Earn)
+  const learnContent = contentItems.filter(item => item.section === "learn");
+  const actContent = contentItems.filter(item => item.section === "act");
+  const earnContent = contentItems.filter(item => item.section === "earn");
 
   const selectedContent = selectedContentId
     ? contentItems.find(item => item.id === selectedContentId)
@@ -139,6 +133,8 @@ export default function ProgramDetail() {
       case "key_takeaways":
       case "faq":
         return <BookOpen className="w-4 h-4" />;
+      case "guided_activity":
+        return <Activity className="w-4 h-4" />;
       case "quiz_multiple_choice":
       case "quiz_true_false":
       case "word_quest":
@@ -161,6 +157,7 @@ export default function ProgramDetail() {
       case "deep_dive": return "Deep Dive";
       case "key_takeaways": return "Key Takeaways";
       case "faq": return "Frequently Asked Questions";
+      case "guided_activity": return "Guided Activity";
       case "quiz_multiple_choice": return "Multiple Choice Quiz";
       case "quiz_true_false": return "True or False Quiz";
       case "word_quest": return "Word Quest";
@@ -311,15 +308,15 @@ export default function ProgramDetail() {
 
         <div className="p-6 space-y-6">
           <p className="text-sm text-muted-foreground italic">
-            Everyone learns differently so I've generated multiple ways to explore this subject:
+            I've organized this session into Learn, Act, and Earn phases:
           </p>
 
-          {/* Learn by Listening */}
-          {learnListening.length > 0 && (
+          {/* Learn Section */}
+          {learnContent.length > 0 && (
             <div className="space-y-2">
-              <h3 className="text-sm font-medium italic">Learn by Listening</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-timer-learn">Learn</h3>
               <div className="space-y-1">
-                {learnListening.map((item) => (
+                {learnContent.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => setSelectedContentId(item.id)}
@@ -331,10 +328,10 @@ export default function ProgramDetail() {
                   >
                     <div className="flex items-center gap-3">
                       {getContentIcon(item.type)}
-                      <span>{getTypeLabel(item.type)}</span>
+                      <span className="text-sm">{item.title}</span>
                     </div>
                     <span className="text-xs text-muted-foreground">
-                      {item.duration} min listen
+                      {item.type === "podcast" || item.type === "lecture" ? `${item.duration} min` : formatDuration(item.duration)}
                     </span>
                   </button>
                 ))}
@@ -342,12 +339,12 @@ export default function ProgramDetail() {
             </div>
           )}
 
-          {/* Learn by Reading */}
-          {learnReading.length > 0 && (
+          {/* Act Section */}
+          {actContent.length > 0 && (
             <div className="space-y-2">
-              <h3 className="text-sm font-medium italic">Learn by Reading</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-timer-act">Act</h3>
               <div className="space-y-1">
-                {learnReading.map((item) => (
+                {actContent.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => setSelectedContentId(item.id)}
@@ -359,10 +356,10 @@ export default function ProgramDetail() {
                   >
                     <div className="flex items-center gap-3">
                       {getContentIcon(item.type)}
-                      <span>{getTypeLabel(item.type)}</span>
+                      <span className="text-sm">{item.title}</span>
                     </div>
                     <span className="text-xs text-muted-foreground">
-                      {formatDuration(item.duration)}
+                      {item.duration} min
                     </span>
                   </button>
                 ))}
@@ -370,12 +367,12 @@ export default function ProgramDetail() {
             </div>
           )}
 
-          {/* Learn by Interacting */}
-          {learnInteracting.length > 0 && (
+          {/* Earn Section */}
+          {earnContent.length > 0 && (
             <div className="space-y-2">
-              <h3 className="text-sm font-medium italic">Learn by Interacting</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-timer-earn">Earn</h3>
               <div className="space-y-1">
-                {learnInteracting.map((item) => (
+                {earnContent.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => setSelectedContentId(item.id)}
@@ -387,10 +384,10 @@ export default function ProgramDetail() {
                   >
                     <div className="flex items-center gap-3">
                       {getContentIcon(item.type)}
-                      <span>{getTypeLabel(item.type)}</span>
+                      <span className="text-sm">{item.title}</span>
                     </div>
                     <span className="text-xs text-muted-foreground">
-                      {item.duration} min test
+                      {item.duration} min
                     </span>
                   </button>
                 ))}
