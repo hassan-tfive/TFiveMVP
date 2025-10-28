@@ -208,6 +208,7 @@ interface ProgramCardWithLoopsProps {
 
 function ProgramCardWithLoops({ program, isExpanded, onToggleExpand, onStartSession }: ProgramCardWithLoopsProps) {
   const { workspace } = useWorkspace();
+  const [, setLocation] = useLocation();
   
   const { data: loops = [] } = useQuery<Loop[]>({
     queryKey: ["/api/programs", program.id, "loops"],
