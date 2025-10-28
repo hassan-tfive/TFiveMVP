@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
 import { ProgramCard } from "@/components/ProgramCard";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles, MessageSquare, Clock } from "lucide-react";
+import { ArrowRight, Sparkles, Clock } from "lucide-react";
 import { Link } from "wouter";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { cn } from "@/lib/utils";
@@ -152,26 +152,6 @@ export default function Dashboard() {
           </div>
         )}
       </div>
-
-      <Link href="/" data-testid="link-chat-with-tairo">
-        <div className={cn(
-          "rounded-lg p-6 cursor-pointer transition-all hover-elevate active-elevate-2 group",
-          workspace === "professional" 
-            ? "bg-[hsl(235,100%,9%)] text-white" 
-            : "bg-gradient-to-r from-[hsl(318,100%,50%)] to-[hsl(266,73%,40%)] text-white"
-        )}>
-          <div className="flex items-center gap-4">
-            <MessageSquare className="w-12 h-12 flex-shrink-0 opacity-80" />
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold mb-1">Chat with Tairo</h3>
-              <p className="text-sm text-white/80">
-                Get personalized guidance and support
-              </p>
-            </div>
-            <ArrowRight className="w-5 h-5 opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-          </div>
-        </div>
-      </Link>
     </div>
   );
 }
