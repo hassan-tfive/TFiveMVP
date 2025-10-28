@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Send, Loader2, LayoutDashboard, BookOpen, Award } from "lucide-react";
+import { Send, Loader2, LayoutDashboard, BookOpen, Award, Mic, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
@@ -9,29 +9,23 @@ import { ChatLayout } from "@/components/AppLayout";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useLocation } from "wouter";
-import type { ChatMessage, Program } from "@shared/schema";
+import type { ChatMessage } from "@shared/schema";
 
 export default function ChatHome() {
   const { workspace } = useWorkspace();
   const { toast } = useToast();
   const [location] = useLocation();
   const [input, setInput] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   const previousLocationRef = useRef<string>("");
   const previousWorkspaceRef = useRef<string>(workspace);
 
   // Track current conversation messages and ID
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
-
-  const { data: programs = [] } = useQuery<Program[]>({
-    queryKey: ["/api/programs", workspace],
-    queryFn: async () => {
-      const res = await fetch(`/api/programs?workspace=${workspace}`);
-      if (!res.ok) throw new Error("Failed to fetch programs");
-      return res.json();
-    },
-  });
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
@@ -142,74 +136,158 @@ export default function ChatHome() {
     }
   };
 
-  const recommendedPrograms = programs.slice(0, 3);
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        
+        // Show toast for voice input
+        toast({
+          title: "Voice recorded",
+          description: "Voice transcription feature coming soon. Please type your message for now.",
+        });
+
+        // Stop all tracks
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      toast({
+        title: "Microphone access denied",
+        description: "Please allow microphone access to use voice input.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
   const hasMessages = messages.length > 0;
 
   return (
     <ChatLayout showTairoTitle onSelectConversation={loadConversation} onNewChat={startNewChat}>
-      <div className="flex flex-col h-full">
-        {/* Messages Area */}
-        <ScrollArea className="flex-1">
-          <div className="max-w-3xl mx-auto px-6 py-8">
-            {!hasMessages ? (
-              <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-8">
-                <div className="text-center space-y-3">
-                  <h1 className="text-4xl font-display font-bold">Hi! How are you?</h1>
-                  <p className="text-muted-foreground text-lg">
-                    I'm tairo, your AI companion for personal growth. How can I help you today?
-                  </p>
-                </div>
+      {!hasMessages ? (
+        /* Empty State - Vertically Centered */
+        <div className="flex flex-col items-center justify-center h-full px-6 py-8">
+          <div className="flex flex-col items-center space-y-8 max-w-3xl w-full">
+            <div className="text-center space-y-3">
+              <h1 className="text-4xl font-display font-bold">Hi! How are you?</h1>
+              <p className="text-muted-foreground text-lg">
+                I'm tairo, your AI companion for personal growth. How can I help you today?
+              </p>
+            </div>
 
-                {/* Suggested Prompts */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl">
-                  <Button
-                    variant="outline"
-                    className="h-auto p-4 text-left justify-start hover-elevate"
-                    onClick={() => setInput("Help me improve my focus and productivity")}
-                    data-testid="button-prompt-focus"
-                  >
-                    <div>
-                      <div className="font-medium mb-1">Improve Focus</div>
-                      <div className="text-xs text-muted-foreground">Help me be more productive</div>
-                    </div>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="h-auto p-4 text-left justify-start hover-elevate"
-                    onClick={() => setInput("I want to develop better leadership skills")}
-                    data-testid="button-prompt-leadership"
-                  >
-                    <div>
-                      <div className="font-medium mb-1">Build Leadership</div>
-                      <div className="text-xs text-muted-foreground">Develop my leadership abilities</div>
-                    </div>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="h-auto p-4 text-left justify-start hover-elevate"
-                    onClick={() => setInput("I need help managing stress and staying calm")}
-                    data-testid="button-prompt-stress"
-                  >
-                    <div>
-                      <div className="font-medium mb-1">Manage Stress</div>
-                      <div className="text-xs text-muted-foreground">Learn stress management techniques</div>
-                    </div>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="h-auto p-4 text-left justify-start hover-elevate"
-                    onClick={() => setInput("Show me programs for personal wellbeing")}
-                    data-testid="button-prompt-wellbeing"
-                  >
-                    <div>
-                      <div className="font-medium mb-1">Enhance Wellbeing</div>
-                      <div className="text-xs text-muted-foreground">Improve my overall wellness</div>
-                    </div>
-                  </Button>
+            {/* Suggested Prompts */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl">
+              <Button
+                variant="outline"
+                className="h-auto p-4 text-left justify-start hover-elevate"
+                onClick={() => setInput("Help me improve my focus and productivity")}
+                data-testid="button-prompt-focus"
+              >
+                <div>
+                  <div className="font-medium mb-1">Improve Focus</div>
+                  <div className="text-xs text-muted-foreground">Help me be more productive</div>
                 </div>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-auto p-4 text-left justify-start hover-elevate"
+                onClick={() => setInput("I want to develop better leadership skills")}
+                data-testid="button-prompt-leadership"
+              >
+                <div>
+                  <div className="font-medium mb-1">Build Leadership</div>
+                  <div className="text-xs text-muted-foreground">Develop my leadership abilities</div>
+                </div>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-auto p-4 text-left justify-start hover-elevate"
+                onClick={() => setInput("I need help managing stress and staying calm")}
+                data-testid="button-prompt-stress"
+              >
+                <div>
+                  <div className="font-medium mb-1">Manage Stress</div>
+                  <div className="text-xs text-muted-foreground">Learn stress management techniques</div>
+                </div>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-auto p-4 text-left justify-start hover-elevate"
+                onClick={() => setInput("Show me programs for personal wellbeing")}
+                data-testid="button-prompt-wellbeing"
+              >
+                <div>
+                  <div className="font-medium mb-1">Enhance Wellbeing</div>
+                  <div className="text-xs text-muted-foreground">Improve my overall wellness</div>
+                </div>
+              </Button>
+            </div>
 
-              </div>
-            ) : (
+            {/* Centered Chat Input */}
+            <div className="flex gap-2 w-full max-w-2xl">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="How can I help you today?"
+                className="flex-1 resize-none rounded-lg border bg-background px-4 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[60px] max-h-[200px]"
+                data-testid="input-chat"
+                disabled={sendMessageMutation.isPending || isRecording}
+              />
+              <Button
+                onClick={isRecording ? stopRecording : startRecording}
+                disabled={sendMessageMutation.isPending}
+                variant={isRecording ? "destructive" : "outline"}
+                size="icon"
+                data-testid="button-voice-input"
+                className={cn(
+                  "h-[60px] w-[60px]",
+                  isRecording && "animate-pulse"
+                )}
+              >
+                {isRecording ? <Square className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+              </Button>
+              <Button
+                onClick={handleSend}
+                disabled={!input.trim() || sendMessageMutation.isPending}
+                data-testid="button-send-message"
+                size="icon"
+                className={cn(
+                  "h-[60px] w-[60px] text-white hover:text-white",
+                  workspace === "professional" ? "bg-workspace-professional" : "bg-workspace-personal"
+                )}
+              >
+                <Send className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Messages View */
+        <div className="flex flex-col h-full">
+          {/* Messages Area */}
+          <ScrollArea className="flex-1">
+            <div className="max-w-3xl mx-auto px-6 py-8">
               <div className="space-y-4" data-testid="chat-messages">
                 {messages.map((message) => (
                   <div
@@ -252,9 +330,8 @@ export default function ChatHome() {
                   </div>
                 )}
               </div>
-            )}
-            {/* Invisible element for scroll anchor */}
-            <div ref={messagesEndRef} />
+              {/* Invisible element for scroll anchor */}
+              <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
 
@@ -307,8 +384,21 @@ export default function ChatHome() {
                 placeholder="How can I help you today?"
                 className="flex-1 resize-none rounded-lg border bg-background px-4 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[60px] max-h-[200px]"
                 data-testid="input-chat"
-                disabled={sendMessageMutation.isPending}
+                disabled={sendMessageMutation.isPending || isRecording}
               />
+              <Button
+                onClick={isRecording ? stopRecording : startRecording}
+                disabled={sendMessageMutation.isPending}
+                variant={isRecording ? "destructive" : "outline"}
+                size="icon"
+                data-testid="button-voice-input"
+                className={cn(
+                  "h-[60px] w-[60px]",
+                  isRecording && "animate-pulse"
+                )}
+              >
+                {isRecording ? <Square className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+              </Button>
               <Button
                 onClick={handleSend}
                 disabled={!input.trim() || sendMessageMutation.isPending}
@@ -324,7 +414,8 @@ export default function ChatHome() {
             </div>
           </div>
         </div>
-      </div>
+        </div>
+      )}
     </ChatLayout>
   );
 }
