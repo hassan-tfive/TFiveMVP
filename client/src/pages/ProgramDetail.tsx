@@ -7,6 +7,7 @@ import { ArrowLeft, Headphones, BookOpen, Brain, CheckCircle, Clock, Play, Pause
 import { cn } from "@/lib/utils";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { Quiz } from "@/components/Quiz";
+import { GuidedActivity } from "@/components/GuidedActivity";
 import { getProgramTypeConfig } from "@shared/programTypes";
 import type { Loop, ContentItem } from "@shared/schema";
 
@@ -504,6 +505,43 @@ export default function ProgramDetail() {
                   type={selectedContent.type === "quiz_multiple_choice" ? "multiple_choice" : "true_false"}
                   onComplete={(score, total) => {
                     console.log(`Quiz completed: ${score}/${total}`);
+                  }}
+                />
+              ) : selectedContent.type === "guided_activity" ? (
+                <GuidedActivity
+                  title={selectedContent.title}
+                  type={(() => {
+                    // Determine activity type from content or metadata
+                    const content = selectedContent.content;
+                    if (typeof content === "object" && content && "activityType" in content) {
+                      return (content as { activityType: "breathing" | "movement" | "relaxation" }).activityType;
+                    }
+                    // Default based on content hints
+                    if (selectedContent.title.toLowerCase().includes("breath")) return "breathing";
+                    if (selectedContent.title.toLowerCase().includes("move")) return "movement";
+                    return "relaxation";
+                  })()}
+                  description={(() => {
+                    const content = selectedContent.content;
+                    if (typeof content === "object" && content && "description" in content) {
+                      return (content as { description: string }).description;
+                    }
+                    return undefined;
+                  })()}
+                  steps={(() => {
+                    // Parse activity steps - expect { steps: [...] } or array
+                    const content = selectedContent.content;
+                    if (Array.isArray(content)) {
+                      return content;
+                    }
+                    if (typeof content === "object" && content && "steps" in content) {
+                      return (content as { steps: unknown[] }).steps;
+                    }
+                    return [];
+                  })()}
+                  totalDuration={selectedContent.duration}
+                  onComplete={() => {
+                    console.log("Guided activity completed");
                   }}
                 />
               ) : (
