@@ -1,26 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useLocation, Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Headphones, BookOpen, Brain, CheckCircle, Clock, Play, Pause, PartyPopper, Zap, BookMarked, Activity } from "lucide-react";
+import { ArrowLeft, Headphones, BookOpen, Brain, CheckCircle, Clock, Play, Zap, BookMarked, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { Quiz } from "@/components/Quiz";
 import { GuidedActivity } from "@/components/GuidedActivity";
 import { getProgramTypeConfig } from "@shared/programTypes";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import type { Loop, ContentItem } from "@shared/schema";
 
 export default function ProgramDetail() {
   const { loopId } = useParams<{ loopId: string }>();
   const [, setLocation] = useLocation();
   const [selectedContentId, setSelectedContentId] = useState<string | null>(null);
-  const [sessionActive, setSessionActive] = useState(false);
-  const [sessionComplete, setSessionComplete] = useState(false);
-  const [currentPhase, setCurrentPhase] = useState<"learn" | "act" | "earn">("learn");
-  const [timeRemaining, setTimeRemaining] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const [readingMode, setReadingMode] = useState<"quick" | "deep">("quick");
+  const [sessionStarted, setSessionStarted] = useState(false);
+  const { toast } = useToast();
 
   const { data: loop, isLoading } = useQuery<Loop>({
     queryKey: ["/api/loops", loopId],
@@ -32,63 +31,35 @@ export default function ProgramDetail() {
     enabled: !!loopId,
   });
 
-  // Timer effect
-  useEffect(() => {
-    if (!sessionActive || isPaused) return;
-    if (timeRemaining <= 0) return;
-
-    const timer = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          // Move to next phase or end session
-          if (currentPhase === "learn" && loop) {
-            setCurrentPhase("act");
-            return loop.durAct * 60;
-          } else if (currentPhase === "act" && loop) {
-            setCurrentPhase("earn");
-            return loop.durEarn * 60;
-          } else {
-            // Session complete
-            setSessionActive(false);
-            setSessionComplete(true);
-            return 0;
-          }
-        }
-        return prev - 1;
+  // Mutation to start a session (mark program as in progress)
+  const startSessionMutation = useMutation({
+    mutationFn: async () => {
+      if (!loopId) throw new Error("No loop ID");
+      return await apiRequest(`/api/sessions/start`, {
+        method: "POST",
+        body: JSON.stringify({ loop_id: loopId }),
+        headers: { "Content-Type": "application/json" },
       });
-    }, 1000);
-
-    return () => {
-      clearInterval(timer);
-    };
-  }, [sessionActive, isPaused, currentPhase, loop]);
-
-  const startSession = () => {
-    if (!loop) return;
-    setSessionActive(true);
-    setSessionComplete(false);
-    setCurrentPhase("learn");
-    setTimeRemaining(loop.durLearn * 60);
-    setIsPaused(false);
-  };
-
-  const togglePause = () => {
-    setIsPaused(!isPaused);
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const getPhaseColor = (phase: "learn" | "act" | "earn") => {
-    switch (phase) {
-      case "learn": return "bg-timer-learn";
-      case "act": return "bg-timer-act";
-      case "earn": return "bg-timer-earn";
-    }
-  };
+    },
+    onSuccess: () => {
+      setSessionStarted(true);
+      // Invalidate queries to update all relevant sections
+      queryClient.invalidateQueries({ queryKey: ["/api/programs/started"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/sessions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/loops", loopId] });
+      toast({
+        title: "Session Started",
+        description: "This program is now in your active sessions",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to start session",
+        variant: "destructive",
+      });
+    },
+  });
 
   if (isLoading) {
     return (
@@ -221,88 +192,33 @@ export default function ProgramDetail() {
                 {getProgramTypeConfig(loop.programType).label}
               </Badge>
             </div>
-            {!sessionActive && (
-              <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-                <Clock className="w-4 h-4" />
-                <span>{loop.durLearn + loop.durAct + loop.durEarn} min total</span>
-              </div>
-            )}
+            <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+              <Clock className="w-4 h-4" />
+              <span>{loop.durLearn + loop.durAct + loop.durEarn} min total</span>
+            </div>
           </div>
 
-          {/* Session Timer or Start Button */}
-          {sessionComplete ? (
-            <div className="space-y-3">
-              <div className="p-4 rounded-lg text-center bg-green-500">
-                <PartyPopper className="w-8 h-8 mx-auto text-white mb-2" />
-                <div className="text-sm font-semibold text-white mb-1">
-                  Session Complete!
-                </div>
-                <div className="text-xs text-white/80">
-                  Great work! You've completed all phases.
-                </div>
-              </div>
-              <Button
-                onClick={startSession}
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                data-testid="button-restart-session"
-              >
-                <Play className="w-4 h-4 mr-2" />
-                Start New Session
-              </Button>
-            </div>
-          ) : sessionActive ? (
-            <div className="space-y-3">
-              <div className={cn("p-4 rounded-lg text-center", getPhaseColor(currentPhase))}>
-                <div className="text-xs uppercase tracking-wider text-white/80 mb-1">
-                  {currentPhase === "learn" ? "Learn" : currentPhase === "act" ? "Act" : "Earn"} Phase
-                </div>
-                <div className="text-3xl font-bold text-white font-mono">
-                  {formatTime(timeRemaining)}
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={togglePause}
-                className="w-full"
-                data-testid="button-pause-session"
-              >
-                {isPaused ? (
-                  <>
-                    <Play className="w-4 h-4 mr-2" />
-                    Resume
-                  </>
-                ) : (
-                  <>
-                    <Pause className="w-4 h-4 mr-2" />
-                    Pause
-                  </>
-                )}
-              </Button>
-              <div className="flex gap-2 text-xs text-muted-foreground">
-                <div className="flex-1 text-center">
-                  <div className="font-medium">{loop.durLearn}m</div>
-                  <div>Learn</div>
-                </div>
-                <div className="flex-1 text-center">
-                  <div className="font-medium">{loop.durAct}m</div>
-                  <div>Act</div>
-                </div>
-                <div className="flex-1 text-center">
-                  <div className="font-medium">{loop.durEarn}m</div>
-                  <div>Earn</div>
-                </div>
-              </div>
-            </div>
-          ) : (
+          {/* Start Session Button */}
+          {!sessionStarted ? (
             <Button
-              onClick={startSession}
+              onClick={() => startSessionMutation.mutate()}
+              disabled={startSessionMutation.isPending}
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
               data-testid="button-start-session"
             >
               <Play className="w-4 h-4 mr-2" />
-              Start Session
+              {startSessionMutation.isPending ? "Starting..." : "Start Session"}
             </Button>
+          ) : (
+            <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
+              <CheckCircle className="w-5 h-5 mx-auto text-green-600 mb-1" />
+              <div className="text-sm font-medium text-green-600">
+                Session In Progress
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Explore the content below
+              </div>
+            </div>
           )}
         </div>
 
@@ -537,6 +453,12 @@ export default function ProgramDetail() {
                     return [];
                   })()}
                   totalDuration={selectedContent.duration}
+                  onStart={() => {
+                    // Mark program as in progress when user starts activity
+                    if (!sessionStarted) {
+                      startSessionMutation.mutate();
+                    }
+                  }}
                   onComplete={() => {
                     console.log("Guided activity completed");
                   }}

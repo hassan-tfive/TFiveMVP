@@ -17,6 +17,7 @@ interface GuidedActivityProps {
   description?: string;
   steps: ActivityStep[];
   totalDuration?: number; // total minutes for the activity
+  onStart?: () => void; // Called when activity begins
   onComplete?: () => void;
 }
 
@@ -26,6 +27,7 @@ export function GuidedActivity({
   description, 
   steps, 
   totalDuration,
+  onStart,
   onComplete 
 }: GuidedActivityProps) {
   const [isActive, setIsActive] = useState(false);
@@ -65,6 +67,7 @@ export function GuidedActivity({
 
   const handleStart = () => {
     if (steps.length === 0) return;
+    onStart?.(); // Notify parent that activity is starting
     setIsActive(true);
     setIsPaused(false);
     setIsComplete(false);
