@@ -3,7 +3,7 @@ import { useParams, useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Headphones, BookOpen, Brain, CheckCircle, Clock, Play, Pause, PartyPopper } from "lucide-react";
+import { ArrowLeft, Headphones, BookOpen, Brain, CheckCircle, Clock, Play, Pause, PartyPopper, Zap, BookMarked } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { getProgramTypeConfig } from "@shared/programTypes";
@@ -18,6 +18,7 @@ export default function ProgramDetail() {
   const [currentPhase, setCurrentPhase] = useState<"learn" | "act" | "earn">("learn");
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [readingMode, setReadingMode] = useState<"quick" | "deep">("quick");
 
   const { data: loop, isLoading } = useQuery<Loop>({
     queryKey: ["/api/loops", loopId],
@@ -164,6 +165,43 @@ export default function ProgramDetail() {
       case "flashcards": return "Flashcards";
       default: return type;
     }
+  };
+
+  // Helper to get reading content based on mode
+  const getReadingContent = (content: unknown, mode: "quick" | "deep"): { text: string; isFormatted: boolean } => {
+    if (typeof content === "string") {
+      // If content is just a string, generate quick version by taking first ~30%
+      if (mode === "quick") {
+        const words = content.split(" ");
+        const quickLength = Math.ceil(words.length * 0.3);
+        const wasTruncated = quickLength < words.length;
+        const truncated = words.slice(0, quickLength).join(" ");
+        return { 
+          text: wasTruncated ? truncated + "..." : truncated, 
+          isFormatted: false 
+        };
+      }
+      return { text: content, isFormatted: false };
+    }
+    
+    // If content is an object with quick/deep properties
+    if (typeof content === "object" && content !== null) {
+      const contentObj = content as { quick?: string; deep?: string; [key: string]: unknown };
+      if (mode === "quick" && contentObj.quick) {
+        return { text: contentObj.quick, isFormatted: false };
+      }
+      if (mode === "deep" && contentObj.deep) {
+        return { text: contentObj.deep, isFormatted: false };
+      }
+      // Fallback: if only one version exists, use it
+      if (contentObj.quick) return { text: contentObj.quick, isFormatted: false };
+      if (contentObj.deep) return { text: contentObj.deep, isFormatted: false };
+      
+      // If no quick/deep fields, return formatted JSON
+      return { text: JSON.stringify(content, null, 2), isFormatted: true };
+    }
+    
+    return { text: JSON.stringify(content, null, 2), isFormatted: true };
   };
 
   return (
@@ -402,11 +440,50 @@ export default function ProgramDetail() {
                   </div>
                 </div>
               ) : selectedContent.type === "deep_dive" || selectedContent.type === "key_takeaways" ? (
-                <div className="space-y-4">
-                  <div className="text-base leading-relaxed">
-                    {typeof selectedContent.content === "string" 
-                      ? selectedContent.content 
-                      : JSON.stringify(selectedContent.content, null, 2)}
+                <div className="space-y-6">
+                  {/* Reading Mode Toggle */}
+                  <div className="flex items-center justify-center gap-2 p-1 bg-muted rounded-lg w-fit mx-auto">
+                    <Button
+                      variant={readingMode === "quick" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setReadingMode("quick")}
+                      className="gap-2"
+                      data-testid="button-reading-mode-quick"
+                    >
+                      <Zap className="w-4 h-4" />
+                      Quick Read
+                    </Button>
+                    <Button
+                      variant={readingMode === "deep" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setReadingMode("deep")}
+                      className="gap-2"
+                      data-testid="button-reading-mode-deep"
+                    >
+                      <BookMarked className="w-4 h-4" />
+                      Deep Read
+                    </Button>
+                  </div>
+
+                  {/* Reading Content */}
+                  {(() => {
+                    const content = getReadingContent(selectedContent.content, readingMode);
+                    return content.isFormatted ? (
+                      <pre className="text-sm bg-muted p-4 rounded-md overflow-auto whitespace-pre-wrap">
+                        {content.text}
+                      </pre>
+                    ) : (
+                      <div className="text-base leading-relaxed whitespace-pre-wrap">
+                        {content.text}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Reading Mode Info */}
+                  <div className="text-sm text-muted-foreground italic text-center">
+                    {readingMode === "quick" 
+                      ? "Quick Read: Get the essentials in less time" 
+                      : "Deep Read: Explore the full content for deeper understanding"}
                   </div>
                 </div>
               ) : (
