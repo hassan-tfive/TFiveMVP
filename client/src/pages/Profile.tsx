@@ -16,6 +16,8 @@ export default function Profile() {
   const { toast } = useToast();
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
 
   const { data: user, isLoading } = useQuery<UserType>({
     queryKey: ["/api/user"],
@@ -27,6 +29,37 @@ export default function Profile() {
     completedPrograms: number;
   }>({
     queryKey: ["/api/stats"],
+  });
+
+  const uploadImageMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("avatar", file);
+      
+      const response = await fetch("/api/upload/avatar", {
+        method: "POST",
+        body: formData,
+      });
+      
+      if (!response.ok) throw new Error("Upload failed");
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      toast({
+        title: "Avatar updated",
+        description: "Your profile photo has been updated successfully.",
+      });
+      setSelectedFile(null);
+      setPreviewUrl("");
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
+    },
   });
 
   const updateProfileMutation = useMutation({
@@ -50,6 +83,42 @@ export default function Profile() {
       });
     },
   });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        toast({
+          title: "Invalid file type",
+          description: "Please select an image file.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please select an image under 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUploadImage = () => {
+    if (selectedFile) {
+      uploadImageMutation.mutate(selectedFile);
+    }
+  };
 
   const handleUpdateProfile = () => {
     const updates: { displayName?: string; avatarUrl?: string } = {};
@@ -107,7 +176,7 @@ export default function Profile() {
           </CardHeader>
           <CardContent className="flex flex-col items-center space-y-4">
             <Avatar className="w-32 h-32">
-              <AvatarImage src={user.avatarUrl || undefined} alt={displayNameValue} />
+              <AvatarImage src={previewUrl || user.avatarUrl || undefined} alt={displayNameValue} />
               <AvatarFallback className="text-3xl bg-primary text-primary-foreground">
                 {getInitials(displayNameValue)}
               </AvatarFallback>
@@ -115,7 +184,34 @@ export default function Profile() {
             
             <div className="w-full space-y-3">
               <div>
-                <Label htmlFor="avatarUrl" className="text-sm">Avatar URL</Label>
+                <Label htmlFor="avatarFile" className="text-sm">Upload Photo</Label>
+                <Input
+                  id="avatarFile"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="mt-1"
+                  data-testid="input-avatar-file"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Max 5MB • JPG, PNG, GIF</p>
+              </div>
+              
+              {selectedFile && (
+                <Button
+                  onClick={handleUploadImage}
+                  disabled={uploadImageMutation.isPending}
+                  className="w-full"
+                  data-testid="button-upload-avatar"
+                >
+                  <Camera className="w-4 h-4 mr-2" />
+                  {uploadImageMutation.isPending ? "Uploading..." : "Upload Photo"}
+                </Button>
+              )}
+              
+              <Separator className="my-2" />
+              
+              <div>
+                <Label htmlFor="avatarUrl" className="text-sm">Or use URL</Label>
                 <Input
                   id="avatarUrl"
                   data-testid="input-avatar-url"
@@ -126,15 +222,18 @@ export default function Profile() {
                 />
               </div>
               
-              <Button
-                onClick={handleUpdateProfile}
-                disabled={!avatarUrl.trim() && !displayName.trim()}
-                className="w-full"
-                data-testid="button-update-avatar"
-              >
-                <Camera className="w-4 h-4 mr-2" />
-                Update Avatar
-              </Button>
+              {avatarUrl.trim() && (
+                <Button
+                  onClick={handleUpdateProfile}
+                  disabled={!avatarUrl.trim()}
+                  variant="outline"
+                  className="w-full"
+                  data-testid="button-update-avatar-url"
+                >
+                  <Camera className="w-4 h-4 mr-2" />
+                  Set from URL
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>

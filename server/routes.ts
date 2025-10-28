@@ -5,6 +5,9 @@ import { setupAuth, isAuthenticated } from "./auth";
 import OpenAI from "openai";
 import { z } from "zod";
 import { randomUUID } from "crypto";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 import {
   insertProgramSchema,
   insertSessionSchema,
@@ -89,6 +92,57 @@ function getPhaseGuidance(phase: string, workspace: string): string {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Whitelist of allowed image extensions for avatar uploads
+  const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+  
+  // Setup multer for avatar uploads
+  const avatarStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadPath = path.join(process.cwd(), 'attached_assets', 'avatars');
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      // Extract and sanitize extension from original filename
+      const originalExt = path.extname(file.originalname).toLowerCase();
+      
+      // Validate extension is in whitelist
+      if (!ALLOWED_EXTENSIONS.includes(originalExt)) {
+        return cb(new Error('Invalid file extension'));
+      }
+      
+      // Check for path traversal attempts
+      if (originalExt.includes('..') || originalExt.includes('/') || originalExt.includes('\\')) {
+        return cb(new Error('Invalid filename'));
+      }
+      
+      const uniqueSuffix = `${Date.now()}-${randomUUID().slice(0, 8)}`;
+      cb(null, `avatar-${uniqueSuffix}${originalExt}`);
+    }
+  });
+
+  const uploadAvatar = multer({
+    storage: avatarStorage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: (req, file, cb) => {
+      // Check MIME type
+      const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedMimeTypes.includes(file.mimetype)) {
+        return cb(new Error('Only JPG, PNG, GIF, and WebP images are allowed'));
+      }
+      
+      // Check extension
+      const ext = path.extname(file.originalname).toLowerCase();
+      if (!ALLOWED_EXTENSIONS.includes(ext)) {
+        return cb(new Error('Invalid file extension'));
+      }
+      
+      cb(null, true);
+    }
+  });
+
   // Setup authentication
   await setupAuth(app);
 
@@ -120,6 +174,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } else {
       res.json({ success: true });
     }
+  });
+
+  // Avatar upload endpoint with error handling
+  app.post('/api/upload/avatar', isAuthenticated, (req: any, res) => {
+    uploadAvatar.single('avatar')(req, res, async (err) => {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({ error: 'File size exceeds 5MB limit' });
+        }
+        return res.status(400).json({ error: `Upload error: ${err.message}` });
+      } else if (err) {
+        return res.status(400).json({ error: err.message });
+      }
+
+      try {
+        if (!req.file) {
+          return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        const userId = getUserId(req);
+        const avatarUrl = `/attached_assets/avatars/${req.file.filename}`;
+
+        // Update user's avatar URL
+        await storage.updateUser(userId, { avatarUrl });
+
+        res.json({ avatarUrl, message: 'Avatar uploaded successfully' });
+      } catch (error) {
+        console.error('Avatar upload error:', error);
+        res.status(500).json({ error: 'Failed to upload avatar' });
+      }
+    });
   });
 
   // Store invitation token in session
