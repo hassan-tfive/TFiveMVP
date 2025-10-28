@@ -39,7 +39,7 @@ export default function ChatPage() {
     sendMessageMutation.mutate(content);
   };
 
-  // Determine if Tairo is currently talking (last message is from assistant and recent)
+  // Determine if tairo is currently talking (last message is from assistant and recent)
   const lastMessage = messages[messages.length - 1];
   const isTairoTalking = lastMessage?.role === "assistant" && 
     (Date.now() - new Date(lastMessage.createdAt || Date.now()).getTime() < 5000);
@@ -47,7 +47,7 @@ export default function ChatPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 relative">
       <div>
-        <h1 className="text-4xl font-display font-bold mb-2">Chat with Tairo</h1>
+        <h1 className="text-4xl font-display font-bold mb-2">Chat with tairo</h1>
         <p className="text-lg text-muted-foreground">
           Your personal AI companion for guidance and support
         </p>
@@ -59,7 +59,7 @@ export default function ChatPage() {
         isLoading={sendMessageMutation.isPending}
       />
 
-      {/* Floating Tairo character */}
+      {/* Floating tairo character */}
       <FloatingTairo 
         isThinking={sendMessageMutation.isPending}
         isTalking={isTairoTalking}

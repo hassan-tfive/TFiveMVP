@@ -46,7 +46,7 @@ export function ChatLayout({ children, showTairoTitle = false, onSelectConversat
               </svg>
             </Button>
             {showTairoTitle ? (
-              <span className="text-lg font-semibold font-display">TAIRO</span>
+              <span className="text-lg font-semibold font-display">tairo</span>
             ) : (
               <img 
                 src={theme === "dark" ? tfiveLogoWhiteUrl : tfiveLogoUrl}

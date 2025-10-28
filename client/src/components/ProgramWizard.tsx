@@ -259,7 +259,7 @@ export function ProgramWizard({ open, onOpenChange }: ProgramWizardProps) {
             Create Your Program
           </DialogTitle>
           <DialogDescription>
-            Tell Tairo what you need and get a personalized growth program
+            Tell tairo what you need and get a personalized growth program
           </DialogDescription>
         </DialogHeader>
 
@@ -355,7 +355,7 @@ export function ProgramWizard({ open, onOpenChange }: ProgramWizardProps) {
                 data-testid="input-prompt"
               />
               <p className="text-sm text-muted-foreground">
-                Describe what you're feeling or what you want to work on. Tairo will understand and create a personalized program.
+                Describe what you're feeling or what you want to work on. tairo will understand and create a personalized program.
               </p>
             </div>
 

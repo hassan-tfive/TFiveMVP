@@ -82,7 +82,7 @@ export default function Programs() {
           <BookOpen className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
           <p className="text-lg font-medium">No programs found</p>
           <p className="text-sm text-muted-foreground mt-2">
-            Try adjusting your filters or chat with Tairo to create a program
+            Try adjusting your filters or chat with tairo to create a program
           </p>
         </div>
       ) : (

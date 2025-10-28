@@ -1,13 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
 import { ProgramCard } from "@/components/ProgramCard";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles, Clock } from "lucide-react";
-import { Link } from "wouter";
+import { Clock } from "lucide-react";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { cn } from "@/lib/utils";
 import type { Program, User } from "@shared/schema";
-import tfiveLogoUrl from "@assets/v3 - crimson text font-02_1760728277193.png";
 import tfiveLogoWhiteUrl from "@assets/v3 - crimson text font-06_1760868063174.png";
 
 export default function Dashboard() {
@@ -15,15 +12,6 @@ export default function Dashboard() {
 
   const { data: user } = useQuery<User>({
     queryKey: ["/api/user"],
-  });
-
-  const { data: programs, isLoading: programsLoading } = useQuery<Program[]>({
-    queryKey: ["/api/programs", workspace],
-    queryFn: async () => {
-      const res = await fetch(`/api/programs?workspace=${workspace}`);
-      if (!res.ok) throw new Error("Failed to fetch programs");
-      return res.json();
-    },
   });
 
   const { data: startedPrograms, isLoading: startedProgramsLoading } = useQuery<Program[]>({
@@ -42,8 +30,6 @@ export default function Dashboard() {
     queryKey: ["/api/stats"],
   });
 
-  const recommendedPrograms = programs?.slice(0, 5) || [];
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
       <div className={cn(
@@ -55,7 +41,7 @@ export default function Dashboard() {
         <div className="flex items-center justify-between gap-4 py-4">
           <div className="flex-1">
             <h1 className="text-2xl font-display font-bold mb-1 text-white relative z-10">
-              Chat with Tairo
+              Chat with tairo
             </h1>
             <p className="text-sm text-white/90 relative z-10">
               {workspace === "professional"
@@ -111,47 +97,6 @@ export default function Dashboard() {
           )}
         </div>
       )}
-
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className={cn(
-              "w-5 h-5",
-              workspace === "professional" ? "text-workspace-professional" : "text-workspace-personal"
-            )} />
-            <h2 className="text-2xl font-display font-semibold">Recommended for You</h2>
-          </div>
-          <Button variant="ghost" asChild data-testid="link-view-all-programs">
-            <Link href="/programs">
-              View all programs
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Link>
-          </Button>
-        </div>
-
-        {programsLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
-            ))}
-          </div>
-        ) : recommendedPrograms.length === 0 ? (
-          <div className="text-center py-12 bg-muted/30 rounded-lg">
-            <p className="text-muted-foreground">No programs available yet.</p>
-            <p className="text-sm text-muted-foreground mt-2">Check back soon for new content!</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-            {recommendedPrograms.map((program) => (
-              <ProgramCard
-                key={program.id}
-                program={program}
-                onClick={() => window.location.href = `/session/${program.id}`}
-              />
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
 }
