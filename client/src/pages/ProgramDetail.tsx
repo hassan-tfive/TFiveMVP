@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Headphones, BookOpen, Brain, CheckCircle, Clock } from "lucide-react";
+import { ArrowLeft, Headphones, BookOpen, Brain, CheckCircle, Clock, Play, Pause, PartyPopper } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Loop, ContentItem } from "@shared/schema";
 
@@ -10,6 +10,11 @@ export default function ProgramDetail() {
   const { loopId } = useParams<{ loopId: string }>();
   const [, setLocation] = useLocation();
   const [selectedContentId, setSelectedContentId] = useState<string | null>(null);
+  const [sessionActive, setSessionActive] = useState(false);
+  const [sessionComplete, setSessionComplete] = useState(false);
+  const [currentPhase, setCurrentPhase] = useState<"learn" | "act" | "earn">("learn");
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   const { data: loop, isLoading } = useQuery<Loop>({
     queryKey: ["/api/loops", loopId],
@@ -20,6 +25,61 @@ export default function ProgramDetail() {
     },
     enabled: !!loopId,
   });
+
+  // Timer effect
+  useEffect(() => {
+    if (!sessionActive || isPaused || timeRemaining <= 0) return;
+
+    const timer = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          // Move to next phase or end session
+          if (currentPhase === "learn" && loop) {
+            setCurrentPhase("act");
+            return loop.durAct * 60;
+          } else if (currentPhase === "act" && loop) {
+            setCurrentPhase("earn");
+            return loop.durEarn * 60;
+          } else {
+            // Session complete
+            setSessionActive(false);
+            setSessionComplete(true);
+            return 0;
+          }
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [sessionActive, isPaused, timeRemaining, currentPhase, loop]);
+
+  const startSession = () => {
+    if (!loop) return;
+    setSessionActive(true);
+    setSessionComplete(false);
+    setCurrentPhase("learn");
+    setTimeRemaining(loop.durLearn * 60);
+    setIsPaused(false);
+  };
+
+  const togglePause = () => {
+    setIsPaused(!isPaused);
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const getPhaseColor = (phase: "learn" | "act" | "earn") => {
+    switch (phase) {
+      case "learn": return "bg-timer-learn";
+      case "act": return "bg-timer-act";
+      case "earn": return "bg-timer-earn";
+    }
+  };
 
   if (isLoading) {
     return (
@@ -104,18 +164,98 @@ export default function ProgramDetail() {
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}
       <div className="w-80 border-r bg-background overflow-y-auto">
-        <div className="p-6 border-b">
+        <div className="p-6 border-b space-y-4">
           <Link href="/programs">
-            <Button variant="ghost" size="sm" className="mb-4" data-testid="button-back-programs">
+            <Button variant="ghost" size="sm" data-testid="button-back-programs">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
           </Link>
-          <h1 className="text-xl font-semibold font-display">{loop.title}</h1>
-          <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-            <Clock className="w-4 h-4" />
-            <span>{loop.durLearn + loop.durAct + loop.durEarn} min total</span>
+          <div>
+            <h1 className="text-xl font-semibold font-display">{loop.title}</h1>
+            {!sessionActive && (
+              <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                <Clock className="w-4 h-4" />
+                <span>{loop.durLearn + loop.durAct + loop.durEarn} min total</span>
+              </div>
+            )}
           </div>
+
+          {/* Session Timer or Start Button */}
+          {sessionComplete ? (
+            <div className="space-y-3">
+              <div className="p-4 rounded-lg text-center bg-green-500">
+                <PartyPopper className="w-8 h-8 mx-auto text-white mb-2" />
+                <div className="text-sm font-semibold text-white mb-1">
+                  Session Complete!
+                </div>
+                <div className="text-xs text-white/80">
+                  Great work! You've completed all phases.
+                </div>
+              </div>
+              <Button
+                onClick={startSession}
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                data-testid="button-restart-session"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Start New Session
+              </Button>
+            </div>
+          ) : sessionActive ? (
+            <div className="space-y-3">
+              <div className={cn("p-4 rounded-lg text-center", getPhaseColor(currentPhase))}>
+                <div className="text-xs uppercase tracking-wider text-white/80 mb-1">
+                  {currentPhase === "learn" ? "Learn" : currentPhase === "act" ? "Act" : "Earn"} Phase
+                </div>
+                <div className="text-3xl font-bold text-white font-mono">
+                  {formatTime(timeRemaining)}
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={togglePause}
+                className="w-full"
+                data-testid="button-pause-session"
+              >
+                {isPaused ? (
+                  <>
+                    <Play className="w-4 h-4 mr-2" />
+                    Resume
+                  </>
+                ) : (
+                  <>
+                    <Pause className="w-4 h-4 mr-2" />
+                    Pause
+                  </>
+                )}
+              </Button>
+              <div className="flex gap-2 text-xs text-muted-foreground">
+                <div className="flex-1 text-center">
+                  <div className="font-medium">{loop.durLearn}m</div>
+                  <div>Learn</div>
+                </div>
+                <div className="flex-1 text-center">
+                  <div className="font-medium">{loop.durAct}m</div>
+                  <div>Act</div>
+                </div>
+                <div className="flex-1 text-center">
+                  <div className="font-medium">{loop.durEarn}m</div>
+                  <div>Earn</div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <Button
+              onClick={startSession}
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+              data-testid="button-start-session"
+            >
+              <Play className="w-4 h-4 mr-2" />
+              Start Session
+            </Button>
+          )}
         </div>
 
         <div className="p-6 space-y-6">
@@ -257,12 +397,6 @@ export default function ProgramDetail() {
                   </pre>
                 </div>
               )}
-            </div>
-
-            <div className="mt-8 pt-8 border-t">
-              <Button onClick={() => setLocation(`/session/${loopId}`)} data-testid="button-start-session">
-                Start Session
-              </Button>
             </div>
           </div>
         ) : (
