@@ -5,6 +5,8 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { ChatMessage } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
+import tairoLogoDark from "@assets/5_1761655395321.png";
+import tairoLogoLight from "@assets/4_1761655395321.png";
 
 export default function ChatPage() {
   const { workspace } = useWorkspace();
@@ -46,8 +48,19 @@ export default function ChatPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 relative">
-      <div>
-        <h1 className="text-4xl font-display font-bold mb-2">Chat with tairo</h1>
+      <div className="flex flex-col items-center text-center">
+        <img 
+          src={tairoLogoLight}
+          alt="tairo"
+          className="h-16 mb-4 hidden dark:block"
+          data-testid="img-tairo-logo"
+        />
+        <img 
+          src={tairoLogoDark}
+          alt="tairo"
+          className="h-16 mb-4 block dark:hidden"
+          data-testid="img-tairo-logo"
+        />
         <p className="text-lg text-muted-foreground">
           Your personal AI companion for guidance and support
         </p>
