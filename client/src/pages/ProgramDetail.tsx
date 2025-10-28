@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Headphones, BookOpen, Brain, CheckCircle, Clock, Play, Pause, PartyPopper, Zap, BookMarked } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AudioPlayer } from "@/components/AudioPlayer";
+import { Quiz } from "@/components/Quiz";
 import { getProgramTypeConfig } from "@shared/programTypes";
 import type { Loop, ContentItem } from "@shared/schema";
 
@@ -486,6 +487,25 @@ export default function ProgramDetail() {
                       : "Deep Read: Explore the full content for deeper understanding"}
                   </div>
                 </div>
+              ) : selectedContent.type === "quiz_multiple_choice" || selectedContent.type === "quiz_true_false" ? (
+                <Quiz
+                  title={selectedContent.title}
+                  questions={(() => {
+                    // Parse quiz content - expect { questions: [...] } or array of questions
+                    const content = selectedContent.content;
+                    if (Array.isArray(content)) {
+                      return content;
+                    }
+                    if (typeof content === "object" && content && "questions" in content) {
+                      return (content as { questions: unknown[] }).questions;
+                    }
+                    return [];
+                  })()}
+                  type={selectedContent.type === "quiz_multiple_choice" ? "multiple_choice" : "true_false"}
+                  onComplete={(score, total) => {
+                    console.log(`Quiz completed: ${score}/${total}`);
+                  }}
+                />
               ) : (
                 <div className="space-y-4">
                   <pre className="text-sm bg-muted p-4 rounded-md overflow-auto">
