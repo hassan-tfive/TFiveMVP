@@ -158,7 +158,7 @@ export function ProgramWizard({ open, onOpenChange }: ProgramWizardProps) {
       
       // Navigate to the session page for the first loop
       if (data.next_loop?.id) {
-        setLocation(`/session/${data.next_loop.id}`);
+        setLocation(`/program/${data.next_loop.id}`);
       }
     },
     onError: (error: any) => {

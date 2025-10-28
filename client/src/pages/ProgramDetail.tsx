@@ -14,12 +14,48 @@ import { useToast } from "@/hooks/use-toast";
 import type { Loop, ContentItem } from "@shared/schema";
 
 export default function ProgramDetail() {
-  const { loopId } = useParams<{ loopId: string }>();
+  const { loopId: id } = useParams<{ loopId: string }>();
   const [, setLocation] = useLocation();
   const [selectedContentId, setSelectedContentId] = useState<string | null>(null);
   const [readingMode, setReadingMode] = useState<"quick" | "deep">("quick");
   const [sessionStarted, setSessionStarted] = useState(false);
   const { toast } = useToast();
+
+  const [loopId, setLoopId] = useState<string | null>(null);
+
+  // Fetch program loops to determine if ID is a program or loop
+  const { data: programLoops, isSuccess: programLoopsLoaded, isError: programLoopsError } = useQuery<Loop[] | null>({
+    queryKey: ["/api/programs", id, "loops"],
+    queryFn: async () => {
+      const res = await fetch(`/api/programs/${id}/loops`);
+      if (!res.ok) {
+        return null;
+      }
+      return res.json();
+    },
+    enabled: !!id,
+    retry: false,
+  });
+
+  // Set the loop ID once we know if it's a program or loop
+  useEffect(() => {
+    if (programLoopsLoaded) {
+      if (programLoops && programLoops.length > 0) {
+        setLoopId(programLoops[0].id);
+      } else if (programLoops && programLoops.length === 0) {
+        toast({
+          title: "No Sessions Available",
+          description: "This program doesn't have any sessions yet.",
+          variant: "destructive",
+        });
+        setLocation("/programs");
+      } else if (id) {
+        setLoopId(id);
+      }
+    } else if (programLoopsError && id) {
+      setLoopId(id);
+    }
+  }, [programLoops, programLoopsLoaded, programLoopsError, id, setLocation, toast]);
 
   const { data: loop, isLoading } = useQuery<Loop>({
     queryKey: ["/api/loops", loopId],

@@ -99,7 +99,7 @@ export default function Dashboard() {
                 <ProgramCard
                   key={program.id}
                   program={program}
-                  onClick={() => window.location.href = `/session/${program.id}`}
+                  onClick={() => window.location.href = `/program/${program.id}`}
                 />
               ))}
             </div>
@@ -139,7 +139,7 @@ export default function Dashboard() {
               <ProgramCard
                 key={program.id}
                 program={program}
-                onClick={() => window.location.href = `/session/${program.id}`}
+                onClick={() => window.location.href = `/program/${program.id}`}
               />
             ))}
           </div>

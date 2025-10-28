@@ -222,7 +222,7 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation, onNewCha
                   </h3>
                   <div className="space-y-1 max-w-full overflow-hidden">
                     {recentPrograms.map((program) => (
-                      <Link key={program.id} href={`/session/${program.id}`} className="block max-w-full">
+                      <Link key={program.id} href={`/program/${program.id}`} className="block max-w-full">
                         <Button
                           variant="ghost"
                           className="w-full justify-start text-xs h-auto py-2 whitespace-normal text-left"

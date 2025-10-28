@@ -91,7 +91,7 @@ export default function Programs() {
             <ProgramCard
               key={program.id}
               program={program}
-              onClick={() => window.location.href = `/session/${program.id}`}
+              onClick={() => window.location.href = `/program/${program.id}`}
             />
           ))}
         </div>
