@@ -259,9 +259,9 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation, onNewCha
                         {getInitials(user.username)}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col items-start min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate w-full">{user.username}</p>
-                      <p className="text-xs text-muted-foreground">Level {user.level} • {user.points} pts</p>
+                    <div className="flex flex-col items-start text-left min-w-0 flex-1">
+                      <p className="text-sm font-medium truncate w-full text-left">{user.username}</p>
+                      <p className="text-xs text-muted-foreground text-left">Level {user.level} • {user.points} pts</p>
                     </div>
                   </Button>
                 </DropdownMenuTrigger>
