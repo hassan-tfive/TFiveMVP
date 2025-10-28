@@ -35,11 +35,8 @@ export default function ProgramDetail() {
   const startSessionMutation = useMutation({
     mutationFn: async () => {
       if (!loopId) throw new Error("No loop ID");
-      return await apiRequest(`/api/sessions/start`, {
-        method: "POST",
-        body: JSON.stringify({ loop_id: loopId }),
-        headers: { "Content-Type": "application/json" },
-      });
+      const res = await apiRequest("POST", "/api/sessions/start", { loop_id: loopId });
+      return await res.json();
     },
     onSuccess: () => {
       setSessionStarted(true);
