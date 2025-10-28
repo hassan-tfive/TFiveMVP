@@ -40,6 +40,11 @@ export function ChatSidebar({ open, onOpenChange, onSelectConversation, onNewCha
 
   const { data: programs = [] } = useQuery<Program[]>({
     queryKey: ["/api/programs", workspace],
+    queryFn: async () => {
+      const res = await fetch(`/api/programs?workspace=${workspace}`);
+      if (!res.ok) throw new Error("Failed to fetch programs");
+      return res.json();
+    },
   });
 
   const recentChats = conversations.slice(0, 5);
