@@ -1,12 +1,9 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ProgramWizard } from "@/components/ProgramWizard";
 import { ProgramCard } from "@/components/ProgramCard";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, Sparkles, BookOpen } from "lucide-react";
+import { Search, BookOpen } from "lucide-react";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -20,7 +17,6 @@ export default function Programs() {
   const { workspace } = useWorkspace();
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [wizardOpen, setWizardOpen] = useState(false);
 
   const { data: programs, isLoading } = useQuery<Program[]>({
     queryKey: ["/api/programs", workspace],
@@ -41,24 +37,11 @@ export default function Programs() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-4xl font-display font-bold mb-2">Program Library</h1>
-          <p className="text-lg text-muted-foreground">
-            Discover growth programs with AI-powered 25-minute sessions
-          </p>
-        </div>
-        <Button
-          onClick={() => setWizardOpen(true)}
-          className={cn(
-            "text-white hover:text-white",
-            workspace === "professional" ? "bg-workspace-professional" : "bg-workspace-personal"
-          )}
-          data-testid="button-create-program"
-        >
-          <Sparkles className="w-4 h-4 mr-2" />
-          Create Program
-        </Button>
+      <div>
+        <h1 className="text-4xl font-display font-bold mb-2">Program Library</h1>
+        <p className="text-lg text-muted-foreground">
+          Discover growth programs with AI-powered 25-minute sessions
+        </p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4">
@@ -99,7 +82,7 @@ export default function Programs() {
           <BookOpen className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
           <p className="text-lg font-medium">No programs found</p>
           <p className="text-sm text-muted-foreground mt-2">
-            Try adjusting your filters or create a new program
+            Try adjusting your filters or chat with Tairo to create a program
           </p>
         </div>
       ) : (
@@ -113,8 +96,6 @@ export default function Programs() {
           ))}
         </div>
       )}
-
-      <ProgramWizard open={wizardOpen} onOpenChange={setWizardOpen} />
     </div>
   );
 }
